@@ -13,23 +13,41 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     text-align: center;
+    position: relative;
 }
 
-input[type="text"] {
+.container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.difficulty-select {
+    text-align: left;
+}
+
+.user-info {
+    text-align: right;
+}
+
+input {
     padding: 10px;
-    font-size: 16px;
+    font-size: 20px;
     margin-right: 10px;
 }
 
 button {
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 20px;
     cursor: pointer;
 }
-
+p {
+    font-size: 24px;    
+}
 .correct {
     color: green;
 }
 .incorrect {
-    color: red;
+    color: tomato;
 }

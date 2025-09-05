@@ -7,52 +7,125 @@
 </head>
 <body>
     <div class="container">
+        <div class="container-header">
+            <div class="difficulty-select">
+                <label for="difficulty">Difficulty:</label>
+                <select name="difficulty" id="difficulty">
+                    <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>Hard</option>
+                </select>
+            </div>
+            <div class="user-info">
+                {% if session.username %}
+                    <span>Signed in as {{ session.username }}</span>
+                    | <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('signup') }}">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+        <br>
         <h1>Math Practice</h1>
+        <h3 id="score">Score: {{ score }}</h3>
 
         {% if result %}
         <h2>{{ result }}</h2>
         {% endif %}
 
-        <form method="post">
+        <form method="post" id="math-form">
             <p>Solve: <strong>{{ question }}</strong></p>
-            <input type="text" name="answer" required>
+            <input type="text" name="answer" placeholder="Enter answer here..." required>
             <input type="hidden" name="correct_answer" value="{{ answer }}">
             <button type="submit">Submit</button>
+            <button type="button" id="skip-btn">Skip</button>
         </form>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(form);
-                fetch('/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector('h2')?.remove();
-                    if (data.result) {
-                            const resultElem = document.createElement('h2');
-                            resultElem.textContent = data.result;
-                            if (data.result.startsWith('Correct')) {
-                                resultElem.classList.add('correct');
-                            } else {
-                                resultElem.classList.add('incorrect');
-                            }
-                            form.parentNode.insertBefore(resultElem, form);
-                    }
-                    form.querySelector('strong').textContent = data.question;
-                    form.querySelector('input[name="correct_answer"]').value = data.answer;
-                    form.querySelector('input[name="answer"]').value = '';
-                });
-            });
-        });
+         document.addEventListener('DOMContentLoaded', function() {
+             const form = document.getElementById('math-form');
+             const skipBtn = document.getElementById('skip-btn');
+             const scoreElem = document.getElementById('score');
+             const difficultySelect = document.getElementById('difficulty');
+
+             form.addEventListener('submit', function(e) {
+                 e.preventDefault();
+                 const formData = new FormData(form);
+                 formData.set('difficulty', difficultySelect.value);
+                 fetch('/', {
+                     method: 'POST',
+                     body: formData,
+                     headers: {
+                         'X-Requested-With': 'XMLHttpRequest'
+                     }
+                 })
+                 .then(response => response.json())
+                 .then(data => {
+                     document.querySelector('h2')?.remove();
+                     if (data.result) {
+                         const resultElem = document.createElement('h2');
+                         resultElem.textContent = data.result;
+                         if (data.result.startsWith('Correct')) {
+                             resultElem.classList.add('correct');
+                         } else {
+                             resultElem.classList.add('incorrect');
+                         }
+                         form.parentNode.insertBefore(resultElem, form);
+                     }
+                     form.querySelector('strong').textContent = data.question;
+                     form.querySelector('input[name="correct_answer"]').value = data.answer;
+                     form.querySelector('input[name="answer"]').value = '';
+                     if (scoreElem && typeof data.score !== 'undefined') {
+                         scoreElem.textContent = 'Score: ' + data.score;
+                     }
+                 });
+             });
+
+             skipBtn.addEventListener('click', function() {
+                 const formData = new FormData();
+                 formData.set('difficulty', difficultySelect.value);
+                 fetch('/skip', {
+                     method: 'POST',
+                     body: formData,
+                     headers: {
+                         'X-Requested-With': 'XMLHttpRequest'
+                     }
+                 })
+                 .then(response => response.json())
+                 .then(data => {
+                     document.querySelector('h2')?.remove();
+                     form.querySelector('strong').textContent = data.question;
+                     form.querySelector('input[name="correct_answer"]').value = data.answer;
+                     form.querySelector('input[name="answer"]').value = '';
+                     if (scoreElem && typeof data.score !== 'undefined') {
+                         scoreElem.textContent = 'Score: ' + data.score;
+                     }
+                 });
+             });
+
+             difficultySelect.addEventListener('change', function() {
+                 const formData = new FormData();
+                 formData.set('difficulty', difficultySelect.value);
+                 fetch('/skip', {
+                     method: 'POST',
+                     body: formData,
+                     headers: {
+                         'X-Requested-With': 'XMLHttpRequest'
+                     }
+                 })
+                 .then(response => response.json())
+                 .then(data => {
+                     document.querySelector('h2')?.remove();
+                     form.querySelector('strong').textContent = data.question;
+                     form.querySelector('input[name="correct_answer"]').value = data.answer;
+                     form.querySelector('input[name="answer"]').value = '';
+                     if (scoreElem && typeof data.score !== 'undefined') {
+                         scoreElem.textContent = 'Score: ' + data.score;
+                     }
+                 });
+             });
+         });
     </script>
     </body>
     </html>
