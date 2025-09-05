@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Math Practice</title>
+    <title>Mrs. McAllister</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -10,23 +10,17 @@
         <div class="container-header">
             <div class="difficulty-select">
                 <label for="difficulty">Difficulty:</label>
-                <select name="difficulty" id="difficulty">
+                <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span>
+                <select name="difficulty" id="difficulty" style="display:none;">
                     <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>Easy</option>
                     <option value="medium" {% if difficulty == 'medium' %}selected{% endif %}>Medium</option>
                     <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>Hard</option>
                 </select>
             </div>
-            <div class="user-info">
-                {% if session.username %}
-                    <span>Signed in as {{ session.username }}</span>
-                    | <a href="{{ url_for('logout') }}">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('signup') }}">Sign Up</a>
-                {% endif %}
-            </div>
+            <!-- User info removed: no authentication features -->
         </div>
         <br>
-        <h1>Math Practice</h1>
+        <h1>Mrs. McAllister's Math Practice</h1>
         <h3 id="score">Score: {{ score }}</h3>
 
         {% if result %}
@@ -78,6 +72,11 @@
                      form.querySelector('input[name="answer"]').value = '';
                      if (scoreElem && typeof data.score !== 'undefined') {
                          scoreElem.textContent = 'Score: ' + data.score;
+                     }
+                     if (data.difficulty) {
+                         const diffElem = document.getElementById('current-difficulty');
+                         diffElem.textContent = data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1);
+                         diffElem.className = 'difficulty-' + data.difficulty;
                      }
                  });
              });
