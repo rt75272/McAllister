@@ -13,11 +13,11 @@ def generate_question(difficulty='easy'):
         num1 = random.randint(1, 10)
         num2 = random.randint(1, 10)
     elif difficulty == 'medium':
-        num1 = random.randint(-10, 100)
-        num2 = random.randint(-10, 100)
+        num1 = random.randint(1, 100)
+        num2 = random.randint(1, 100)
     elif difficulty == 'hard':
-        num1 = random.randint(-100, 9999)
-        num2 = random.randint(-100, 9999)
+        num1 = random.randint(1, 9999)
+        num2 = random.randint(1, 9999)
     else:
         num1 = random.randint(1, 10)
         num2 = random.randint(1, 10)
