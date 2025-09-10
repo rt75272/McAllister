@@ -23,7 +23,7 @@
         </div>
         </br>
         <h1>Mrs. McAllister's Math Practice</h1>
-        <h3 id="score">Score: {{ score }}</h3>
+    <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
         {% if result %}
         <h2>{{ result }}</h2>
         {% endif %}
@@ -34,6 +34,7 @@
             <button type="submit">Submit</button>
             <button type="button" id="skip-btn">Skip</button>
         </form>
+        <p><span id="note">Round to 4 decimaml places if needed.</span></p>
     </div>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>

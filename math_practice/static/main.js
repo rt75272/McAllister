@@ -10,7 +10,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('math-form');
     const skipBtn = document.getElementById('skip-btn');
-    const scoreElem = document.getElementById('score');
+    function updateQuestionsLeft(count, nextLevel) {
+        let elem = document.getElementById('questions-left');
+        const text = `${count} question${count !== 1 ? 's' : ''} left until ${nextLevel.charAt(0).toUpperCase() + nextLevel.slice(1)}`;
+        if (!elem) {
+            // If missing, create and insert after h1
+            const h1 = document.querySelector('h1');
+            elem = document.createElement('h3');
+            elem.id = 'questions-left';
+            h1.parentNode.insertBefore(elem, h1.nextSibling);
+        }
+        elem.textContent = text;
+    }
     const difficultySelect = document.getElementById('difficulty');
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -27,16 +38,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.result) {
                 const resultElem = document.createElement('h2');
                 resultElem.textContent = data.result;
-                if (data.result.startsWith('Correct')) {
+                if (data.victory) {
+                    resultElem.classList.add('victory');
+                } else if (data.result.startsWith('Correct')) {
                     resultElem.classList.add('correct');
                 } else {
-                    resultElem.classList.add('incorrect');}
-                form.parentNode.insertBefore(resultElem, form);}
+                    resultElem.classList.add('incorrect');
+                }
+                form.parentNode.insertBefore(resultElem, form);
+            }
             form.querySelector('strong').textContent = data.question;
             form.querySelector('input[name="correct_answer"]').value = data.answer;
             form.querySelector('input[name="answer"]').value = '';
-            if (scoreElem && typeof data.score !== 'undefined') {
-                scoreElem.textContent = 'Score: ' + data.score;}
+            if (typeof data.questions_left !== 'undefined' && typeof data.next_level !== 'undefined') {
+                updateQuestionsLeft(data.questions_left, data.next_level);
+            }
             if (data.difficulty) {
                 const diffElem = document.getElementById('current-difficulty');
                 diffElem.textContent = data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1);
@@ -57,8 +73,10 @@ document.addEventListener('DOMContentLoaded', function() {
             form.querySelector('strong').textContent = data.question;
             form.querySelector('input[name="correct_answer"]').value = data.answer;
             form.querySelector('input[name="answer"]').value = '';
-            if (scoreElem && typeof data.score !== 'undefined') {
-                scoreElem.textContent = 'Score: ' + data.score;}});
+            if (typeof data.questions_left !== 'undefined' && typeof data.next_level !== 'undefined') {
+                updateQuestionsLeft(data.questions_left, data.next_level);
+            }
+        });
     });
 
     difficultySelect.addEventListener('change', function() {
@@ -75,8 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
             form.querySelector('strong').textContent = data.question;
             form.querySelector('input[name="correct_answer"]').value = data.answer;
             form.querySelector('input[name="answer"]').value = '';
-            if (scoreElem && typeof data.score !== 'undefined') {
-                scoreElem.textContent = 'Score: ' + data.score;
-            }});
+            if (typeof data.questions_left !== 'undefined' && typeof data.next_level !== 'undefined') {
+                updateQuestionsLeft(data.questions_left, data.next_level);
+            }
+        });
     });
 });
