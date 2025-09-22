@@ -51,8 +51,18 @@ def generate_question(difficulty='easy'):
         answer = round(num1 * num2, num_rounded)
     return question, answer
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
+@app.route('/', methods=['GET'])
+def home():
+    """Home page with navigation to different math activities."""
+    return render_template('home.html')
+
+@app.route('/math-blast', methods=['GET'])
+def math_blast():
+    """Math Blast game page."""
+    return render_template('math_blast.html')
+
+@app.route('/math-practice', methods=['GET', 'POST'])
+def math_practice():
     """Main page for math practice."""
     # Always reset session state on GET (refresh).
     if request.method == 'GET':

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mrs. McAllister's Math Center</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .home-container {
+            background-color: white;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .activity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2em;
+            margin-top: 2em;
+        }
+        .activity-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2em;
+            border-radius: 1em;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-decoration: none;
+            color: white;
+        }
+        .activity-card h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .activity-card p {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+        .math-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        .math-blast-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+        }
+        @media (max-width: 600px) {
+            .activity-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <h1>Mrs. McAllister's Math Center</h1>
+        <p>Welcome! Choose your math activity:</p>
+        
+        <div class="activity-grid">
+            <a href="{{ url_for('math_practice') }}" class="activity-card math-practice-card">
+                <h3>📚 Math Practice</h3>
+                <p>Traditional math problems with progressive difficulty levels. Perfect for skill building!</p>
+            </a>
+            
+            <a href="{{ url_for('math_blast') }}" class="activity-card math-blast-card">
+                <h3>🎮 Math Blast</h3>
+                <p>Fast-paced math game! Shoot down falling math problems in this exciting arcade-style challenge!</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

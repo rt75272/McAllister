@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Blast - Sky Shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='math_blast.css') }}">
+</head>
+<body>
+    <!-- Navigation back to home -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="game-title">Math Blast</h2>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <input id="answerInput" type="number" placeholder="Type answer & hit Enter">
+    <div id="score">Score: 0</div>
+    <div id="level">Level: 1</div>
+    <div id="lives">Lives: 3</div>
+    <script src="{{ url_for('static', filename='math_blast.js') }}"></script>
+</body>
+</html>

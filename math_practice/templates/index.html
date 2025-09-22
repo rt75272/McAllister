@@ -9,21 +9,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- Navigation header -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="page-title">Math Practice</h2>
+    </div>
+    
     <div class="container">
-        <div class="container-header">
-            <div class="difficulty-select">
-                <label for="difficulty">Difficulty:</label>
-                <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span>
-                <select name="difficulty" id="difficulty" style="display:none;">
-                    <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>Easy</option>
-                    <option value="medium" {% if difficulty == 'medium' %}selected{% endif %}>Medium</option>
-                    <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>Hard</option>
-                </select>
-            </div>
-        </div>
-        </br>
-        <h1>Mrs. McAllister's Math Practice</h1>
-    <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
+        <p class="difficulty-display">Difficulty: <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span></p>
+        
+        <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
         {% if result %}
         <h2>{{ result }}</h2>
         {% endif %}
