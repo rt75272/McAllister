@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Race - Speed Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='math_race.css') }}">
+</head>
+<body>
+    <!-- Navigation back to home -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="game-title">Math Race</h2>
+    </div>
+    
+    <div class="game-container">
+        <!-- Game Status -->
+        <div class="status-bar">
+            <div class="stat-item">
+                <span class="stat-label">Time:</span>
+                <span id="timer" class="stat-value">60</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Score:</span>
+                <span id="score" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Streak:</span>
+                <span id="streak" class="stat-value">0</span>
+            </div>
+        </div>
+        
+        <!-- Game Area -->
+        <div class="game-area">
+            <div id="question-display" class="question-display">
+                <div id="question" class="question">Click Start to Begin!</div>
+                <div class="answer-section">
+                    <input type="number" id="answer-input" placeholder="Your answer" inputmode="decimal" disabled>
+                    <button id="submit-btn" class="submit-btn" disabled>✓</button>
+                </div>
+                <div id="feedback" class="feedback"></div>
+            </div>
+            
+            <!-- Start/Game Over Screen -->
+            <div id="start-screen" class="start-screen">
+                <h3>Math Race Challenge!</h3>
+                <p>Solve as many math problems as you can in 60 seconds!</p>
+                <div class="difficulty-selector">
+                    <label for="difficulty">Choose Difficulty:</label>
+                    <select id="difficulty">
+                        <option value="easy">Easy (1-10)</option>
+                        <option value="medium">Medium (1-50)</option>
+                        <option value="hard">Hard (1-100)</option>
+                    </select>
+                </div>
+                <button id="start-btn" class="start-btn">🏁 Start Race!</button>
+            </div>
+            
+            <div id="game-over-screen" class="game-over-screen hidden">
+                <h3>Race Complete!</h3>
+                <div id="final-stats" class="final-stats"></div>
+                <button id="play-again-btn" class="play-again-btn">🔄 Race Again!</button>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='math_race.js') }}"></script>
+</body>
+</html>

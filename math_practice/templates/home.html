@@ -18,7 +18,7 @@
         }
         .activity-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 2em;
             margin-top: 2em;
         }
@@ -51,7 +51,19 @@
         .math-blast-card {
             background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
         }
-        @media (max-width: 600px) {
+        .math-race-card {
+            background: linear-gradient(135deg, #FFA726 0%, #FF9800 100%);
+        }
+        .math-memory-card {
+            background: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
+        }
+        @media (max-width: 900px) {
+            .activity-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
             .activity-grid {
                 grid-template-columns: 1fr;
             }
@@ -104,6 +116,16 @@
             <a href="{{ url_for('math_blast') }}" class="activity-card math-blast-card">
                 <h3>🎮 Math Blast</h3>
                 <p>Fast-paced math game! Shoot down falling math problems in this exciting arcade-style challenge!</p>
+            </a>
+            
+            <a href="{{ url_for('math_race') }}" class="activity-card math-race-card">
+                <h3>🏁 Math Race</h3>
+                <p>Beat the clock! Solve as many math problems as you can in 60 seconds. Test your speed and accuracy!</p>
+            </a>
+            
+            <a href="{{ url_for('math_memory') }}" class="activity-card math-memory-card">
+                <h3>🧠 Math Memory</h3>
+                <p>Memory card game! Match math problems with their answers. Challenge your concentration and math skills!</p>
             </a>
         </div>
     </div>

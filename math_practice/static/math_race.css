@@ -1,0 +1,358 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.home-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.home-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.game-title {
+    color: white;
+    margin: 0;
+    font-size: 1.8rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.status-bar {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+#timer {
+    color: #e74c3c;
+}
+
+#score {
+    color: #27ae60;
+}
+
+#streak {
+    color: #f39c12;
+}
+
+.game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.question-display {
+    background: white;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.question {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.answer-section {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#answer-input {
+    font-size: 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 0.5rem;
+    width: 200px;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+#answer-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn {
+    font-size: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 50px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #219a52;
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.feedback {
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback.correct {
+    color: #27ae60;
+}
+
+.feedback.incorrect {
+    color: #e74c3c;
+}
+
+.start-screen, .game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.start-screen h3, .game-over-screen h3 {
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.start-screen p {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.difficulty-selector {
+    margin-bottom: 2rem;
+}
+
+.difficulty-selector label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: bold;
+}
+
+.difficulty-selector select {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 0.5rem;
+    background: white;
+}
+
+.start-btn, .play-again-btn {
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover, .play-again-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+}
+
+.final-stats {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #667eea;
+}
+
+.final-stats h4 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.final-stats p {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.progress-container {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .nav-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .game-title {
+        font-size: 1.4rem;
+    }
+    
+    .game-container {
+        padding: 1rem;
+    }
+    
+    .status-bar {
+        padding: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .question {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .question-display {
+        padding: 2rem 1rem;
+    }
+    
+    .answer-section {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    #answer-input {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-header {
+        padding: 0.5rem;
+    }
+    
+    .game-title {
+        font-size: 1.2rem;
+    }
+    
+    .game-container {
+        padding: 0.5rem;
+    }
+    
+    .question {
+        font-size: 1.5rem;
+    }
+    
+    .question-display {
+        padding: 1.5rem 0.75rem;
+    }
+    
+    #answer-input {
+        font-size: 1.2rem;
+        padding: 0.5rem;
+    }
+    
+    .submit-btn {
+        font-size: 1.2rem;
+        padding: 0.5rem 0.75rem;
+    }
+}

@@ -61,6 +61,16 @@ def math_blast():
     """Math Blast game page."""
     return render_template('math_blast.html')
 
+@app.route('/math-race', methods=['GET'])
+def math_race():
+    """Math Race game page."""
+    return render_template('math_race.html')
+
+@app.route('/math-memory', methods=['GET'])
+def math_memory():
+    """Math Memory game page."""
+    return render_template('math_memory.html')
+
 @app.route('/math-practice', methods=['GET', 'POST'])
 def math_practice():
     """Main page for math practice."""
