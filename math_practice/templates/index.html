@@ -18,18 +18,29 @@
     <div class="container">
         <p class="difficulty-display">Difficulty: <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span></p>
         
+        <!-- Previous question display -->
+        <div id="previous-question" class="previous-question" style="display: none;">
+            <h4>Previous Question:</h4>
+            <p><span id="prev-question-text"></span></p>
+            <p>Your answer: <span id="prev-user-answer" class="user-answer"></span></p>
+            <p>Correct answer: <span id="prev-correct-answer" class="correct-answer"></span></p>
+        </div>
+        
         <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
         {% if result %}
         <h2>{{ result }}</h2>
         {% endif %}
         <form method="post" id="math-form">
             <p>Solve: <strong>{{ question }}</strong></p>
-            <input type="text" name="answer" placeholder="Enter answer here..." required>
+            <input type="text" name="answer" placeholder="Enter answer here..." required inputmode="decimal">
             <input type="hidden" name="correct_answer" value="{{ answer }}">
-            <button type="submit">Submit</button>
-            <button type="button" id="skip-btn">Skip</button>
+            <input type="hidden" name="current_question" value="{{ question }}">
+            <div class="form-buttons">
+                <button type="submit">Submit</button>
+                <button type="button" id="skip-btn">Skip</button>
+            </div>
         </form>
-        <p><span id="note">Round to 4 decimaml places if needed.</span></p>
+        <p><span id="note">Round to 2 decimaml places if needed.</span></p>
     </div>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>

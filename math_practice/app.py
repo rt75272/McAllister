@@ -19,7 +19,7 @@ easy_num = 4      # Number of consecutive easy questions to answer correctly to 
 medium_num = 7    # Number of consecutive medium questions to answer correctly to reach hard.
 hard_num = 5      # Number of hard questions to answer correctly to achieve victory.
 
-num_rounded = 4   # Number of decimal places to round to.
+num_rounded = 2   # Number of decimal places to round to.
 
 def generate_question(difficulty='easy'):
     """Generate a math question based on difficulty level."""
@@ -32,8 +32,8 @@ def generate_question(difficulty='easy'):
         num1 = random.randint(1, 100)
         num2 = random.randint(1, 50)
     elif difficulty == 'hard':
-        num1 = random.randint(1, 9999)
-        num2 = random.randint(1, 999)
+        num1 = random.randint(1, 1000)
+        num2 = random.randint(1, 500)
     else:
         num1 = random.randint(5, 10)
         num2 = random.randint(1, 5)
@@ -124,6 +124,16 @@ def math_practice():
             streaks[difficulty] += 1
         else:
             streaks[difficulty] = 0
+            
+        # Store previous question information BEFORE updating difficulty
+        current_question = request.form.get('current_question', '')
+        session['previous_question'] = {
+            'question': current_question,
+            'user_answer': user_answer,
+            'correct_answer': correct_answer_float,
+            'was_correct': is_correct
+        }
+        
         # Difficulty progression.
         if difficulty == 'easy' and streaks['easy'] >= easy_to_medium:
             difficulty = 'medium'
@@ -133,6 +143,7 @@ def math_practice():
             streaks['medium'] = 0
         session['difficulty'] = difficulty
         session['streaks'] = streaks
+        
         if difficulty == 'easy':
             questions_left = max(0, easy_to_medium - streaks['easy'])
             next_level = 'medium'
@@ -157,14 +168,19 @@ def math_practice():
             next_level = 'medium'
         question, answer = generate_question(session['difficulty'])
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({
+            response_data = {
                 'result': result,
                 'question': question,
                 'answer': answer,
                 'difficulty': session['difficulty'],
                 'victory': victory,
                 'questions_left': questions_left,
-                'next_level': next_level})
+                'next_level': next_level
+            }
+            # Add previous question info if available
+            if 'previous_question' in session:
+                response_data['previous_question'] = session['previous_question']
+            return jsonify(response_data)
         else:
             return render_template('index.html', 
                                    question=question, 

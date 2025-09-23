@@ -10,6 +10,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('math-form');
     const skipBtn = document.getElementById('skip-btn');
+    
     function updateQuestionsLeft(count, nextLevel) {
         let elem = document.getElementById('questions-left');
         const text = `${count} question${count !== 1 ? 's' : ''} left until ${nextLevel.charAt(0).toUpperCase() + nextLevel.slice(1)}`;
@@ -21,6 +22,23 @@ document.addEventListener('DOMContentLoaded', function() {
             h1.parentNode.insertBefore(elem, h1.nextSibling);
         }
         elem.textContent = text;
+    }
+    
+    function updatePreviousQuestion(prevQuestion) {
+        const prevQuestionDiv = document.getElementById('previous-question');
+        if (prevQuestion) {
+            document.getElementById('prev-question-text').textContent = prevQuestion.question;
+            document.getElementById('prev-user-answer').textContent = prevQuestion.user_answer;
+            document.getElementById('prev-correct-answer').textContent = prevQuestion.correct_answer;
+            
+            // Style the user answer based on correctness
+            const userAnswerSpan = document.getElementById('prev-user-answer');
+            userAnswerSpan.className = prevQuestion.was_correct ? 'user-answer correct' : 'user-answer incorrect';
+            
+            prevQuestionDiv.style.display = 'block';
+        } else {
+            prevQuestionDiv.style.display = 'none';
+        }
     }
     
     form.addEventListener('submit', function(e) {
@@ -48,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             form.querySelector('strong').textContent = data.question;
             form.querySelector('input[name="correct_answer"]').value = data.answer;
+            form.querySelector('input[name="current_question"]').value = data.question;
             form.querySelector('input[name="answer"]').value = '';
             if (typeof data.questions_left !== 'undefined' && typeof data.next_level !== 'undefined') {
                 updateQuestionsLeft(data.questions_left, data.next_level);
@@ -58,6 +77,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     diffElem.textContent = data.difficulty.charAt(0).toUpperCase() + data.difficulty.slice(1);
                     diffElem.className = 'difficulty-' + data.difficulty;
                 }
+            }
+            // Update previous question display
+            if (data.previous_question) {
+                updatePreviousQuestion(data.previous_question);
             }
         });
     });

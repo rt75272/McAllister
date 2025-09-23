@@ -55,7 +55,10 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    max-width: 100%;
+    height: auto;
 }
+
 #answerInput {
     position: fixed; 
     bottom: 30px; 
@@ -72,8 +75,11 @@ body {
     outline: none;
     transition: all 0.3s ease;
     min-width: 280px;
+    max-width: 90vw;
     text-align: center;
     border: 2px solid transparent;
+    -webkit-appearance: none;
+    appearance: none;
 }
 #answerInput:focus {
     background: rgba(255, 255, 255, 1);
@@ -112,6 +118,7 @@ body {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
 #level {
     position: fixed; 
     top: 70px; 
@@ -126,4 +133,81 @@ body {
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 215, 0, 0.6);
     z-index: 1000;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .nav-header {
+        padding: 12px 15px;
+    }
+    
+    .home-btn {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    .game-title {
+        font-size: 1.3em;
+    }
+    
+    #gameCanvas {
+        width: 95vw;
+        height: auto;
+        margin-top: 6em;
+    }
+    
+    #answerInput {
+        font-size: 20px;
+        padding: 15px 25px;
+        bottom: 20px;
+        min-width: 200px;
+    }
+    
+    #score, #lives, #level {
+        font-size: 18px;
+        padding: 8px 16px;
+    }
+    
+    #level {
+        top: 65px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-header {
+        padding: 10px 12px;
+    }
+    
+    .home-btn {
+        padding: 5px 10px;
+        font-size: 0.8em;
+    }
+    
+    .game-title {
+        font-size: 1.1em;
+    }
+    
+    #gameCanvas {
+        width: 98vw;
+        margin-top: 5em;
+    }
+    
+    #answerInput {
+        font-size: 18px;
+        padding: 12px 20px;
+        bottom: 15px;
+        min-width: 150px;
+    }
+    
+    #score, #lives {
+        font-size: 16px;
+        padding: 6px 12px;
+        top: 15px;
+    }
+    
+    #level {
+        font-size: 16px;
+        padding: 6px 12px;
+        top: 60px;
+    }
 }

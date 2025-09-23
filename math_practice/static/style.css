@@ -18,9 +18,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    padding-top: 80px; /* Account for fixed nav header */
+    padding: 80px 10px 20px 10px; /* Account for fixed nav header and add side padding */
 }
 
 .nav-header {
@@ -56,6 +56,10 @@ body {
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.3);
     position: static; /* Override the absolute positioning */
+    min-height: 44px; /* Minimum touch target size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-header .home-btn:hover {
@@ -67,12 +71,15 @@ body {
 
 .container {
     background-color: white;
-    padding: 2.5em;
+    padding: 2em;
     border-radius: 0.5em;
     box-shadow: 0 0 0.8em rgba(0,0,0,0.1);
     text-align: center;
     position: relative;
-    margin-top: 0; /* Remove extra margin since we have padding-top on body */
+    margin-top: 0;
+    width: 100%;
+    max-width: 500px; /* Limit max width for larger screens */
+    box-sizing: border-box;
 }
 
 .difficulty-display {
@@ -85,15 +92,201 @@ body {
     font-weight: 600;
 }
 
-input {
-    padding: 0.8em;
-    font-size: 1.25em;
-    margin-right: 0.8em;
+.previous-question {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1em;
+    margin: 1em 0;
+    text-align: left;
 }
+
+.previous-question h4 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    color: #495057;
+    font-size: 1em;
+}
+
+.previous-question p {
+    margin: 0.3em 0;
+    font-size: 0.95em;
+}
+
+.user-answer.correct {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.user-answer.incorrect {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.correct-answer {
+    color: #28a745;
+    font-weight: 600;
+}
+
+input {
+    padding: 1em;
+    font-size: 1.2em;
+    margin: 0.5em;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+    -webkit-appearance: none; /* Remove iOS styling */
+    appearance: none;
+}
+
+input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
 button {
-    padding: 0.8em 1.5em;
-    font-size: 1.25em;
+    padding: 1em 1.5em;
+    font-size: 1.2em;
     cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    margin: 0.5em;
+    min-height: 44px; /* Minimum touch target size */
+    min-width: 88px; /* Minimum touch target width */
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+button[type="submit"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+button[type="button"] {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+button[type="button"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Form layout improvements for mobile */
+form {
+    margin: 1.5em 0;
+}
+
+form p {
+    margin-bottom: 1em;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.form-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+    .nav-header {
+        padding: 12px 15px;
+    }
+    
+    .page-title {
+        font-size: 1.3em;
+    }
+    
+    .nav-header .home-btn {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    .container {
+        padding: 1.5em;
+        margin: 0 5px;
+    }
+    
+    input {
+        font-size: 1.1em;
+        padding: 0.9em;
+    }
+    
+    button {
+        font-size: 1.1em;
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    form p {
+        font-size: 1.2em;
+    }
+    
+    h3 {
+        font-size: 1.1em;
+    }
+    
+    .previous-question {
+        padding: 0.8em;
+        margin: 0.8em 0;
+    }
+    
+    .previous-question p {
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 70px 5px 15px 5px;
+    }
+    
+    .nav-header {
+        padding: 10px 12px;
+    }
+    
+    .page-title {
+        font-size: 1.1em;
+    }
+    
+    .container {
+        padding: 1em;
+    }
+    
+    input {
+        font-size: 1em;
+        padding: 0.8em;
+    }
+    
+    button {
+        font-size: 1em;
+        padding: 0.8em 1.2em;
+    }
+    
+    .previous-question {
+        padding: 0.7em;
+        margin: 0.7em 0;
+    }
+    
+    .previous-question h4 {
+        font-size: 0.9em;
+    }
+    
+    .previous-question p {
+        font-size: 0.85em;
+    }
 }
 p {
     font-size: 1.25em;    
