@@ -1,47 +1,133 @@
 <!DOCTYPE html>
-<!-- HTML template for the math practice app -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mrs. McAllister</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mrs. McAllister's Math Center</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .home-container {
+            background-color: white;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2em;
+            margin-top: 2em;
+        }
+        .activity-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2em;
+            border-radius: 1em;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-decoration: none;
+            color: white;
+        }
+        .activity-card h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .activity-card p {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+        .math-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        .math-blast-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+        }
+        .math-race-card {
+            background: linear-gradient(135deg, #FFA726 0%, #FF9800 100%);
+        }
+        .math-memory-card {
+            background: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
+        }
+        @media (max-width: 900px) {
+            .activity-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .activity-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .home-container {
+                padding: 2em 1em;
+                margin: 20px 10px;
+            }
+            
+            .activity-card {
+                padding: 1.5em;
+            }
+            
+            .activity-card h3 {
+                font-size: 1.3em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .home-container {
+                padding: 1.5em 0.8em;
+                margin: 15px 5px;
+            }
+            
+            .activity-card {
+                padding: 1.2em;
+            }
+            
+            .activity-card h3 {
+                font-size: 1.2em;
+            }
+            
+            .activity-card p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation header -->
-    <div class="nav-header">
-        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
-        <h2 class="page-title">Math Practice</h2>
-    </div>
-    
-    <div class="container">
-        <p class="difficulty-display">Difficulty: <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span></p>
+    <div class="home-container">
+        <h1>Mrs. McAllister's Math Center</h1>
+        <p>Welcome! Choose your math activity:</p>
         
-        <!-- Previous question display -->
-        <div id="previous-question" class="previous-question" style="display: none;">
-            <h4>Previous Question:</h4>
-            <p><span id="prev-question-text"></span></p>
-            <p>Your answer: <span id="prev-user-answer" class="user-answer"></span></p>
-            <p>Correct answer: <span id="prev-correct-answer" class="correct-answer"></span></p>
+        <div class="activity-grid">
+            <a href="{{ url_for('math_practice') }}" class="activity-card math-practice-card">
+                <h3>📚 Math Practice</h3>
+                <p>Traditional math problems with progressive difficulty levels. Perfect for skill building!</p>
+            </a>
+            
+            <a href="{{ url_for('math_blast') }}" class="activity-card math-blast-card">
+                <h3>🎮 Math Blast</h3>
+                <p>Fast-paced math game! Shoot down falling math problems in this exciting arcade-style challenge!</p>
+            </a>
+            
+            <a href="{{ url_for('math_race') }}" class="activity-card math-race-card">
+                <h3>🏁 Math Race</h3>
+                <p>Beat the clock! Solve as many math problems as you can in 60 seconds. Test your speed and accuracy!</p>
+            </a>
+            
+            <a href="{{ url_for('math_memory') }}" class="activity-card math-memory-card">
+                <h3>🧠 Math Memory</h3>
+                <p>Memory card game! Match math problems with their answers. Challenge your concentration and math skills!</p>
+            </a>
         </div>
-        
-        <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
-        {% if result %}
-        <h2>{{ result }}</h2>
-        {% endif %}
-        <form method="post" id="math-form">
-            <p>Solve: <strong>{{ question }}</strong></p>
-            <input type="text" name="answer" placeholder="Enter answer here..." required inputmode="decimal">
-            <input type="hidden" name="correct_answer" value="{{ answer }}">
-            <input type="hidden" name="current_question" value="{{ question }}">
-            <div class="form-buttons">
-                <button type="submit">Submit</button>
-                <button type="button" id="skip-btn">Skip</button>
-            </div>
-        </form>
-        <p><span id="note">Round to 2 decimaml places if needed.</span></p>
     </div>
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

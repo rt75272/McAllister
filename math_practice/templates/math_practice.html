@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- HTML template for the math practice app -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mrs. McAllister</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation header -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="page-title">Math Practice</h2>
+    </div>
+    
+    <div class="container">
+        <p class="difficulty-display">Difficulty: <span id="current-difficulty" class="difficulty-{{ difficulty }}">{{ difficulty|capitalize }}</span></p>
+        
+        <!-- Progression Map -->
+        <div class="progression-map">
+            <h4>Your Progress Journey</h4>
+            <div class="progress-track">
+                <div class="progress-stage" data-stage="easy">
+                    <div class="stage-icon">📚</div>
+                    <div class="stage-label">Easy</div>
+                    <div class="stage-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="easy-progress"></div>
+                        </div>
+                        <span class="progress-text" id="easy-text">0/{{ easy_num }}</span>
+                    </div>
+                </div>
+                
+                <div class="progress-arrow">→</div>
+                
+                <div class="progress-stage" data-stage="medium">
+                    <div class="stage-icon">🎯</div>
+                    <div class="stage-label">Medium</div>
+                    <div class="stage-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="medium-progress"></div>
+                        </div>
+                        <span class="progress-text" id="medium-text">0/{{ medium_num }}</span>
+                    </div>
+                </div>
+                
+                <div class="progress-arrow">→</div>
+                
+                <div class="progress-stage" data-stage="hard">
+                    <div class="stage-icon">🔥</div>
+                    <div class="stage-label">Hard</div>
+                    <div class="stage-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="hard-progress"></div>
+                        </div>
+                        <span class="progress-text" id="hard-text">0/{{ hard_num }}</span>
+                    </div>
+                </div>
+                
+                <div class="progress-arrow">→</div>
+                
+                <div class="progress-stage" data-stage="victory">
+                    <div class="stage-icon">🏆</div>
+                    <div class="stage-label">Victory!</div>
+                    <div class="stage-progress">
+                        <span class="victory-text">Complete!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Previous question display -->
+        <div id="previous-question" class="previous-question" style="display: none;">
+            <h4>Previous Question:</h4>
+            <p><span id="prev-question-text"></span></p>
+            <p>Your answer: <span id="prev-user-answer" class="user-answer"></span></p>
+            <p>Correct answer: <span id="prev-correct-answer" class="correct-answer"></span></p>
+        </div>
+        
+        <h3 id="questions-left">{{ questions_left }} question{{ 's' if questions_left != 1 else '' }} left until {{ next_level|capitalize }}</h3>
+        {% if result %}
+        <h2>{{ result }}</h2>
+        {% endif %}
+        <form method="post" id="math-form">
+            <p>Solve: <strong>{{ question }}</strong></p>
+            <input type="text" name="answer" placeholder="Enter answer here..." required inputmode="decimal">
+            <input type="hidden" name="correct_answer" value="{{ answer }}">
+            <input type="hidden" name="current_question" value="{{ question }}">
+            <div class="form-buttons">
+                <button type="submit">Submit</button>
+                <button type="button" id="skip-btn">Skip</button>
+            </div>
+        </form>
+        <p><span id="note">Round to 2 decimaml places if needed.</span></p>
+    </div>
+    
+    <script>
+        // Make initial data available globally
+        window.initialStreaks = {{ streaks|tojson|safe }};
+        window.initialHardVictories = {{ hard_victories }};
+        window.easyNum = {{ easy_num }};
+        window.mediumNum = {{ medium_num }};
+        window.hardNum = {{ hard_num }};
+    </script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

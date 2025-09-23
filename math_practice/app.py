@@ -54,7 +54,7 @@ def generate_question(difficulty='easy'):
 @app.route('/', methods=['GET'])
 def home():
     """Home page with navigation to different math activities."""
-    return render_template('home.html')
+    return render_template('index.html')
 
 @app.route('/math-blast', methods=['GET'])
 def math_blast():
@@ -94,15 +94,9 @@ def math_practice():
     if difficulty == 'easy':
         questions_left = max(0, easy_to_medium - streaks['easy'])
         next_level = 'medium'
-        if streaks['easy'] >= easy_to_medium:
-            difficulty = 'medium'
-            streaks['easy'] = 0
     elif difficulty == 'medium':
         questions_left = max(0, medium_to_hard - streaks['medium'])
         next_level = 'hard'
-        if streaks['medium'] >= medium_to_hard:
-            difficulty = 'hard'
-            streaks['medium'] = 0
     elif difficulty == 'hard':
         questions_left = max(0, hard_to_victory - session['hard_victories'])
         next_level = 'victory'
@@ -185,30 +179,42 @@ def math_practice():
                 'difficulty': session['difficulty'],
                 'victory': victory,
                 'questions_left': questions_left,
-                'next_level': next_level
+                'next_level': next_level,
+                'streaks': streaks,
+                'hard_victories': session.get('hard_victories', 0)
             }
             # Add previous question info if available
             if 'previous_question' in session:
                 response_data['previous_question'] = session['previous_question']
             return jsonify(response_data)
         else:
-            return render_template('index.html', 
+            return render_template('math_practice.html', 
                                    question=question, 
                                    answer=answer, 
                                    result=result, 
                                    difficulty=session['difficulty'],
                                    victory=victory,
                                    questions_left=questions_left,
-                                   next_level=next_level)
+                                   next_level=next_level,
+                                   easy_num=easy_num,
+                                   medium_num=medium_num,
+                                   hard_num=hard_num,
+                                   streaks=streaks,
+                                   hard_victories=session.get('hard_victories', 0))
     else:
         question, answer = generate_question(difficulty)
-        return render_template('index.html', 
+        return render_template('math_practice.html', 
                                question=question, 
                                answer=answer, 
                                result=result, 
                                difficulty=difficulty,
                                questions_left=questions_left,
-                               next_level=next_level)
+                               next_level=next_level,
+                               easy_num=easy_num,
+                               medium_num=medium_num,
+                               hard_num=hard_num,
+                               streaks=streaks,
+                               hard_victories=session.get('hard_victories', 0))
 
 @app.route('/skip', methods=['POST'])
 def skip():
@@ -240,7 +246,9 @@ def skip():
         'answer': answer,
         'difficulty': difficulty,
         'questions_left': questions_left,
-        'next_level': next_level})
+        'next_level': next_level,
+        'streaks': streaks,
+        'hard_victories': session.get('hard_victories', 0)})
 
 # The big red activation button.
 if __name__ == '__main__':
