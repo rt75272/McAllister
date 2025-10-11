@@ -1,27 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mrs. McAllister's Math Center</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% extends "base.html" %}
+
+{% block title %}Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
     <style>
-        .home-container {
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero-section {
             background-color: white;
             padding: 3em;
             border-radius: 1em;
-            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            box-shadow: 0 0 2em rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
+            margin-bottom: 2em;
         }
+        
+        .hero-title {
+            font-size: 2.5em;
+            color: #4CAF50;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 1.5em;
+        }
+        
+        .info-section {
+            background-color: white;
+            padding: 2em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            margin-bottom: 2em;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5em;
+            margin: 2em 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6efff 100%);
+            padding: 1.5em;
+            border-radius: 0.8em;
+            text-align: center;
+            border: 2px solid #e0e8ff;
+        }
+        
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 0.5em;
+        }
+        
+        .feature-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 0.5em;
+        }
+        
+        .games-section {
+            background-color: white;
+            padding: 2em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        
         .activity-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2em;
-            margin-top: 2em;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5em;
+            margin-top: 1.5em;
         }
+        
         .activity-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 2em;
@@ -30,47 +103,135 @@
             text-decoration: none;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .activity-card:hover::before {
+            opacity: 1;
+        }
+        
         .activity-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
             text-decoration: none;
             color: white;
         }
+        
         .activity-card h3 {
             margin-top: 0;
-            font-size: 1.5em;
+            font-size: 1.4em;
+            margin-bottom: 0.5em;
         }
+        
         .activity-card p {
             margin-bottom: 0;
             opacity: 0.9;
+            line-height: 1.4;
         }
+        
+        .difficulty-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3em 0.8em;
+            border-radius: 1em;
+            font-size: 0.8em;
+            margin-top: 0.5em;
+        }
+        
         .math-practice-card {
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
         }
+        
         .math-blast-card {
             background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
         }
+        
         .math-race-card {
             background: linear-gradient(135deg, #FFA726 0%, #FF9800 100%);
         }
+        
         .math-memory-card {
             background: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
         }
+        
+        .decimal-master-card {
+            background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+        }
+        
+        .fraction-master-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+        }
+        
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5em 0;
+        }
+        
+        .benefits-list li {
+            padding: 0.5em 0;
+            padding-left: 2em;
+            position: relative;
+        }
+        
+        .benefits-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 2em;
+            border-radius: 1em;
+            text-align: center;
+            margin-top: 2em;
+        }
+        
+        .cta-title {
+            font-size: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        
         @media (max-width: 900px) {
+            .features-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
             .activity-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
         }
         
         @media (max-width: 768px) {
-            .activity-grid {
-                grid-template-columns: 1fr;
+            .hero-title {
+                font-size: 2em;
             }
             
-            .home-container {
+            .hero-section {
                 padding: 2em 1em;
-                margin: 20px 10px;
+            }
+            
+            .info-section, .games-section {
+                padding: 1.5em;
+                margin: 0 0.5em 1.5em;
             }
             
             .activity-card {
@@ -80,12 +241,29 @@
             .activity-card h3 {
                 font-size: 1.3em;
             }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1em;
+            }
         }
         
         @media (max-width: 480px) {
-            .home-container {
+            body {
+                padding: 10px;
+            }
+            
+            .hero-title {
+                font-size: 1.8em;
+            }
+            
+            .hero-section {
                 padding: 1.5em 0.8em;
-                margin: 15px 5px;
+            }
+            
+            .info-section, .games-section {
+                padding: 1.2em;
+                margin: 0 0.2em 1.2em;
             }
             
             .activity-card {
@@ -101,33 +279,102 @@
             }
         }
     </style>
-</head>
-<body>
-    <div class="home-container">
-        <h1>Mrs. McAllister's Math Center</h1>
-        <p>Welcome! Choose your math activity:</p>
-        
-        <div class="activity-grid">
-            <a href="{{ url_for('math_practice') }}" class="activity-card math-practice-card">
-                <h3>📚 Math Practice</h3>
-                <p>Traditional math problems with progressive difficulty levels. Perfect for skill building!</p>
-            </a>
+{% endblock %}
+
+{% block content %}
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">🎓 Mrs. McAllister's Math Center</h1>
+            <p class="hero-subtitle">Making Math Fun, Engaging, and Educational for Every Student!</p>
+            <p>Welcome to your interactive math learning adventure! Our platform offers five unique games designed to strengthen your mathematical skills while having fun.</p>
+        </div>
+
+        <!-- Features Section -->
+        <div class="info-section">
+            <h2 class="section-title">Why Choose Our Math Center?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Adaptive Learning</div>
+                    <p>Progressive difficulty that adjusts to your skill level</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-title">Achievement System</div>
+                    <p>Track your progress with visual milestones and rewards</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Mobile Friendly</div>
+                    <p>Learn anywhere with our responsive design</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <div class="feature-title">Gamified Learning</div>
+                    <p>Five different game modes to keep learning exciting</p>
+                </div>
+            </div>
             
-            <a href="{{ url_for('math_blast') }}" class="activity-card math-blast-card">
-                <h3>🎮 Math Blast</h3>
-                <p>Fast-paced math game! Shoot down falling math problems in this exciting arcade-style challenge!</p>
-            </a>
+            <h3 style="text-align: center; color: #4CAF50; margin-top: 2em;">Educational Benefits</h3>
+            <ul class="benefits-list">
+                <li>Improves mental math calculation speed and accuracy</li>
+                <li>Builds confidence in mathematical problem-solving</li>
+                <li>Develops number sense and mathematical intuition</li>
+                <li>Enhances concentration and focus through engaging gameplay</li>
+                <li>Provides immediate feedback for continuous improvement</li>
+                <li>Suitable for all skill levels from beginner to advanced</li>
+            </ul>
+        </div>
+
+        <!-- Games Section -->
+        <div class="games-section">
+            <h2 class="section-title">Choose Your Math Adventure</h2>
+            <p style="text-align: center; margin-bottom: 1.5em;">Each game offers a unique way to practice and master mathematical concepts. Click on any game below to start your learning journey!</p>
             
-            <a href="{{ url_for('math_race') }}" class="activity-card math-race-card">
-                <h3>🏁 Math Race</h3>
-                <p>Beat the clock! Solve as many math problems as you can in 60 seconds. Test your speed and accuracy!</p>
-            </a>
-            
-            <a href="{{ url_for('math_memory') }}" class="activity-card math-memory-card">
-                <h3>🧠 Math Memory</h3>
-                <p>Memory card game! Match math problems with their answers. Challenge your concentration and math skills!</p>
-            </a>
+            <div class="activity-grid">
+                <a href="{{ url_for('math_practice') }}" class="activity-card math-practice-card">
+                    <h3>📚 Math Practice</h3>
+                    <p>Traditional math problems with progressive difficulty levels. Perfect for systematic skill building and mastering fundamentals!</p>
+                    <div class="difficulty-badge">Progressive Difficulty</div>
+                </a>
+                
+                <a href="{{ url_for('math_blast') }}" class="activity-card math-blast-card">
+                    <h3>🎮 Math Blast</h3>
+                    <p>Fast-paced arcade-style game! Shoot down falling math problems before they reach the bottom. Test your reflexes and accuracy!</p>
+                    <div class="difficulty-badge">Action & Speed</div>
+                </a>
+                
+                <a href="{{ url_for('math_race') }}" class="activity-card math-race-card">
+                    <h3>🏁 Math Race</h3>
+                    <p>Beat the clock! Solve as many math problems as you can in 60 seconds. Challenge yourself to improve your time and score!</p>
+                    <div class="difficulty-badge">Timed Challenge</div>
+                </a>
+                
+                <a href="{{ url_for('math_memory') }}" class="activity-card math-memory-card">
+                    <h3>🧠 Math Memory</h3>
+                    <p>Memory card matching game! Find pairs of math problems and their answers. Strengthen both memory and math skills!</p>
+                    <div class="difficulty-badge">Memory & Logic</div>
+                </a>
+                
+                <a href="{{ url_for('decimal_master') }}" class="activity-card decimal-master-card">
+                    <h3>🔢 Decimal Master</h3>
+                    <p>Master decimal operations! From basic addition to advanced multiplication and division. Perfect for understanding place value and decimal concepts!</p>
+                    <div class="difficulty-badge">Decimal Focus</div>
+                </a>
+                
+                <a href="{{ url_for('fraction_master') }}" class="activity-card fraction-master-card">
+                    <h3>🍰 Fraction Master</h3>
+                    <p>Master fractions through 8 progressive levels! From simplifying fractions to complex operations with different denominators. Visual learning included!</p>
+                    <div class="difficulty-badge">Fraction Focus</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section">
+            <h2 class="cta-title">Ready to Start Learning?</h2>
+            <p>Choose any game above to begin your math learning adventure. Each game is designed to challenge and engage you while building essential mathematical skills. Progress is saved automatically, so you can pick up where you left off anytime!</p>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

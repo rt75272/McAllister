@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<!-- HTML template for the math practice app -->
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Mrs. McAllister</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Math Practice - Mrs. McAllister's Math Center{% endblock %}
+
+{% block content %}
     <!-- Navigation header -->
     <div class="nav-header">
         <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
@@ -95,7 +89,9 @@
         </form>
         <p><span id="note">Round to 2 decimaml places if needed.</span></p>
     </div>
+{% endblock %}
     
+{% block extra_scripts %}
     <script>
         // Make initial data available globally
         window.initialStreaks = {{ streaks|tojson|safe }};
@@ -105,5 +101,4 @@
         window.hardNum = {{ hard_num }};
     </script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
-</body>
-</html>
+{% endblock %}

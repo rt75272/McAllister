@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+
+{% block title %}Decimal Master - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        body {
+            background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .nav-header {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 1em 2em;
+            border-radius: 1em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .home-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8em 1.5em;
+            border-radius: 0.5em;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .page-title {
+            margin: 0;
+            color: #2E8B57;
+            font-size: 1.8em;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 2em;
+            border-radius: 1em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .game-title {
+            color: #2E8B57;
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 2em;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 2em;
+            margin-bottom: 2em;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+            color: white;
+            padding: 1em 2em;
+            border-radius: 0.8em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-width: 120px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 0.2em;
+        }
+
+        .level-container {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            padding: 1em;
+            border-radius: 0.8em;
+            margin-bottom: 2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .level-title {
+            font-size: 1.3em;
+            color: #d63031;
+            margin-bottom: 0.5em;
+        }
+
+        .level-description {
+            color: #2d3436;
+            font-size: 1em;
+        }
+
+        .question-container {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 2em;
+            border-radius: 1em;
+            margin-bottom: 2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .question-text {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 1em;
+        }
+
+        .answer-input {
+            font-size: 1.5em;
+            padding: 0.8em;
+            border: none;
+            border-radius: 0.5em;
+            text-align: center;
+            width: 200px;
+            margin: 0 1em;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+            border: none;
+            padding: 0.8em 2em;
+            font-size: 1.2em;
+            border-radius: 0.5em;
+            cursor: pointer;
+            margin: 0 0.5em;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .skip-btn {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+            color: white;
+            border: none;
+            padding: 0.8em 2em;
+            font-size: 1.2em;
+            border-radius: 0.5em;
+            cursor: pointer;
+            margin: 0 0.5em;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .skip-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            font-size: 1.5em;
+            margin: 1em 0;
+            padding: 1em;
+            border-radius: 0.5em;
+            font-weight: bold;
+        }
+
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .hint-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 1em;
+            border-radius: 0.8em;
+            margin: 1em 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .decimal-tips {
+            text-align: left;
+            background: rgba(255,255,255,0.9);
+            padding: 1.5em;
+            border-radius: 0.8em;
+            margin-top: 2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tips-title {
+            color: #2E8B57;
+            font-size: 1.3em;
+            margin-bottom: 1em;
+            text-align: center;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 0.5em 0;
+            padding-left: 2em;
+            position: relative;
+        }
+
+        .tips-list li:before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .nav-header {
+                flex-direction: column;
+                gap: 1em;
+                padding: 1em;
+            }
+
+            .page-title {
+                font-size: 1.5em;
+            }
+
+            .game-container {
+                padding: 1.5em;
+                margin: 0 0.5em;
+            }
+
+            .game-title {
+                font-size: 2em;
+            }
+
+            .stats-container {
+                gap: 1em;
+            }
+
+            .stat-box {
+                padding: 0.8em 1.5em;
+                min-width: 100px;
+            }
+
+            .question-text {
+                font-size: 1.5em;
+            }
+
+            .answer-input {
+                width: 150px;
+                font-size: 1.2em;
+            }
+
+            .submit-btn, .skip-btn {
+                padding: 0.6em 1.5em;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .answer-input {
+                width: 120px;
+                font-size: 1em;
+                margin: 0.5em 0;
+            }
+
+            .submit-btn, .skip-btn {
+                display: block;
+                width: 100%;
+                margin: 0.5em 0;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="page-title">🔢 Decimal Master</h2>
+    </div>
+
+    <div class="game-container">
+        <h1 class="game-title">🔢 Decimal Master</h1>
+        <p class="game-subtitle">Master decimal operations and place value understanding!</p>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Questions</div>
+                <div class="stat-value" id="question-count">0</div>
+            </div>
+        </div>
+
+        <div class="level-container" id="level-info">
+            <div class="level-title">Level 1: Basic Decimal Addition</div>
+            <div class="level-description">Add simple decimals with tenths place</div>
+        </div>
+
+        <div class="question-container">
+            <div class="question-text" id="question">Click "New Question" to start!</div>
+            <div style="margin: 1.5em 0;">
+                <input type="text" id="answer-input" class="answer-input" placeholder="Your answer" inputmode="decimal">
+            </div>
+            <div>
+                <button onclick="submitAnswer()" class="submit-btn" id="submit-btn">Submit Answer</button>
+                <button onclick="newQuestion()" class="skip-btn">New Question</button>
+            </div>
+        </div>
+
+        <div id="result-message" class="result-message" style="display: none;"></div>
+
+        <div id="hint-box" class="hint-box" style="display: none;"></div>
+
+        <div class="decimal-tips">
+            <h3 class="tips-title">🎯 Decimal Tips & Tricks</h3>
+            <ul class="tips-list">
+                <li>Line up decimal points when adding or subtracting</li>
+                <li>Count decimal places when multiplying (add them together)</li>
+                <li>When dividing, move decimal points in both numbers the same way</li>
+                <li>Remember: 0.1 = 1/10, 0.01 = 1/100, 0.001 = 1/1000</li>
+                <li>To convert fractions to decimals, divide the numerator by denominator</li>
+                <li>Use estimation to check if your answer makes sense</li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        let score = 0;
+        let streak = 0;
+        let level = 1;
+        let questionCount = 0;
+        let currentAnswer = 0;
+        let currentQuestion = '';
+
+        const levels = [
+            {
+                name: "Basic Decimal Addition",
+                description: "Add simple decimals with tenths place",
+                generator: () => generateDecimalAddition(1)
+            },
+            {
+                name: "Decimal Subtraction", 
+                description: "Subtract decimals with up to hundredths",
+                generator: () => generateDecimalSubtraction(2)
+            },
+            {
+                name: "Decimal Multiplication",
+                description: "Multiply decimals by whole numbers",
+                generator: () => generateDecimalMultiplication(1)
+            },
+            {
+                name: "Mixed Decimal Operations",
+                description: "Addition and subtraction with hundredths",
+                generator: () => generateMixedOperations(2)
+            },
+            {
+                name: "Decimal Division",
+                description: "Divide decimals by whole numbers",
+                generator: () => generateDecimalDivision(2)
+            },
+            {
+                name: "Advanced Decimal Multiplication",
+                description: "Multiply decimals by decimals",
+                generator: () => generateAdvancedMultiplication(2)
+            },
+            {
+                name: "Fraction to Decimal Conversion",
+                description: "Convert common fractions to decimals",
+                generator: () => generateFractionToDecimal()
+            },
+            {
+                name: "Decimal Master Challenge",
+                description: "All operations with up to thousandths",
+                generator: () => generateMasterChallenge(3)
+            }
+        ];
+
+        function generateDecimalAddition(places) {
+            const factor = Math.pow(10, places);
+            const num1 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const num2 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const answer = Math.round((num1 + num2) * factor) / factor;
+            return {
+                question: `${num1} + ${num2}`,
+                answer: answer
+            };
+        }
+
+        function generateDecimalSubtraction(places) {
+            const factor = Math.pow(10, places);
+            let num1 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            let num2 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            
+            // Ensure positive result
+            if (num1 < num2) [num1, num2] = [num2, num1];
+            
+            const answer = Math.round((num1 - num2) * factor) / factor;
+            return {
+                question: `${num1} - ${num2}`,
+                answer: answer
+            };
+        }
+
+        function generateDecimalMultiplication(places) {
+            const factor = Math.pow(10, places);
+            const num1 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const num2 = Math.floor(Math.random() * 9) + 2; // Whole number 2-10
+            const answer = Math.round((num1 * num2) * factor) / factor;
+            return {
+                question: `${num1} × ${num2}`,
+                answer: answer
+            };
+        }
+
+        function generateDecimalDivision(places) {
+            const factor = Math.pow(10, places);
+            const divisor = Math.floor(Math.random() * 9) + 2; // 2-10
+            const result = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const dividend = Math.round((result * divisor) * factor) / factor;
+            return {
+                question: `${dividend} ÷ ${divisor}`,
+                answer: result
+            };
+        }
+
+        function generateMixedOperations(places) {
+            const operations = ['+', '-'];
+            const op = operations[Math.floor(Math.random() * operations.length)];
+            
+            if (op === '+') {
+                return generateDecimalAddition(places);
+            } else {
+                return generateDecimalSubtraction(places);
+            }
+        }
+
+        function generateAdvancedMultiplication(places) {
+            const factor = Math.pow(10, places);
+            const num1 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const num2 = Math.round((Math.random() * 9 + 1) * factor) / factor;
+            const answer = Math.round((num1 * num2) * Math.pow(10, places * 2)) / Math.pow(10, places * 2);
+            return {
+                question: `${num1} × ${num2}`,
+                answer: answer
+            };
+        }
+
+        function generateFractionToDecimal() {
+            const fractions = [
+                {fraction: '1/2', decimal: 0.5},
+                {fraction: '1/4', decimal: 0.25},
+                {fraction: '3/4', decimal: 0.75},
+                {fraction: '1/5', decimal: 0.2},
+                {fraction: '2/5', decimal: 0.4},
+                {fraction: '3/5', decimal: 0.6},
+                {fraction: '4/5', decimal: 0.8},
+                {fraction: '1/8', decimal: 0.125},
+                {fraction: '3/8', decimal: 0.375},
+                {fraction: '5/8', decimal: 0.625},
+                {fraction: '7/8', decimal: 0.875},
+                {fraction: '1/10', decimal: 0.1},
+                {fraction: '3/10', decimal: 0.3},
+                {fraction: '7/10', decimal: 0.7},
+                {fraction: '9/10', decimal: 0.9}
+            ];
+            
+            const selected = fractions[Math.floor(Math.random() * fractions.length)];
+            return {
+                question: `Convert ${selected.fraction} to a decimal`,
+                answer: selected.decimal
+            };
+        }
+
+        function generateMasterChallenge(places) {
+            const operations = ['+', '-', '*', '/'];
+            const op = operations[Math.floor(Math.random() * operations.length)];
+            
+            switch (op) {
+                case '+': return generateDecimalAddition(places);
+                case '-': return generateDecimalSubtraction(places);
+                case '*': return generateAdvancedMultiplication(places);
+                case '/': return generateDecimalDivision(places);
+            }
+        }
+
+        function newQuestion() {
+            const currentLevel = levels[Math.min(level - 1, levels.length - 1)];
+            const questionData = currentLevel.generator();
+            
+            currentQuestion = questionData.question;
+            currentAnswer = questionData.answer;
+            
+            document.getElementById('question').textContent = currentQuestion;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('hint-box').style.display = 'none';
+            document.getElementById('answer-input').focus();
+            
+            questionCount++;
+            updateDisplay();
+        }
+
+        function submitAnswer() {
+            const userAnswer = parseFloat(document.getElementById('answer-input').value);
+            const resultDiv = document.getElementById('result-message');
+            const hintDiv = document.getElementById('hint-box');
+            
+            if (isNaN(userAnswer)) {
+                resultDiv.textContent = 'Please enter a valid number!';
+                resultDiv.className = 'result-message incorrect';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            const tolerance = 0.001; // Allow for small rounding differences
+            const isCorrect = Math.abs(userAnswer - currentAnswer) < tolerance;
+            
+            if (isCorrect) {
+                score += (level * 10);
+                streak++;
+                
+                resultDiv.textContent = `Correct! 🎉 The answer is ${currentAnswer}`;
+                resultDiv.className = 'result-message correct';
+                
+                // Level progression
+                if (streak > 0 && streak % 5 === 0 && level < levels.length) {
+                    level++;
+                    hintDiv.innerHTML = `<strong>🎊 Level Up!</strong> You've reached Level ${level}: ${levels[level-1].name}!`;
+                    hintDiv.style.display = 'block';
+                }
+            } else {
+                streak = 0;
+                resultDiv.textContent = `Not quite right. The correct answer is ${currentAnswer}. Try to understand why!`;
+                resultDiv.className = 'result-message incorrect';
+                
+                // Provide helpful hints
+                if (currentQuestion.includes('×')) {
+                    hintDiv.innerHTML = '<strong>Hint:</strong> When multiplying decimals, count the total decimal places in both numbers and place the decimal point in your answer.';
+                } else if (currentQuestion.includes('÷')) {
+                    hintDiv.innerHTML = '<strong>Hint:</strong> When dividing decimals, move the decimal point in both numbers to make the divisor a whole number.';
+                } else if (currentQuestion.includes('+') || currentQuestion.includes('-')) {
+                    hintDiv.innerHTML = '<strong>Hint:</strong> Line up the decimal points when adding or subtracting. Add zeros if needed to make the same number of decimal places.';
+                } else if (currentQuestion.includes('Convert')) {
+                    hintDiv.innerHTML = '<strong>Hint:</strong> To convert a fraction to decimal, divide the top number by the bottom number.';
+                }
+                hintDiv.style.display = 'block';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateDisplay();
+            
+            // Auto-generate new question after a short delay
+            setTimeout(() => {
+                newQuestion();
+            }, 3000);
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('level').textContent = level;
+            document.getElementById('question-count').textContent = questionCount;
+            
+            const currentLevel = levels[Math.min(level - 1, levels.length - 1)];
+            document.getElementById('level-info').innerHTML = `
+                <div class="level-title">Level ${level}: ${currentLevel.name}</div>
+                <div class="level-description">${currentLevel.description}</div>
+            `;
+        }
+
+        // Enter key support
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        // Initialize the game
+        updateDisplay();
+    </script>
+{% endblock %}

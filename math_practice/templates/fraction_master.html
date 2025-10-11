@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fraction Master - Learn Fractions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fraction_master.css') }}">
+</head>
+<body>
+    <!-- Navigation back to home -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h2 class="game-title">Fraction Master</h2>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Level Info -->
+        <div class="level-info">
+            <div class="level-display">Level: <span id="currentLevel">1</span>/8</div>
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="streak-display">Streak: <span id="streak">0</span></div>
+        </div>
+
+        <!-- Level Description -->
+        <div class="level-description" id="levelDescription">
+            Simplify fractions to their lowest terms
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0/10</div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area">
+            <!-- Question Display -->
+            <div class="question-container">
+                <div class="question-text" id="questionText">Click "New Problem" to start!</div>
+                <div class="fraction-display" id="fractionDisplay"></div>
+            </div>
+
+            <!-- Answer Input -->
+            <div class="answer-container">
+                <div class="fraction-input">
+                    <input type="number" id="numeratorInput" placeholder="?" min="0" max="999">
+                    <div class="fraction-line"></div>
+                    <input type="number" id="denominatorInput" placeholder="?" min="1" max="999">
+                </div>
+                <button id="submitAnswer" class="submit-btn">Submit</button>
+            </div>
+
+            <!-- Visual Fraction Display -->
+            <div class="visual-container">
+                <div class="fraction-visual" id="fractionVisual"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button id="newProblem" class="control-btn">New Problem</button>
+                <button id="showHint" class="control-btn">Hint</button>
+                <button id="skipProblem" class="control-btn">Skip</button>
+            </div>
+
+            <!-- Hint Display -->
+            <div class="hint-display" id="hintDisplay" style="display: none;"></div>
+
+            <!-- Feedback -->
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div class="modal" id="levelCompleteModal" style="display: none;">
+            <div class="modal-content">
+                <h3>Level Complete! 🎉</h3>
+                <div class="level-stats" id="levelStats"></div>
+                <div class="modal-buttons">
+                    <button id="nextLevel" class="modal-btn primary">Next Level</button>
+                    <button id="restartLevel" class="modal-btn">Restart Level</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Complete Modal -->
+        <div class="modal" id="gameCompleteModal" style="display: none;">
+            <div class="modal-content">
+                <h3>Congratulations! 🏆</h3>
+                <p>You've mastered all fraction levels!</p>
+                <div class="final-stats" id="finalStats"></div>
+                <div class="modal-buttons">
+                    <button id="playAgain" class="modal-btn primary">Play Again</button>
+                    <button id="backToHome" class="modal-btn">Back to Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='fraction_master.js') }}"></script>
+</body>
+</html>

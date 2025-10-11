@@ -71,6 +71,16 @@ def math_memory():
     """Math Memory game page."""
     return render_template('math_memory.html')
 
+@app.route('/decimal-master', methods=['GET'])
+def decimal_master():
+    """Decimal Master game page."""
+    return render_template('decimal_master.html')
+
+@app.route('/fraction-master', methods=['GET'])
+def fraction_master():
+    """Fraction Master game page."""
+    return render_template('fraction_master.html')
+
 @app.route('/math-practice', methods=['GET', 'POST'])
 def math_practice():
     """Main page for math practice."""
