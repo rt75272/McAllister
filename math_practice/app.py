@@ -1,5 +1,6 @@
 import random
 from collections import deque
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, session
 # ########################################################################################################
 # Math Practice Web App.
@@ -13,6 +14,12 @@ from flask import Flask, render_template, request, jsonify, session
 # Flask app setup.
 app = Flask(__name__)
 app.secret_key = 'secure_random_secret_key'
+
+
+@app.context_processor
+def inject_current_year():
+    """Inject current year into all templates as `current_year`."""
+    return {'current_year': datetime.now().year}
 
 # Difficulty progression settings. 
 easy_num = 4      # Number of consecutive easy questions to answer correctly to reach medium.
@@ -80,6 +87,18 @@ def decimal_master():
 def fraction_master():
     """Fraction Master game page."""
     return render_template('fraction_master.html')
+
+
+@app.route('/plot-points', methods=['GET'])
+def plot_points():
+    """Plot Points (graphing) game page."""
+    return render_template('plot_points.html')
+
+
+@app.route('/about', methods=['GET'])
+def about():
+    """About page."""
+    return render_template('about.html')
 
 @app.route('/math-practice', methods=['GET', 'POST'])
 def math_practice():

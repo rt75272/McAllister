@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Plot Points - Graphing Practice{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='plot_points.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="plot-container">
+        <div class="nav-header">
+            <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+            <h2 class="game-title">Plot Points</h2>
+        </div>
+
+        <div class="game-area">
+            <div class="controls">
+                <div class="instruction">Place two points (A and B) on the grid and compute the distance between them. Use click-to-place or enter coordinates for each point.</div>
+                
+                <hr>
+                <div class="two-point-section">
+                    <h4>Two-Point Distance</h4>
+                    <div class="coord-inputs two-point-inputs">
+                        <div>
+                            <strong>A:</strong>
+                            <label>X: <input id="inputAx" type="number" step="1"></label>
+                            <label>Y: <input id="inputAy" type="number" step="1"></label>
+                            <button id="plotABtn">Plot A</button>
+                        </div>
+                        <div>
+                            <strong>B:</strong>
+                            <label>X: <input id="inputBx" type="number" step="1"></label>
+                            <label>Y: <input id="inputBy" type="number" step="1"></label>
+                            <button id="plotBBtn">Plot B</button>
+                        </div>
+                    </div>
+                    <div class="two-point-controls" style="margin-top:8px;">
+                        <button id="placeModeA">Place A (click)</button>
+                        <button id="placeModeB">Place B (click)</button>
+                        <button id="computeDist">Compute Distance</button>
+                        <button id="genTargets2">Generate Targets</button>
+                    </div>
+                    <div id="distanceDisplay" class="feedback" style="margin-top:8px;"></div>
+                </div>
+            </div>
+
+            <div class="canvas-wrap">
+                <canvas id="plotCanvas" width="600" height="600"></canvas>
+                <div class="legend">Click on the grid to place a point. Grid is 1:1 ratio; each square = 1 unit.</div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='plot_points.js') }}"></script>
+{% endblock %}

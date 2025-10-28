@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}About - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .about-container { max-width: 900px; margin: 24px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);} 
+        .about-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .about-title { margin:0; color:#4CAF50; }
+        .about-section { margin-top:12px; line-height:1.6; color:#333; }
+        .credits { margin-top:16px; font-size:0.95rem; color:#555; }
+        .small-link { font-size:0.95rem; color:#1f6feb; text-decoration:none; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="about-container">
+        <div class="about-header">
+            <h2 class="about-title">About Mrs. McAllister's Math Center</h2>
+            <a class="small-link" href="{{ url_for('home') }}">← Back Home</a>
+        </div>
+
+        <div class="about-section">
+            <p>Welcome! This site is a small collection of interactive math games designed to make math practice engaging and visual for students. The games focus on number sense, speed, memory, decimals, fractions, and graphing.</p>
+
+            <h3>Goals</h3>
+            <ul>
+                <li>Provide bite-sized, game-like activities to practice core math skills.</li>
+                <li>Offer progressive difficulty where relevant so learners can improve over time.</li>
+                <li>Give immediate feedback and encourage repeated practice.</li>
+            </ul>
+
+            <h3>Games Included</h3>
+            <ul>
+                <li>Math Practice — progressive problem sets</li>
+                <li>Math Blast — fast-paced falling problems</li>
+                <li>Math Race — timed speed challenge</li>
+                <li>Math Memory — matching problems to answers</li>
+                <li>Decimal Master — decimal-focused practice</li>
+                <li>Fraction Master — fraction practice and visualizations</li>
+                <li>Plot Points — graphing practice (plot two points, compute distance)</li>
+            </ul>
+
+            <h3>How to Use</h3>
+            <p>Choose a game from the home page. Most games will provide simple instructions in the top area. For Plot Points, place two points and click "Compute Distance" to measure the Euclidean distance between them.</p>
+
+            <div class="credits">
+                <strong>Built with:</strong> Flask, HTML/CSS, and JavaScript. <br>
+                <strong>Contact / Credits:</strong> For improvements or feedback, update the project repository or contact the maintainer.
+            </div>
+        </div>
+    </div>
+{% endblock %}
