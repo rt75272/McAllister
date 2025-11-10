@@ -95,6 +95,24 @@ def plot_points():
     return render_template('plot_points.html')
 
 
+@app.route('/exponent-power', methods=['GET'])
+def exponent_power():
+    """Exponent Power game page."""
+    return render_template('exponent_power.html')
+
+
+@app.route('/exponent-world', methods=['GET'])
+def exponent_world():
+    """Exponent World word problems game page."""
+    return render_template('exponent_world.html')
+
+
+@app.route('/exponent-rules', methods=['GET'])
+def exponent_rules():
+    """Exponent Rules game page for operations with exponents."""
+    return render_template('exponent_rules.html')
+
+
 @app.route('/about', methods=['GET'])
 def about():
     """About page."""

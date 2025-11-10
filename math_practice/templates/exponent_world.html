@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exponent World - Mrs. McAllister's Math Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='exponent_world.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h1 class="game-title">🌍 Exponent World</h1>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Instructions Panel -->
+        <div class="instructions-panel">
+            <h3>🎯 How to Play</h3>
+            <p><strong>Solve real-world problems using exponents!</strong></p>
+            
+            <div class="category-info">
+                <h4>📚 Problem Categories:</h4>
+                <ul>
+                    <li>🌱 <strong>Growth:</strong> Population, bacteria, investments</li>
+                    <li>💾 <strong>Technology:</strong> Computer storage, data</li>
+                    <li>🏗️ <strong>Construction:</strong> Area, volume calculations</li>
+                    <li>🔬 <strong>Science:</strong> Measurements, distances</li>
+                    <li>🎲 <strong>Fun Facts:</strong> Interesting scenarios</li>
+                </ul>
+            </div>
+            
+            <div class="tips-section">
+                <h4>💡 Tips:</h4>
+                <ul>
+                    <li>Read problems carefully</li>
+                    <li>Look for key words like "squared", "cubed", "times itself"</li>
+                    <li>Some answers might be very large numbers!</li>
+                    <li>Use the hint button if you need help</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Category Selector -->
+            <div class="category-selector">
+                <label for="category">Choose Category:</label>
+                <select id="category">
+                    <option value="all">🎯 All Categories</option>
+                    <option value="growth">🌱 Growth & Change</option>
+                    <option value="technology">💾 Technology</option>
+                    <option value="construction">🏗️ Construction</option>
+                    <option value="science">🔬 Science</option>
+                    <option value="fun">🎲 Fun Facts</option>
+                </select>
+            </div>
+
+            <!-- Problem Display -->
+            <div class="problem-container">
+                <div class="problem-category">
+                    <span id="problem-category-badge">🌱 Growth</span>
+                </div>
+                <div class="problem-text">
+                    <p id="problem-description">Loading problem...</p>
+                </div>
+                <div class="problem-question">
+                    <strong id="question-text">What is the answer?</strong>
+                </div>
+            </div>
+
+            <!-- Answer Input -->
+            <div class="answer-section">
+                <input type="number" id="answer-input" placeholder="Enter your answer" autofocus>
+                <div class="button-group">
+                    <button id="submit-btn">Submit Answer</button>
+                    <button id="hint-btn">Get Hint</button>
+                    <button id="skip-btn">Skip Problem</button>
+                    <button id="explain-btn">Show Work</button>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <!-- Calculator Panel -->
+        <div class="calculator-panel">
+            <h3>🧮 Calculator</h3>
+            <div class="calculator">
+                <div class="calculator-display">
+                    <input type="text" id="calc-display" readonly>
+                </div>
+                <div class="calculator-buttons">
+                    <button class="calc-btn clear" onclick="calculator.clear()">C</button>
+                    <button class="calc-btn clear" onclick="calculator.clearEntry()">CE</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('/')">/</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('*')">×</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('7')">7</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('8')">8</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('9')">9</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('-')">-</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('4')">4</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('5')">5</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('6')">6</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('+')">+</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('1')">1</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('2')">2</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('3')">3</button>
+                    <button class="calc-btn equals" onclick="calculator.calculate()" rowspan="2">=</button>
+                    
+                    <button class="calc-btn number zero" onclick="calculator.inputNumber('0')">0</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('.')">.</button>
+                    <button class="calc-btn power" onclick="calculator.power()">x^y</button>
+                </div>
+                <div class="calculator-actions">
+                    <button class="transfer-btn" onclick="calculator.transferToAnswer()">→ Use Result</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <h3>📊 Your Progress</h3>
+            <div class="stat-item">
+                <span class="stat-label">Score:</span>
+                <span id="score" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Streak:</span>
+                <span id="streak" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Accuracy:</span>
+                <span id="accuracy" class="stat-value">100%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Problems Solved:</span>
+                <span id="total-solved" class="stat-value">0</span>
+            </div>
+            
+            <!-- Category Progress -->
+            <div class="category-progress">
+                <h4>🏆 Category Mastery</h4>
+                <div class="progress-list">
+                    <div class="category-stat">
+                        <span class="category-name">🌱 Growth:</span>
+                        <span id="growth-count" class="category-count">0</span>
+                    </div>
+                    <div class="category-stat">
+                        <span class="category-name">💾 Technology:</span>
+                        <span id="technology-count" class="category-count">0</span>
+                    </div>
+                    <div class="category-stat">
+                        <span class="category-name">🏗️ Construction:</span>
+                        <span id="construction-count" class="category-count">0</span>
+                    </div>
+                    <div class="category-stat">
+                        <span class="category-name">🔬 Science:</span>
+                        <span id="science-count" class="category-count">0</span>
+                    </div>
+                    <div class="category-stat">
+                        <span class="category-name">🎲 Fun Facts:</span>
+                        <span id="fun-count" class="category-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Display -->
+            <div class="achievements">
+                <h4>🌟 Achievements</h4>
+                <div id="achievement-list" class="achievement-list">
+                    <!-- Achievements will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explanation Modal -->
+    <div id="explanation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📖 Problem Explanation</h3>
+            <div id="explanation-content"></div>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-hint">&times;</span>
+            <h3>💡 Hint</h3>
+            <div id="hint-content"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='exponent_world.js') }}"></script>
+</body>
+</html>

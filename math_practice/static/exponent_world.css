@@ -1,0 +1,721 @@
+/* Exponent World Game Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #2C5F41 0%, #4A90A4 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Navigation Header */
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.home-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.game-title {
+    color: #2C5F41;
+    font-size: 1.8em;
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* Main Game Container */
+.game-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 250px;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 70vh;
+}
+
+/* Instructions Panel */
+.instructions-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.instructions-panel h3 {
+    color: #2C5F41;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.category-info, .tips-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #e0f2e7;
+}
+
+.category-info h4, .tips-section h4 {
+    color: #4A90A4;
+    margin-bottom: 10px;
+}
+
+.category-info ul, .tips-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.category-info li, .tips-section li {
+    margin: 8px 0;
+    padding: 5px 0;
+    font-size: 0.9em;
+}
+
+.tips-section ul {
+    list-style: disc;
+    padding-left: 20px;
+}
+
+/* Game Area */
+.game-area {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 600px;
+}
+
+.category-selector {
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.category-selector label {
+    font-weight: bold;
+    color: #2C5F41;
+    margin-right: 10px;
+}
+
+.category-selector select {
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 2px solid #e0f2e7;
+    font-size: 1em;
+    background: white;
+    color: #333;
+    width: 200px;
+}
+
+/* Problem Display */
+.problem-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8fffe 0%, #e8f5f0 100%);
+    border-radius: 12px;
+    border: 2px solid #e0f2e7;
+    width: 100%;
+    max-width: 700px;
+}
+
+.problem-category {
+    margin-bottom: 20px;
+}
+
+#problem-category-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #4A90A4 0%, #2C5F41 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.problem-text {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #4A90A4;
+    text-align: left;
+}
+
+#problem-description {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+}
+
+.problem-question {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #2C5F41 0%, #4A90A4 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+#question-text {
+    font-size: 1.2em;
+}
+
+/* Answer Section */
+.answer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 30px;
+}
+
+#answer-input {
+    width: 250px;
+    padding: 12px 20px;
+    font-size: 1.3em;
+    text-align: center;
+    border: 3px solid #e0f2e7;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#answer-input:focus {
+    border-color: #4A90A4;
+    box-shadow: 0 0 15px rgba(74, 144, 164, 0.3);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+#submit-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+#hint-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+}
+
+#skip-btn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+#explain-btn {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Feedback */
+.feedback {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 600px;
+    line-height: 1.4;
+}
+
+.feedback.correct {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+.feedback.incorrect {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.feedback.neutral {
+    background: #f0f8ff;
+    color: #666;
+    border: 2px solid #e0f2e7;
+}
+
+/* Stats Panel */
+.stats-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.stats-panel h3 {
+    color: #2C5F41;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0f2e7;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #2C5F41;
+}
+
+/* Category Progress */
+.category-progress {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #e0f2e7;
+}
+
+.category-progress h4 {
+    color: #4A90A4;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #f8fffe 0%, #e8f5f0 100%);
+    border-radius: 6px;
+    border: 1px solid #e0f2e7;
+}
+
+.category-name {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.category-count {
+    background: #4A90A4;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* Achievements */
+.achievements {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #e0f2e7;
+}
+
+.achievements h4 {
+    color: #4A90A4;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.achievement {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    text-align: center;
+    animation: achievementPop 0.5s ease;
+}
+
+@keyframes achievementPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Calculator Panel */
+.calculator-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.calculator-panel h3 {
+    color: #2C5F41;
+    margin-bottom: 12px;
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.calculator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-display {
+    margin-bottom: 12px;
+}
+
+#calc-display {
+    width: 100%;
+    height: 50px;
+    font-size: 1.3em;
+    text-align: right;
+    padding: 8px 12px;
+    border: 2px solid #e0f2e7;
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    font-family: 'Courier New', monospace;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.calc-btn {
+    height: 42px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calc-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.calc-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.calc-btn.number {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.calc-btn.operator {
+    background: linear-gradient(135deg, #2C5F41 0%, #4A90A4 100%);
+    color: white;
+}
+
+.calc-btn.equals {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    grid-row: span 2;
+    height: 90px;
+}
+
+.calc-btn.clear {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.calc-btn.power {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+    font-size: 0.85em;
+}
+
+.calc-btn.zero {
+    grid-column: span 2;
+}
+
+.calculator-actions {
+    margin-top: 8px;
+}
+
+.transfer-btn {
+    width: 100%;
+    height: 35px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transfer-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close, .close-hint {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close:hover, .close-hint:hover {
+    color: #000;
+}
+
+#explanation-content, #hint-content {
+    margin-top: 20px;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+#explanation-content h4 {
+    color: #2C5F41;
+    margin: 15px 0 10px 0;
+}
+
+#explanation-content .step {
+    background: #f8fffe;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border-left: 4px solid #4A90A4;
+}
+
+#hint-content {
+    background: #fff3e0;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #ff9800;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .game-container {
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 15px;
+    }
+    
+    .calculator-panel {
+        grid-column: 1 / -1;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .instructions-panel,
+    .stats-panel,
+    .calculator-panel {
+        order: 1;
+    }
+    
+    .game-area {
+        order: 0;
+    }
+    
+    .calculator-panel {
+        max-width: 280px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .nav-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .game-area {
+        padding: 20px;
+    }
+    
+    .problem-container {
+        padding: 20px;
+    }
+    
+    #problem-description {
+        font-size: 1em;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    #answer-input {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .calculator-panel {
+        max-width: 260px;
+    }
+    
+    .calc-btn {
+        height: 40px;
+        font-size: 0.95em;
+    }
+    
+    .calc-btn.equals {
+        height: 86px;
+    }
+    
+    #calc-display {
+        height: 45px;
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 20px;
+    }
+    
+    .problem-text {
+        padding: 15px;
+    }
+    
+    #problem-description {
+        font-size: 0.95em;
+    }
+    
+    #question-text {
+        font-size: 1.1em;
+    }
+}

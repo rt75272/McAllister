@@ -1,0 +1,656 @@
+/* Exponent Rules Game Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #6B46C1 0%, #805AD5 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Navigation Header */
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.home-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.game-title {
+    color: #6B46C1;
+    font-size: 1.8em;
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* Main Game Container */
+.game-container {
+    display: grid;
+    grid-template-columns: 270px 2fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 70vh;
+}
+
+/* Calculator Panel */
+.calculator-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.calculator-panel h3 {
+    color: #6B46C1;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.calculator {
+    width: 100%;
+}
+
+.calculator-display {
+    background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+    color: #ECF0F1;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: right;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 12px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.calc-btn {
+    padding: 15px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #ECF0F1 0%, #BDC3C7 100%);
+    color: #2C3E50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: bold;
+}
+
+.calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.calc-btn:active {
+    transform: translateY(0);
+}
+
+.calc-btn.operator {
+    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+    color: white;
+}
+
+.calc-btn.clear {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+    grid-column: span 1;
+}
+
+.calc-btn.equals {
+    background: linear-gradient(135deg, #27AE60 0%, #229954 100%);
+    color: white;
+    grid-column: span 1;
+}
+
+.calc-btn.transfer {
+    background: linear-gradient(135deg, #6B46C1 0%, #805AD5 100%);
+    color: white;
+    grid-column: span 1;
+    font-size: 1.4em;
+}
+
+/* Rules Reference Panel */
+.rules-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.rules-panel h3 {
+    color: #6B46C1;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.rule-card {
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+.rule-card.multiply {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    border-left-color: #2196F3;
+}
+
+.rule-card.divide {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-left-color: #FF9800;
+}
+
+.rule-card.power {
+    background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+    border-left-color: #9C27B0;
+}
+
+.rule-card.special {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    border-left-color: #4CAF50;
+}
+
+.rule-card h4 {
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+.rule-formula {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin: 8px 0;
+    color: #333;
+}
+
+.rule-example {
+    font-size: 0.9em;
+    color: #555;
+    margin: 5px 0;
+}
+
+.rule-tip {
+    font-size: 0.85em;
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* Game Area */
+.game-area {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+}
+
+.difficulty-selector {
+    margin-bottom: 30px;
+}
+
+.difficulty-selector label {
+    font-weight: bold;
+    color: #6B46C1;
+    margin-right: 10px;
+}
+
+.difficulty-selector select {
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 2px solid #D6BCFA;
+    font-size: 1em;
+    background: white;
+    color: #333;
+}
+
+/* Problem Display */
+.problem-container {
+    text-align: center;
+    margin: 30px 0;
+    padding: 30px;
+    background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%);
+    border-radius: 12px;
+    border: 2px solid #D6BCFA;
+    width: 100%;
+    max-width: 600px;
+}
+
+.problem-type {
+    margin-bottom: 20px;
+}
+
+#problem-type-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #6B46C1 0%, #805AD5 100%);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1.3em;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(107, 70, 193, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#problem-type-badge.multiply {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+#problem-type-badge.divide {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+#problem-type-badge.power {
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+#problem-type-badge.special {
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.problem-display {
+    font-size: 3em;
+    font-weight: bold;
+    color: #6B46C1;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    line-height: 1.4;
+}
+
+.problem-hint {
+    font-size: 1.2em;
+    color: #333;
+    font-weight: 600;
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: rgba(107, 70, 193, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #6B46C1;
+}
+
+/* Answer Section */
+.answer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.answer-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.answer-group label {
+    font-weight: bold;
+    color: #6B46C1;
+    font-size: 1.1em;
+}
+
+#answer-input {
+    width: 200px;
+    padding: 12px 20px;
+    font-size: 1.5em;
+    text-align: center;
+    border: 3px solid #D6BCFA;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#answer-input:focus {
+    border-color: #6B46C1;
+    box-shadow: 0 0 15px rgba(107, 70, 193, 0.3);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#submit-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+#show-work-btn {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+}
+
+#skip-btn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Feedback */
+.feedback {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback.correct {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+.feedback.incorrect {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.feedback.neutral {
+    background: #f0f0f0;
+    color: #666;
+}
+
+/* Stats Panel */
+.stats-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.stats-panel h3 {
+    color: #6B46C1;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #D6BCFA;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #6B46C1;
+}
+
+/* Rule Mastery */
+.rule-mastery {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #D6BCFA;
+}
+
+.rule-mastery h4 {
+    color: #805AD5;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.mastery-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mastery-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%);
+    border-radius: 6px;
+    border: 1px solid #D6BCFA;
+}
+
+.mastery-label {
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.mastery-count {
+    background: #6B46C1;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* Achievements */
+.achievements {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #D6BCFA;
+}
+
+.achievements h4 {
+    color: #805AD5;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.achievement {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    text-align: center;
+    animation: achievementPop 0.5s ease;
+}
+
+@keyframes achievementPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close:hover {
+    color: #000;
+}
+
+#work-content {
+    margin-top: 20px;
+    font-size: 1.1em;
+    line-height: 1.8;
+}
+
+#work-content .step {
+    background: #FAF5FF;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border-left: 4px solid #6B46C1;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .calculator-panel,
+    .stats-panel {
+        order: 1;
+    }
+    
+    .game-area {
+        order: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .nav-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .problem-display {
+        font-size: 2em;
+    }
+    
+    .game-area {
+        padding: 20px;
+        min-height: 400px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .problem-display {
+        font-size: 1.8em;
+    }
+    
+    #answer-input {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}

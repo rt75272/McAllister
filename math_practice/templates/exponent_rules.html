@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exponent Evaluator - Mrs. McAllister's Math Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='exponent_rules.css') }}">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h1 class="game-title">📐 Exponent Evaluator</h1>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Calculator Panel -->
+        <aside class="calculator-panel">
+            <h3>🔢 Calculator</h3>
+            <div class="calculator">
+                <div class="calculator-display" id="calc-display">0</div>
+                <div class="calculator-buttons">
+                    <button class="calc-btn" data-value="7">7</button>
+                    <button class="calc-btn" data-value="8">8</button>
+                    <button class="calc-btn" data-value="9">9</button>
+                    <button class="calc-btn operator" data-value="/">÷</button>
+                    
+                    <button class="calc-btn" data-value="4">4</button>
+                    <button class="calc-btn" data-value="5">5</button>
+                    <button class="calc-btn" data-value="6">6</button>
+                    <button class="calc-btn operator" data-value="*">×</button>
+                    
+                    <button class="calc-btn" data-value="1">1</button>
+                    <button class="calc-btn" data-value="2">2</button>
+                    <button class="calc-btn" data-value="3">3</button>
+                    <button class="calc-btn operator" data-value="-">−</button>
+                    
+                    <button class="calc-btn" data-value="0">0</button>
+                    <button class="calc-btn" data-value=".">.</button>
+                    <button class="calc-btn operator" data-value="^">^</button>
+                    <button class="calc-btn operator" data-value="+">+</button>
+                    
+                    <button class="calc-btn clear" data-value="C">C</button>
+                    <button class="calc-btn equals" data-value="=">=</button>
+                    <button class="calc-btn transfer" id="transfer-btn">→</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Difficulty Selector -->
+            <div class="difficulty-selector">
+                <label for="difficulty">Choose Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy (Small Numbers)</option>
+                    <option value="medium">Medium (Mixed Rules)</option>
+                    <option value="hard">Hard (Complex)</option>
+                </select>
+            </div>
+
+            <!-- Problem Display -->
+                        <div class="problem-container">
+                <div class="problem-display" id="problem-display">
+                    2^3 = ?
+                </div>
+                
+                <p class="problem-hint" id="problem-hint">Calculate the value</p>
+            </div>
+
+            <!-- Answer Input -->
+            <div class="answer-section">
+                <div class="answer-group">
+                    <label for="answer-input">Your Answer:</label>
+                    <input type="number" id="answer-input" placeholder="Enter the exponent" autofocus>
+                </div>
+                <div class="button-group">
+                    <button id="submit-btn">Submit Answer</button>
+                    <button id="show-work-btn">Show Work</button>
+                    <button id="skip-btn">Skip Problem</button>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <!-- Stats Panel -->
+                <!-- Stats Panel -->
+        <aside class="stats-panel">
+            <h3>📊 Your Stats</h3>
+            
+            <div class="stat-item">
+                <span class="stat-label">Score:</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">Streak:</span>
+                <span class="stat-value" id="streak">0</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">Accuracy:</span>
+                <span class="stat-value" id="accuracy">0%</span>
+            </div>
+            
+            <div class="stat-item">
+                <span class="stat-label">Problems Solved:</span>
+                <span class="stat-value" id="problems-solved">0</span>
+            </div>
+
+            <!-- Achievements -->
+            <div class="achievements">
+                <h4>🏆 Achievements</h4>
+                <div id="achievement-list" class="achievement-list">
+                    <!-- Achievements will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Work Modal -->
+    <div id="work-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📝 Step-by-Step Solution</h3>
+            <div id="work-content"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='exponent_rules.js') }}"></script>
+</body>
+</html>

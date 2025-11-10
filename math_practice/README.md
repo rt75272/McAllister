@@ -12,6 +12,8 @@ A comprehensive web-based math practice platform featuring multiple interactive 
 - **Decimal Master** - Focused decimal arithmetic practice
 - **Fraction Master** - Fraction operations and conversions
 - **Plot Points** - Interactive graphing and coordinate activities
+- **Exponent Power** - Master exponents with interactive power calculations
+- **Exponent World** - Real-world word problems using exponent calculations
 
 ### Key Features
 - **Progressive Difficulty System** - Automatically advances from easy → medium → hard based on performance
@@ -47,6 +49,8 @@ math_practice/
 │   ├── decimal_master.html # Decimal practice
 │   ├── fraction_master.html # Fraction practice
 │   ├── plot_points.html   # Graphing activities
+│   ├── exponent_power.html # Exponent practice
+│   ├── exponent_world.html # Exponent word problems
 │   └── about.html         # About page
 ├── static/               # Static assets (CSS/JS)
 │   ├── style.css         # Global styles
@@ -56,7 +60,9 @@ math_practice/
 │   ├── math_race.css/.js  # Math Race game logic
 │   ├── math_memory.css/.js # Math Memory game logic
 │   ├── fraction_master.css/.js # Fraction game logic
-│   └── plot_points.css/.js # Graphing functionality
+│   ├── plot_points.css/.js # Graphing functionality
+│   ├── exponent_power.css/.js # Exponent game logic
+│   └── exponent_world.css/.js # Exponent word problems
 └── mcallister/           # Python virtual environment
 ```
 
@@ -142,6 +148,12 @@ Comprehensive fraction practice including operations, simplification, and mixed 
 
 ### Plot Points
 Interactive graphing activities teaching coordinate systems, plotting points, and basic graphing concepts.
+
+### Exponent Power
+Comprehensive exponent practice with three difficulty levels. Learn fundamental exponent rules including x⁰ = 1, x¹ = x, and practice calculating powers from simple squares to more complex exponential expressions. Features step-by-step calculation guidance and achievement system.
+
+### Exponent World  
+Real-world word problem scenarios that require exponent calculations to solve. Covers applications in population growth, technology, construction, science, and fun scenarios. Each problem includes hints, step-by-step explanations, and categorized learning to show how exponents are used in everyday life.
 
 ## 🔧 Configuration
 

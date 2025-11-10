@@ -1,0 +1,628 @@
+/* Exponent Power Game Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Navigation Header */
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.home-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.game-title {
+    color: #667eea;
+    font-size: 1.8em;
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* Main Game Container */
+.game-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 300px;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 70vh;
+}
+
+/* Instructions Panel */
+.instructions-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.instructions-panel h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.instructions-panel ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.instructions-panel li {
+    margin: 8px 0;
+    padding: 5px 0;
+}
+
+.rules-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #e0e8ff;
+}
+
+.rules-section h4 {
+    color: #764ba2;
+    margin-bottom: 10px;
+}
+
+.rules-section ul {
+    list-style: disc;
+    padding-left: 20px;
+}
+
+.rules-section li {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/* Game Area */
+.game-area {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+}
+
+.difficulty-selector {
+    margin-bottom: 30px;
+}
+
+.difficulty-selector label {
+    font-weight: bold;
+    color: #667eea;
+    margin-right: 10px;
+}
+
+.difficulty-selector select {
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 2px solid #e0e8ff;
+    font-size: 1em;
+    background: white;
+    color: #333;
+}
+
+/* Problem Display */
+.problem-container {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.problem-display {
+    font-size: 4em;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.problem-display sup {
+    font-size: 0.6em;
+    color: #764ba2;
+}
+
+.problem-hint {
+    font-size: 1.2em;
+    color: #666;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Answer Section */
+.answer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+}
+
+#answer-input {
+    width: 200px;
+    padding: 12px 20px;
+    font-size: 1.5em;
+    text-align: center;
+    border: 3px solid #e0e8ff;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#answer-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#submit-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+#hint-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+}
+
+#skip-btn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Feedback */
+.feedback {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback.correct {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+.feedback.incorrect {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.feedback.neutral {
+    background: #f0f0f0;
+    color: #666;
+}
+
+/* Stats Panel */
+.stats-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.stats-panel h3 {
+    color: #667eea;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e8ff;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* Progress Section */
+.progress-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.progress-section h4 {
+    color: #764ba2;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e0e8ff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+#progress-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Achievements */
+.achievements {
+    margin-top: 20px;
+}
+
+.achievements h4 {
+    color: #764ba2;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.achievement {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    text-align: center;
+    animation: achievementPop 0.5s ease;
+}
+
+@keyframes achievementPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Calculator Panel */
+.calculator-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.calculator-panel h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.calculator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-display {
+    margin-bottom: 15px;
+}
+
+#calc-display {
+    width: 100%;
+    height: 60px;
+    font-size: 1.5em;
+    text-align: right;
+    padding: 10px 15px;
+    border: 2px solid #e0e8ff;
+    border-radius: 6px;
+    background: white;
+    color: #333;
+    font-family: 'Courier New', monospace;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.calc-btn {
+    height: 50px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calc-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.calc-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.calc-btn.number {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.calc-btn.operator {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.calc-btn.equals {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    grid-row: span 2;
+    height: 108px;
+}
+
+.calc-btn.clear {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.calc-btn.power {
+    background: linear-gradient(135deg, #ff9800 0%, #e68900 100%);
+    color: white;
+    font-size: 0.9em;
+}
+
+.calc-btn.zero {
+    grid-column: span 2;
+}
+
+.calculator-actions {
+    margin-top: 10px;
+}
+
+.transfer-btn {
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transfer-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Modal for Calculator */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.close:hover {
+    color: #000;
+}
+
+#calculation-steps {
+    margin-top: 20px;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .game-container {
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 15px;
+    }
+    
+    .calculator-panel {
+        grid-column: 1 / -1;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .instructions-panel,
+    .stats-panel,
+    .calculator-panel {
+        order: 1;
+    }
+    
+    .game-area {
+        order: 0;
+    }
+    
+    .calculator-panel {
+        max-width: 350px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .nav-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .problem-display {
+        font-size: 3em;
+    }
+    
+    .game-area {
+        padding: 20px;
+        min-height: 400px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .calculator-panel {
+        max-width: 300px;
+    }
+    
+    .calc-btn {
+        height: 45px;
+        font-size: 1em;
+    }
+    
+    .calc-btn.equals {
+        height: 98px;
+    }
+}
+
+@media (max-width: 480px) {
+    .problem-display {
+        font-size: 2.5em;
+    }
+    
+    #answer-input {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}

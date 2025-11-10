@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let canvasSize = Math.min(canvas.width, canvas.height);
     let origin = { x: canvasSize / 2, y: canvasSize / 2 };
-    let cellSize = 30; // px per unit
+    const maxRange = 15; // Maximum coordinate range (up to 15)
+    let cellSize = Math.min(30, Math.floor(Math.min(canvas.width, canvas.height) / (maxRange * 2 + 2))); // Dynamic cell size
     let placingMode = null; // 'A' or 'B' or null
     let pointA = null;
     let pointB = null;
@@ -30,12 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function resizeCalc() {
         canvasSize = Math.min(canvas.width, canvas.height);
         origin = { x: canvas.width / 2, y: canvas.height / 2 };
+        cellSize = Math.min(30, Math.floor(Math.min(canvas.width, canvas.height) / (maxRange * 2 + 2)));
     }
 
     function drawGrid() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const maxCellsX = Math.floor(canvas.width / cellSize / 2);
-        const maxCellsY = Math.floor(canvas.height / cellSize / 2);
+        const maxCellsX = Math.min(Math.floor(canvas.width / cellSize / 2), maxRange);
+        const maxCellsY = Math.min(Math.floor(canvas.height / cellSize / 2), maxRange);
         const cells = Math.min(maxCellsX, maxCellsY);
 
         // grid lines
@@ -122,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (genTargets2) genTargets2.addEventListener('click', () => {
-        const maxCellsX = Math.floor(canvas.width / cellSize / 2);
-        const maxCellsY = Math.floor(canvas.height / cellSize / 2);
+        const maxCellsX = Math.min(Math.floor(canvas.width / cellSize / 2), maxRange);
+        const maxCellsY = Math.min(Math.floor(canvas.height / cellSize / 2), maxRange);
         const range = Math.min(maxCellsX, maxCellsY) - 1;
         const ax = Math.floor(Math.random() * (range * 2 + 1)) - range;
         const ay = Math.floor(Math.random() * (range * 2 + 1)) - range;

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exponent Power - Mrs. McAllister's Math Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='exponent_power.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h1 class="game-title">⚡ Exponent Power</h1>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Instructions Panel -->
+        <div class="instructions-panel">
+            <h3>📚 How to Play</h3>
+            <p><strong>Goal:</strong> Solve exponent problems by calculating the power of numbers!</p>
+            <ul>
+                <li>✨ <strong>Easy:</strong> Small bases (2-5) with exponents 2-4</li>
+                <li>🔥 <strong>Medium:</strong> Bases up to 10 with exponents up to 5</li>
+                <li>💥 <strong>Hard:</strong> Larger numbers and complex calculations</li>
+            </ul>
+            <div class="rules-section">
+                <h4>⚡ Exponent Rules Reminder:</h4>
+                <ul>
+                    <li>x² = x × x (x squared)</li>
+                    <li>x³ = x × x × x (x cubed)</li>
+                    <li>x⁰ = 1 (anything to the power 0 equals 1)</li>
+                    <li>x¹ = x (anything to the power 1 equals itself)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Difficulty Selector -->
+            <div class="difficulty-selector">
+                <label for="difficulty">Choose Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy (2-5)²⁻⁴</option>
+                    <option value="medium">Medium (2-10)²⁻⁵</option>
+                    <option value="hard">Hard (2-15)²⁻⁶</option>
+                </select>
+            </div>
+
+            <!-- Problem Display -->
+            <div class="problem-container">
+                <div class="problem-display">
+                    <span id="base">2</span><sup id="exponent">2</sup> = ?
+                </div>
+                <div class="problem-hint">
+                    <span id="hint-text">2 × 2</span>
+                </div>
+            </div>
+
+            <!-- Answer Input -->
+            <div class="answer-section">
+                <input type="number" id="answer-input" placeholder="Enter your answer" autofocus>
+                <div class="button-group">
+                    <button id="submit-btn">Submit Answer</button>
+                    <button id="hint-btn">Show Work</button>
+                    <button id="skip-btn">Skip Problem</button>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <!-- Calculator Panel -->
+        <div class="calculator-panel">
+            <h3>🧮 Calculator</h3>
+            <div class="calculator">
+                <div class="calculator-display">
+                    <input type="text" id="calc-display" readonly>
+                </div>
+                <div class="calculator-buttons">
+                    <button class="calc-btn clear" onclick="calculator.clear()">C</button>
+                    <button class="calc-btn clear" onclick="calculator.clearEntry()">CE</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('/')">/</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('*')">×</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('7')">7</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('8')">8</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('9')">9</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('-')">-</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('4')">4</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('5')">5</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('6')">6</button>
+                    <button class="calc-btn operator" onclick="calculator.inputOperator('+')">+</button>
+                    
+                    <button class="calc-btn number" onclick="calculator.inputNumber('1')">1</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('2')">2</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('3')">3</button>
+                    <button class="calc-btn equals" onclick="calculator.calculate()" rowspan="2">=</button>
+                    
+                    <button class="calc-btn number zero" onclick="calculator.inputNumber('0')">0</button>
+                    <button class="calc-btn number" onclick="calculator.inputNumber('.')">.</button>
+                    <button class="calc-btn power" onclick="calculator.power()">x^y</button>
+                </div>
+                <div class="calculator-actions">
+                    <button class="transfer-btn" onclick="calculator.transferToAnswer()">→ Use Result</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="stats-panel">
+            <h3>📊 Your Progress</h3>
+            <div class="stat-item">
+                <span class="stat-label">Score:</span>
+                <span id="score" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Streak:</span>
+                <span id="streak" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Accuracy:</span>
+                <span id="accuracy" class="stat-value">100%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Problems Solved:</span>
+                <span id="total-solved" class="stat-value">0</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <h4>Level Progress</h4>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="progress-text">Solve 5 problems to level up!</p>
+            </div>
+
+            <!-- Achievement Display -->
+            <div class="achievements">
+                <h4>🏆 Achievements</h4>
+                <div id="achievement-list" class="achievement-list">
+                    <!-- Achievements will be added dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power Calculator Helper (Hidden by default) -->
+    <div id="calculator-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>🧮 Power Calculator Steps</h3>
+            <div id="calculation-steps"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='exponent_power.js') }}"></script>
+</body>
+</html>
