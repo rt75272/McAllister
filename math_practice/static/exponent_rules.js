@@ -6,8 +6,11 @@ class Calculator {
         this.previousValue = '';
         this.operation = null;
         this.waitingForOperand = false;
+        this.displayExpression = '0';
+        this.fullExpression = '';
         
         this.init();
+        this.updateDisplay();
     }
     
     init() {
@@ -53,26 +56,34 @@ class Calculator {
         } else if (value === '=') {
             this.calculate();
         }
-        
-        this.updateDisplay();
     }
     
     inputDigit(digit) {
         if (this.waitingForOperand) {
             this.currentValue = digit;
             this.waitingForOperand = false;
+            this.fullExpression += digit;
         } else {
             this.currentValue = this.currentValue === '0' ? digit : this.currentValue + digit;
+            if (this.fullExpression === '' || this.fullExpression === '0') {
+                this.fullExpression = digit;
+            } else {
+                this.fullExpression += digit;
+            }
         }
+        this.updateDisplayExpression();
     }
     
     inputDecimal() {
         if (this.waitingForOperand) {
             this.currentValue = '0.';
             this.waitingForOperand = false;
+            this.fullExpression += '0.';
         } else if (this.currentValue.indexOf('.') === -1) {
             this.currentValue += '.';
+            this.fullExpression += '.';
         }
+        this.updateDisplayExpression();
     }
     
     clear() {
@@ -80,51 +91,69 @@ class Calculator {
         this.previousValue = '';
         this.operation = null;
         this.waitingForOperand = false;
+        this.displayExpression = '0';
+        this.fullExpression = '';
+        this.updateDisplay();
     }
     
     setOperation(op) {
-        if (this.operation && !this.waitingForOperand) {
-            this.calculate();
-        }
+        const opSymbol = op === '*' ? ' × ' : op === '/' ? ' ÷ ' : ` ${op} `;
         
+        if (this.currentValue === '0' && this.fullExpression === '') return;
+        
+        // Don't auto-calculate, just add the operator
         this.previousValue = this.currentValue;
         this.operation = op;
         this.waitingForOperand = true;
+        
+        if (this.fullExpression === '' || this.fullExpression === '0') {
+            this.fullExpression = this.currentValue + opSymbol;
+        } else if (!this.fullExpression.endsWith(' ')) {
+            this.fullExpression += opSymbol;
+        }
+        
+        this.updateDisplayExpression();
     }
     
     calculate() {
-        if (!this.operation || this.waitingForOperand) return;
+        if (!this.fullExpression || this.waitingForOperand) return;
         
-        const prev = parseFloat(this.previousValue);
-        const current = parseFloat(this.currentValue);
-        let result;
-        
-        switch (this.operation) {
-            case '+':
-                result = prev + current;
-                break;
-            case '-':
-                result = prev - current;
-                break;
-            case '*':
-                result = prev * current;
-                break;
-            case '/':
-                result = current !== 0 ? prev / current : 'Error';
-                break;
-            case '^':
-                result = Math.pow(prev, current);
-                break;
+        try {
+            // Replace visual symbols with JavaScript operators
+            let expression = this.fullExpression
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/\^/g, '**');
+            
+            // Evaluate the expression
+            let result = eval(expression);
+            
+            this.currentValue = result.toString();
+            this.previousValue = '';
+            this.operation = null;
+            this.waitingForOperand = false;
+            
+            // Show full expression with result
+            this.displayExpression = `${this.fullExpression} = ${this.currentValue}`;
+            this.updateDisplay();
+            
+            // Reset for next calculation
+            this.fullExpression = this.currentValue;
+        } catch (error) {
+            this.currentValue = 'Error';
+            this.displayExpression = 'Error';
+            this.updateDisplay();
+            this.clear();
         }
-        
-        this.currentValue = result.toString();
-        this.operation = null;
-        this.previousValue = '';
-        this.waitingForOperand = true;
+    }
+    
+    updateDisplayExpression() {
+        this.displayExpression = this.fullExpression || this.currentValue;
+        this.updateDisplay();
     }
     
     updateDisplay() {
-        this.display.textContent = this.currentValue;
+        this.display.textContent = this.displayExpression;
     }
 }
 

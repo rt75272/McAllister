@@ -94,32 +94,31 @@
                     <input type="text" id="calc-display" readonly>
                 </div>
                 <div class="calculator-buttons">
-                    <button class="calc-btn clear" onclick="calculator.clear()">C</button>
-                    <button class="calc-btn clear" onclick="calculator.clearEntry()">CE</button>
-                    <button class="calc-btn operator" onclick="calculator.inputOperator('/')">/</button>
-                    <button class="calc-btn operator" onclick="calculator.inputOperator('*')">×</button>
+                    <button class="calc-btn clear" data-value="C">C</button>
+                    <button class="calc-btn operator" data-value="/">/</button>
+                    <button class="calc-btn operator" data-value="*">×</button>
+                    <button class="calc-btn operator" data-value="^">x^y</button>
                     
-                    <button class="calc-btn number" onclick="calculator.inputNumber('7')">7</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('8')">8</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('9')">9</button>
-                    <button class="calc-btn operator" onclick="calculator.inputOperator('-')">-</button>
+                    <button class="calc-btn number" data-value="7">7</button>
+                    <button class="calc-btn number" data-value="8">8</button>
+                    <button class="calc-btn number" data-value="9">9</button>
+                    <button class="calc-btn operator" data-value="-">-</button>
                     
-                    <button class="calc-btn number" onclick="calculator.inputNumber('4')">4</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('5')">5</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('6')">6</button>
-                    <button class="calc-btn operator" onclick="calculator.inputOperator('+')">+</button>
+                    <button class="calc-btn number" data-value="4">4</button>
+                    <button class="calc-btn number" data-value="5">5</button>
+                    <button class="calc-btn number" data-value="6">6</button>
+                    <button class="calc-btn operator" data-value="+">+</button>
                     
-                    <button class="calc-btn number" onclick="calculator.inputNumber('1')">1</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('2')">2</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('3')">3</button>
-                    <button class="calc-btn equals" onclick="calculator.calculate()" rowspan="2">=</button>
+                    <button class="calc-btn number" data-value="1">1</button>
+                    <button class="calc-btn number" data-value="2">2</button>
+                    <button class="calc-btn number" data-value="3">3</button>
+                    <button class="calc-btn equals" data-value="=">=</button>
                     
-                    <button class="calc-btn number zero" onclick="calculator.inputNumber('0')">0</button>
-                    <button class="calc-btn number" onclick="calculator.inputNumber('.')">.</button>
-                    <button class="calc-btn power" onclick="calculator.power()">x^y</button>
+                    <button class="calc-btn number zero" data-value="0">0</button>
+                    <button class="calc-btn number" data-value=".">.</button>
                 </div>
                 <div class="calculator-actions">
-                    <button class="transfer-btn" onclick="calculator.transferToAnswer()">→ Use Result</button>
+                    <button id="transfer-btn" class="transfer-btn">→ Use Result</button>
                 </div>
             </div>
         </div>

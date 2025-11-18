@@ -3,137 +3,158 @@
 class Calculator {
     constructor() {
         this.display = document.getElementById('calc-display');
-        this.currentInput = '';
-        this.operator = null;
-        this.previousInput = '';
-        this.waitingForNewNumber = false;
-    }
-    
-    inputNumber(num) {
-        if (this.waitingForNewNumber) {
-            this.currentInput = num;
-            this.waitingForNewNumber = false;
-        } else {
-            this.currentInput = this.currentInput === '' ? num : this.currentInput + num;
-        }
+        this.currentValue = '0';
+        this.previousValue = '';
+        this.operation = null;
+        this.waitingForOperand = false;
+        this.displayExpression = '0';
+        this.fullExpression = '';
+        
+        this.init();
         this.updateDisplay();
     }
     
-    inputOperator(op) {
-        if (this.currentInput === '') return;
+    init() {
+        const buttons = document.querySelectorAll('.calc-btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.dataset.value;
+                this.handleInput(value);
+            });
+        });
         
-        if (this.previousInput !== '' && this.operator !== null && !this.waitingForNewNumber) {
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.target.id === 'answer-input') return; // Don't interfere with answer input
+            
+            if (e.key >= '0' && e.key <= '9') this.handleInput(e.key);
+            else if (e.key === '.') this.handleInput('.');
+            else if (e.key === '+') this.handleInput('+');
+            else if (e.key === '-') this.handleInput('-');
+            else if (e.key === '*') this.handleInput('*');
+            else if (e.key === '/') this.handleInput('/');
+            else if (e.key === '^') this.handleInput('^');
+            else if (e.key === 'Enter') this.handleInput('=');
+            else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') this.handleInput('C');
+        });
+        
+        // Transfer button
+        document.getElementById('transfer-btn').addEventListener('click', () => {
+            document.getElementById('answer-input').value = this.currentValue;
+            document.getElementById('answer-input').focus();
+        });
+    }
+    
+    handleInput(value) {
+        if (value >= '0' && value <= '9') {
+            this.inputDigit(value);
+        } else if (value === '.') {
+            this.inputDecimal();
+        } else if (value === 'C') {
+            this.clear();
+        } else if (['+', '-', '*', '/', '^'].includes(value)) {
+            this.setOperation(value);
+        } else if (value === '=') {
             this.calculate();
         }
-        
-        this.operator = op;
-        this.previousInput = this.currentInput;
-        this.waitingForNewNumber = true;
     }
     
-    calculate() {
-        if (this.operator === null || this.waitingForNewNumber) return;
-        
-        const prev = parseFloat(this.previousInput);
-        const current = parseFloat(this.currentInput);
-        
-        if (isNaN(prev) || isNaN(current)) return;
-        
-        let result;
-        switch (this.operator) {
-            case '+':
-                result = prev + current;
-                break;
-            case '-':
-                result = prev - current;
-                break;
-            case '*':
-                result = prev * current;
-                break;
-            case '/':
-                if (current === 0) {
-                    this.currentInput = 'Error';
-                    this.updateDisplay();
-                    this.clear();
-                    return;
-                }
-                result = prev / current;
-                break;
-            default:
-                return;
+    inputDigit(digit) {
+        if (this.waitingForOperand) {
+            this.currentValue = digit;
+            this.waitingForOperand = false;
+            this.fullExpression += digit;
+        } else {
+            this.currentValue = this.currentValue === '0' ? digit : this.currentValue + digit;
+            if (this.fullExpression === '' || this.fullExpression === '0') {
+                this.fullExpression = digit;
+            } else {
+                this.fullExpression += digit;
+            }
         }
-        
-        this.currentInput = result.toString();
-        this.operator = null;
-        this.previousInput = '';
-        this.waitingForNewNumber = true;
-        this.updateDisplay();
+        this.updateDisplayExpression();
     }
     
-    power() {
-        if (this.currentInput === '') return;
-        
-        const base = parseFloat(this.currentInput);
-        if (isNaN(base)) return;
-        
-        // For the exponent game, we'll prompt for the exponent
-        const exponent = prompt('Enter the exponent:');
-        if (exponent === null || exponent === '') return;
-        
-        const exp = parseFloat(exponent);
-        if (isNaN(exp)) {
-            alert('Please enter a valid number for the exponent.');
-            return;
+    inputDecimal() {
+        if (this.waitingForOperand) {
+            this.currentValue = '0.';
+            this.waitingForOperand = false;
+            this.fullExpression += '0.';
+        } else if (this.currentValue.indexOf('.') === -1) {
+            this.currentValue += '.';
+            this.fullExpression += '.';
         }
-        
-        const result = Math.pow(base, exp);
-        this.currentInput = result.toString();
-        this.updateDisplay();
-        this.waitingForNewNumber = true;
+        this.updateDisplayExpression();
     }
     
     clear() {
-        this.currentInput = '';
-        this.operator = null;
-        this.previousInput = '';
-        this.waitingForNewNumber = false;
+        this.currentValue = '0';
+        this.previousValue = '';
+        this.operation = null;
+        this.waitingForOperand = false;
+        this.displayExpression = '0';
+        this.fullExpression = '';
         this.updateDisplay();
     }
     
-    clearEntry() {
-        this.currentInput = '';
+    setOperation(op) {
+        const opSymbol = op === '*' ? ' × ' : op === '/' ? ' ÷ ' : ` ${op} `;
+        
+        if (this.currentValue === '0' && this.fullExpression === '') return;
+        
+        // Don't auto-calculate, just add the operator
+        this.previousValue = this.currentValue;
+        this.operation = op;
+        this.waitingForOperand = true;
+        
+        if (this.fullExpression === '' || this.fullExpression === '0') {
+            this.fullExpression = this.currentValue + opSymbol;
+        } else if (!this.fullExpression.endsWith(' ')) {
+            this.fullExpression += opSymbol;
+        }
+        
+        this.updateDisplayExpression();
+    }
+    
+    calculate() {
+        if (!this.fullExpression || this.waitingForOperand) return;
+        
+        try {
+            // Replace visual symbols with JavaScript operators
+            let expression = this.fullExpression
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/\^/g, '**');
+            
+            // Evaluate the expression
+            let result = eval(expression);
+            
+            this.currentValue = result.toString();
+            this.previousValue = '';
+            this.operation = null;
+            this.waitingForOperand = false;
+            
+            // Show full expression with result
+            this.displayExpression = `${this.fullExpression} = ${this.currentValue}`;
+            this.updateDisplay();
+            
+            // Reset for next calculation
+            this.fullExpression = this.currentValue;
+        } catch (error) {
+            this.currentValue = 'Error';
+            this.displayExpression = 'Error';
+            this.updateDisplay();
+            this.clear();
+        }
+    }
+    
+    updateDisplayExpression() {
+        this.displayExpression = this.fullExpression || this.currentValue;
         this.updateDisplay();
     }
     
     updateDisplay() {
-        this.display.value = this.currentInput || '0';
-    }
-    
-    // Add keyboard support
-    handleKeyboard(event) {
-        const key = event.key;
-        
-        if (key >= '0' && key <= '9' || key === '.') {
-            this.inputNumber(key);
-        } else if (['+', '-', '*', '/'].includes(key)) {
-            this.inputOperator(key === '*' ? '*' : key);
-        } else if (key === 'Enter' || key === '=') {
-            this.calculate();
-        } else if (key === 'Escape' || key.toLowerCase() === 'c') {
-            this.clear();
-        } else if (key === 'Backspace') {
-            this.clearEntry();
-        }
-    }
-    
-    transferToAnswer() {
-        const answerInput = document.getElementById('answer-input');
-        if (answerInput && this.currentInput && this.currentInput !== 'Error') {
-            // Round to avoid floating point precision issues
-            const value = parseFloat(this.currentInput);
-            answerInput.value = Number.isInteger(value) ? value.toString() : parseFloat(value.toFixed(6)).toString();
-            answerInput.focus();
-        }
+        this.display.value = this.displayExpression;
     }
 }
 
@@ -491,13 +512,5 @@ class ExponentPowerGame {
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new ExponentPowerGame();
-    window.calculator = new Calculator(); // Make calculator globally accessible for onclick handlers
-    
-    // Add keyboard support for calculator
-    document.addEventListener('keydown', (event) => {
-        // Only handle calculator keys if the answer input is not focused
-        if (document.activeElement.id !== 'answer-input') {
-            window.calculator.handleKeyboard(event);
-        }
-    });
+    window.calculator = new Calculator();
 });
