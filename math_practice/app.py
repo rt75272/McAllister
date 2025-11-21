@@ -60,8 +60,23 @@ def generate_question(difficulty='easy'):
 
 @app.route('/', methods=['GET'])
 def home():
-    """Home page with navigation to different math activities."""
-    return render_template('index.html')
+    """Main home page with Math and ELA sections."""
+    return render_template('home.html')
+
+@app.route('/math-games', methods=['GET'])
+def math_games():
+    """Math games selection page."""
+    return render_template('math_games.html')
+
+@app.route('/ela-games', methods=['GET'])
+def ela_games():
+    """ELA games selection page."""
+    return render_template('ela_games.html')
+
+@app.route('/noun-hunter', methods=['GET'])
+def noun_hunter():
+    """Noun Hunter game page."""
+    return render_template('noun_hunter.html')
 
 @app.route('/math-blast', methods=['GET'])
 def math_blast():
@@ -296,6 +311,10 @@ def skip():
         'next_level': next_level,
         'streaks': streaks,
         'hard_victories': session.get('hard_victories', 0)})
+
+@app.route('/verb-detective')
+def verb_detective():
+    return render_template('verb_detective.html')
 
 # The big red activation button.
 if __name__ == '__main__':

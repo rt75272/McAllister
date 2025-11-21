@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero-section {
+            background-color: white;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 0 2em rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        
+        .hero-title {
+            font-size: 2.5em;
+            color: #4CAF50;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 1.5em;
+        }
+        
+        .hero-links {
+            margin-top: 12px;
+        }
+        
+        .hero-links a {
+            display: inline-block;
+            margin: 0 6px;
+            padding: 8px 12px;
+            background: #1f6feb;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .hero-links a:hover {
+            background: #0d4fb2;
+        }
+        
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2em;
+            margin: 2em 0;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 1em;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+        
+        .section-header {
+            padding: 2em;
+            text-align: center;
+            color: white;
+        }
+        
+        .math-section .section-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .ela-section .section-header {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+        }
+        
+        .section-icon {
+            font-size: 4em;
+            margin-bottom: 0.3em;
+        }
+        
+        .section-title {
+            font-size: 2em;
+            margin: 0;
+            font-weight: bold;
+        }
+        
+        .section-content {
+            padding: 2em;
+        }
+        
+        .section-description {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 1.5em;
+            line-height: 1.6;
+        }
+        
+        .game-count {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0.5em 1em;
+            border-radius: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1em;
+        }
+        
+        .math-section .game-count {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .ela-section .game-count {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 1em 0;
+        }
+        
+        .features-list li {
+            padding: 0.5em 0;
+            padding-left: 1.8em;
+            position: relative;
+            color: #555;
+        }
+        
+        .features-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .math-section .features-list li:before {
+            color: #4CAF50;
+        }
+        
+        .ela-section .features-list li:before {
+            color: #FF6B6B;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 1em 2em;
+            border-radius: 2em;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1em;
+        }
+        
+        .math-section .cta-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .ela-section .cta-button {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+        }
+        
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .coming-soon {
+            display: inline-block;
+            padding: 0.5em 1.5em;
+            background: #ffc107;
+            color: #333;
+            border-radius: 2em;
+            font-weight: bold;
+            margin-top: 1em;
+        }
+        
+        @media (max-width: 900px) {
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2em;
+            }
+            
+            .hero-section {
+                padding: 2em 1em;
+            }
+            
+            .section-title {
+                font-size: 1.5em;
+            }
+            
+            .section-icon {
+                font-size: 3em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .hero-title {
+                font-size: 1.8em;
+            }
+            
+            .hero-section {
+                padding: 1.5em 0.8em;
+            }
+            
+            .section-content {
+                padding: 1.5em;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">🎓 Learning Center</h1>
+            <p class="hero-subtitle">Making Learning Fun, Engaging, and Educational for Every Student!</p>
+            <p>Welcome to your interactive learning adventure! Choose a subject below to explore engaging games and activities designed to strengthen your skills.</p>
+            <div class="hero-links">
+                <a href="{{ url_for('about') }}">About</a>
+            </div>
+        </div>
+
+        <!-- Sections Grid -->
+        <div class="sections-grid">
+            <!-- Math Section -->
+            <a href="{{ url_for('math_games') }}" class="section-card math-section">
+                <div class="section-header">
+                    <div class="section-icon">🔢</div>
+                    <h2 class="section-title">Math Games</h2>
+                </div>
+                <div class="section-content">
+                    <div class="game-count">10 Games Available</div>
+                    <p class="section-description">
+                        Master mathematical concepts through engaging and interactive games. From basic operations to advanced topics like exponents and fractions!
+                    </p>
+                    <ul class="features-list">
+                        <li>Progressive difficulty levels</li>
+                        <li>Fraction & decimal mastery</li>
+                        <li>Exponent calculations</li>
+                        <li>Coordinate graphing</li>
+                        <li>Timed challenges & memory games</li>
+                    </ul>
+                    <span class="cta-button">Explore Math Games →</span>
+                </div>
+            </a>
+
+            <!-- ELA Section -->
+            <a href="{{ url_for('ela_games') }}" class="section-card ela-section">
+                <div class="section-header">
+                    <div class="section-icon">📚</div>
+                    <h2 class="section-title">ELA Games</h2>
+                </div>
+                <div class="section-content">
+                    <div class="game-count">2 Games Available</div>
+                    <p class="section-description">
+                        Enhance your English Language Arts skills with exciting games focused on reading, writing, vocabulary, and grammar!
+                    </p>
+                    <ul class="features-list">
+                        <li>Parts of speech practice</li>
+                        <li>Vocabulary building</li>
+                        <li>Reading comprehension</li>
+                        <li>Grammar practice</li>
+                        <li>More games coming soon!</li>
+                    </ul>
+                    <span class="cta-button">Explore ELA Games →</span>
+                </div>
+            </a>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,414 @@
+/* Verb Detective Game Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.home-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.home-btn:hover {
+    transform: scale(1.05);
+}
+
+.game-title {
+    color: #e74c3c;
+    font-size: 1.8em;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.verb-detective-container {
+    display: grid;
+    grid-template-columns: 300px 1fr 280px;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.instructions-card, .achievements-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.instructions-card h2, .achievements-card h3 {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.instructions-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.instructions-card li {
+    margin: 10px 0;
+    padding-left: 25px;
+    position: relative;
+    color: #555;
+}
+
+.instructions-card li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.difficulty-selector {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #ecf0f1;
+}
+
+.difficulty-selector label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.difficulty-selector select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    font-size: 1em;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.difficulty-selector select:hover {
+    border-color: #c0392b;
+}
+
+/* Achievements */
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    margin: 8px 0;
+    background: #ecf0f1;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.achievement.unlocked {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+}
+
+.achievement-icon {
+    font-size: 1.5em;
+}
+
+.achievement-name {
+    font-weight: bold;
+}
+
+/* Game Area */
+.game-area {
+    background: white;
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sentence-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sentence {
+    font-size: 1.8em;
+    line-height: 2;
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    min-height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.word {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: #ecf0f1;
+}
+
+.word:hover {
+    background: #e74c3c;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.word.correct {
+    background: #27ae60;
+    color: white;
+    animation: correctPulse 0.6s ease;
+}
+
+.word.incorrect {
+    background: #e74c3c;
+    color: white;
+    animation: shake 0.5s ease;
+}
+
+@keyframes correctPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.feedback {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    min-height: 40px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.feedback.correct {
+    color: #27ae60;
+    background: #d5f4e6;
+}
+
+.feedback.incorrect {
+    color: #e74c3c;
+    background: #fadbd8;
+}
+
+/* Game Controls */
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.control-btn {
+    padding: 12px 24px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.hint-btn {
+    background: #3498db;
+    color: white;
+}
+
+.hint-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.skip-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.skip-btn:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+.next-btn {
+    background: #27ae60;
+    color: white;
+}
+
+.next-btn:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+.hint-text {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    color: #856404;
+    font-size: 1.1em;
+    margin-top: 15px;
+}
+
+/* Stats Panel */
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.stats-card h3 {
+    color: #e74c3c;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #7f8c8d;
+}
+
+.stat-value {
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.reset-btn, .back-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.reset-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.reset-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.back-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.back-btn:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .verb-detective-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .nav-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .game-title {
+        font-size: 1.4em;
+    }
+
+    .sentence {
+        font-size: 1.4em;
+    }
+
+    .word {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .game-controls {
+        flex-direction: column;
+    }
+
+    .control-btn {
+        width: 100%;
+    }
+
+    .game-area {
+        padding: 20px;
+    }
+}

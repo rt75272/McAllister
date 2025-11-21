@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}ELA Games - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        body {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1em;
+            padding: 0.5em 1em;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            text-decoration: none;
+            border-radius: 0.5em;
+            transition: background 0.3s;
+        }
+        
+        .back-link:hover {
+            background: white;
+        }
+        
+        .hero-section {
+            background-color: white;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 0 2em rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        
+        .hero-title {
+            font-size: 2.5em;
+            color: #FF6B6B;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 1.5em;
+        }
+        
+        .hero-links {
+            margin-top: 12px;
+        }
+        
+        .hero-links a {
+            display: inline-block;
+            margin: 0 6px;
+            padding: 8px 12px;
+            background: #1f6feb;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .hero-links a:hover {
+            background: #0d4fb2;
+        }
+        
+        .coming-soon-section {
+            background-color: white;
+            padding: 3em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        
+        .construction-icon {
+            font-size: 5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .coming-soon-title {
+            font-size: 2em;
+            color: #FF6B6B;
+            margin-bottom: 0.5em;
+        }
+        
+        .coming-soon-text {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.6;
+            margin: 1em 0;
+        }
+        
+        .planned-features {
+            background-color: white;
+            padding: 2em;
+            border-radius: 1em;
+            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            margin-bottom: 2em;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #FF6B6B;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5em;
+            margin: 2em 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+            padding: 1.5em;
+            border-radius: 0.8em;
+            text-align: center;
+            border: 2px solid #ffcccc;
+        }
+        
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .feature-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 0.5em;
+        }
+        
+        .feature-description {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #333;
+            padding: 0.5em 1em;
+            border-radius: 2em;
+            font-weight: bold;
+            margin-top: 1em;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2em;
+            }
+            
+            .hero-section, .coming-soon-section, .planned-features {
+                padding: 2em 1em;
+            }
+            
+            .construction-icon {
+                font-size: 4em;
+            }
+            
+            .coming-soon-title {
+                font-size: 1.5em;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .hero-title {
+                font-size: 1.8em;
+            }
+            
+            .hero-section, .coming-soon-section, .planned-features {
+                padding: 1.5em 0.8em;
+            }
+            
+            .construction-icon {
+                font-size: 3em;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="main-container">
+        <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">📚 ELA Games</h1>
+            <p class="hero-subtitle">English Language Arts Adventures Coming Soon!</p>
+            <p>Get ready for exciting games that will help you master reading, writing, vocabulary, and grammar through interactive and engaging activities.</p>
+            <div class="hero-links">
+                <a href="{{ url_for('about') }}">About</a>
+            </div>
+        </div>
+
+        <!-- Games Section -->
+        <div class="games-section" style="background-color: white; padding: 2em; border-radius: 1em; box-shadow: 0 0 1em rgba(0,0,0,0.1); margin-bottom: 2em;">
+            <h2 class="section-title">Available ELA Games</h2>
+            <p style="text-align: center; margin-bottom: 1.5em; color: #666;">
+                Click on the game below to start practicing your English Language Arts skills!
+            </p>
+            
+            <div class="activity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5em; margin-top: 1.5em;">
+                <a href="{{ url_for('noun_hunter') }}" class="activity-card noun-hunter-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);">
+                    <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🔍 Noun Hunter</h3>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Find the nouns in sentences! Learn to identify people, places, things, and ideas. Perfect for mastering parts of speech!</p>
+                    <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Parts of Speech</div>
+                </a>
+
+                <a href="{{ url_for('verb_detective') }}" class="activity-card verb-detective-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🕵️ Verb Detective</h3>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Discover the action words! Identify verbs in sentences and learn about action verbs and state-of-being verbs.</p>
+                    <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Parts of Speech</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Planned Features -->
+        <div class="planned-features">
+            <h2 class="section-title">What's Coming</h2>
+            <p style="text-align: center; margin-bottom: 2em; color: #666;">
+                Here's a preview of the exciting ELA games we're planning:
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📖</div>
+                    <div class="feature-title">Reading Comprehension</div>
+                    <p class="feature-description">Interactive stories with questions to test understanding and critical thinking</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">✍️</div>
+                    <div class="feature-title">Writing Adventures</div>
+                    <p class="feature-description">Creative writing prompts and story-building games to enhance composition skills</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔤</div>
+                    <div class="feature-title">Vocabulary Builder</div>
+                    <p class="feature-description">Word matching, definitions, and context games to expand your vocabulary</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-title">Grammar Master</div>
+                    <p class="feature-description">Practice parts of speech, sentence structure, and punctuation rules</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <div class="feature-title">Word Games</div>
+                    <p class="feature-description">Fun puzzles, crosswords, and word searches to reinforce language skills</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🗣️</div>
+                    <div class="feature-title">Spelling Bee</div>
+                    <p class="feature-description">Progressive spelling challenges with audio support and immediate feedback</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
