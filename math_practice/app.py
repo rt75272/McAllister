@@ -73,10 +73,15 @@ def ela_games():
     """ELA games selection page."""
     return render_template('ela_games.html')
 
-@app.route('/noun-hunter', methods=['GET'])
-def noun_hunter():
-    """Noun Hunter game page."""
-    return render_template('noun_hunter.html')
+@app.route('/sentence-fixer', methods=['GET'])
+def sentence_fixer():
+    """Sentence Fixer game page (capitalization and punctuation)."""
+    return render_template('sentence_fixer.html')
+
+@app.route('/word-match', methods=['GET'])
+def word_match():
+    """Word Match game page (synonyms/antonyms)."""
+    return render_template('word_match.html')
 
 @app.route('/math-blast', methods=['GET'])
 def math_blast():
