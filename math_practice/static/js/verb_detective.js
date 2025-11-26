@@ -225,13 +225,13 @@ class VerbDetectiveGame {
             this.achievements.firstVerb = true;
             this.unlockAchievement('firstVerb', 'First Find!');
         }
-        
-        if (this.streak >= 5 && !this.achievements.streakFive) {
+
+        if (this.correct >= 5 && !this.achievements.streakFive) {
             this.achievements.streakFive = true;
             this.unlockAchievement('streakFive', '5 in a Row!');
         }
-        
-        if (this.streak >= 10 && !this.achievements.perfectTen) {
+
+        if (this.correct >= 10 && !this.achievements.perfectTen) {
             this.achievements.perfectTen = true;
             this.unlockAchievement('perfectTen', 'Perfect 10!');
         }

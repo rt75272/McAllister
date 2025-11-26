@@ -174,11 +174,11 @@ class WordMatchGame {
             this.achievements.firstMatch = true;
             this.unlockAchievement('firstMatch');
         }
-        if (!this.achievements.streakFive && this.streak >= 5) {
+        if (!this.achievements.streakFive && this.correct >= 5) {
             this.achievements.streakFive = true;
             this.unlockAchievement('streakFive');
         }
-        if (!this.achievements.perfectTen && this.correct >= 10 && this.total >= 10 && this.correct === this.total) {
+        if (!this.achievements.perfectTen && this.correct >= 10) {
             this.achievements.perfectTen = true;
             this.unlockAchievement('perfectTen');
         }

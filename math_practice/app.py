@@ -15,7 +15,6 @@ from flask import Flask, render_template, request, jsonify, session
 app = Flask(__name__)
 app.secret_key = 'secure_random_secret_key'
 
-
 @app.context_processor
 def inject_current_year():
     """Inject current year into all templates as `current_year`."""
@@ -25,7 +24,6 @@ def inject_current_year():
 easy_num = 4      # Number of consecutive easy questions to answer correctly to reach medium.
 medium_num = 7    # Number of consecutive medium questions to answer correctly to reach hard.
 hard_num = 5      # Number of hard questions to answer correctly to achieve victory.
-
 num_rounded = 2   # Number of decimal places to round to.
 
 def generate_question(difficulty='easy'):
@@ -73,6 +71,11 @@ def ela_games():
     """ELA games selection page."""
     return render_template('ela_games.html')
 
+@app.route('/context-clues', methods=['GET'])
+def context_clues():
+    """Context Clues game page (infer word meanings)."""
+    return render_template('context_clues.html')
+
 @app.route('/sentence-fixer', methods=['GET'])
 def sentence_fixer():
     """Sentence Fixer game page (capitalization and punctuation)."""
@@ -108,30 +111,25 @@ def fraction_master():
     """Fraction Master game page."""
     return render_template('fraction_master.html')
 
-
 @app.route('/plot-points', methods=['GET'])
 def plot_points():
     """Plot Points (graphing) game page."""
     return render_template('plot_points.html')
-
 
 @app.route('/exponent-power', methods=['GET'])
 def exponent_power():
     """Exponent Power game page."""
     return render_template('exponent_power.html')
 
-
 @app.route('/exponent-world', methods=['GET'])
 def exponent_world():
     """Exponent World word problems game page."""
     return render_template('exponent_world.html')
 
-
 @app.route('/exponent-rules', methods=['GET'])
 def exponent_rules():
     """Exponent Rules game page for operations with exponents."""
     return render_template('exponent_rules.html')
-
 
 @app.route('/about', methods=['GET'])
 def about():
