@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Expression Comparison - Mrs. McAllister's Learning Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/expression_comparison.css') }}">
+</head>
+<body>
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h1 class="game-title">⚖️ Expression Comparison</h1>
+    </div>
+
+    <div class="comparison-container">
+        <div class="instructions-card">
+            <h2>How to Play</h2>
+            <ul>
+                <li>Look at the two <strong>expressions</strong> shown.</li>
+                <li>Calculate or estimate each value in your head.</li>
+                <li>Click on the expression that is <strong>larger</strong>.</li>
+                <li>If they are equal, click the <strong>=</strong> button.</li>
+                <li>Get points for each correct answer!</li>
+            </ul>
+
+            <div class="difficulty-selector">
+                <label>Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="comparison-display">
+                <div id="expression1" class="expression left-expression">5 + 3</div>
+                <div class="vs-text">VS</div>
+                <div id="expression2" class="expression right-expression">2 × 4</div>
+            </div>
+
+            <div class="comparison-buttons">
+                <button id="leftBtn" class="compare-btn left-btn">◀ Left is Larger</button>
+                <button id="equalBtn" class="compare-btn equal-btn">= Equal</button>
+                <button id="rightBtn" class="compare-btn right-btn">Right is Larger ▶</button>
+            </div>
+
+            <div id="feedback" class="feedback"></div>
+            <div id="explanation" class="explanation"></div>
+
+            <div class="controls">
+                <button id="skipBtn" class="control-btn skip-btn">⏭️ Skip</button>
+                <button id="nextBtn" class="control-btn next-btn" style="display:none;">Next ➡️</button>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stats-card">
+                <h3>📊 Your Stats</h3>
+                <div class="stat-item"><span class="stat-label">Score:</span><span id="score" class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">Streak:</span><span id="streak" class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">Correct:</span><span id="correct" class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">Total:</span><span id="total" class="stat-value">0</span></div>
+                <div class="stat-item"><span class="stat-label">Accuracy:</span><span id="accuracy" class="stat-value">0%</span></div>
+            </div>
+
+            <div class="achievements-card">
+                <h3>🏆 Achievements</h3>
+                <div class="achievement" data-achievement="firstCompare">⭐ First Comparison</div>
+                <div class="achievement" data-achievement="streakFive">🔥 5 Correct</div>
+                <div class="achievement" data-achievement="perfectTen">💯 10 Correct</div>
+                <div class="achievement" data-achievement="mathMaster">🧮 Math Master (25)</div>
+
+                <button id="resetBtn" class="reset-btn">🔄 Reset Game</button>
+                <a href="{{ url_for('math_games') }}" class="back-btn">← Back to Math Games</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/expression_comparison.js') }}"></script>
+</body>
+</html>

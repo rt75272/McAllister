@@ -319,6 +319,11 @@ def skip():
 def verb_detective():
     return render_template('verb_detective.html')
 
+@app.route('/expression-comparison', methods=['GET'])
+def expression_comparison():
+    """Expression Comparison game page."""
+    return render_template('expression_comparison.html')
+
 # The big red activation button.
 if __name__ == '__main__':
     app.run(debug=True)
