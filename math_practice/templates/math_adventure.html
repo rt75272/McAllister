@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Adventure - Mrs. McAllister's Learning Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/math_adventure.css') }}">
+</head>
+<body>
+    <div class="nav-header">
+        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <h1 class="game-title">⚔️ Math Adventure</h1>
+    </div>
+
+    <div id="start-modal">
+        <div id="start-content">
+            <h2>Welcome to Math Adventure!</h2>
+            <p>Select your difficulty to begin.</p>
+            <div class="difficulty-selector">
+                <label for="difficulty-start">Difficulty:</label>
+                <select id="difficulty-start">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+
+            <div class="difficulty-selector">
+                <label for="character-start">Character:</label>
+                <select id="character-start">
+                    <option value="knight">Knight</option>
+                    <option value="wizard">Wizard</option>
+                    <option value="ninja">Ninja</option>
+                    <option value="astronaut">Astronaut</option>
+                </select>
+            </div>
+            <button id="start-game-btn">Start Adventure</button>
+        </div>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="map-container">
+            <canvas id="map-canvas"></canvas>
+            <div id="player"></div>
+        </div>
+        <div id="game-info">
+            <h2 id="location-name">Starting Village</h2>
+            <p id="location-description">A quiet village where your journey begins.</p>
+            <div class="progress-info">
+                <p>Location: <span id="location-progress">1/7</span></p>
+            </div>
+            <button id="start-challenge-btn">Start Challenge</button>
+        </div>
+    </div>
+
+    <div id="problem-modal" class="hidden">
+        <div id="problem-content">
+            <h2>Solve the problem to move:</h2>
+            <p id="problem-text"></p>
+            <input type="number" id="answer-input" placeholder="Your answer...">
+            <button id="submit-answer-btn">Submit</button>
+            <p id="feedback"></p>
+        </div>
+    </div>
+
+    <div id="path-modal" class="hidden">
+        <div id="path-content">
+            <h2>Choose your path:</h2>
+            <div id="path-options"></div>
+        </div>
+    </div>
+
+    <div id="victory-modal" class="hidden">
+        <div id="victory-content">
+            <div class="confetti"></div>
+            <h1>🎉 Victory! 🎉</h1>
+            <p class="victory-message">Congratulations! You've completed your Math Adventure and reached the Castle of Triumph!</p>
+            <div class="victory-stats">
+                <p>You are now a true Math Champion!</p>
+            </div>
+            <div class="victory-buttons">
+                <button id="play-again-btn">Play Again</button>
+                <a href="{{ url_for('math_games') }}" class="back-to-games-btn">Back to Games</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/math_adventure.js') }}"></script>
+</body>
+</html>

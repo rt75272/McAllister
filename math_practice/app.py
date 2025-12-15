@@ -324,6 +324,10 @@ def expression_comparison():
     """Expression Comparison game page."""
     return render_template('expression_comparison.html')
 
+@app.route('/math_adventure')
+def math_adventure():
+    return render_template('math_adventure.html')
+
 # The big red activation button.
 if __name__ == '__main__':
     app.run(debug=True)
