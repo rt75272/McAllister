@@ -63,6 +63,23 @@ body {
     border: 1px solid #ccc;
 }
 
+.game-area {
+    display: flex;
+    flex-direction: column;
+}
+
+#variable-display {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
 .comparison-display {
     display: flex;
     align-items: center;

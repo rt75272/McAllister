@@ -32,11 +32,8 @@ class ExpressionComparisonGame {
         document.getElementById('resetBtn').addEventListener('click', () => this.resetGame());
     }
 
-    generateExpression(difficulty) {
+    generateExpression(difficulty, varName, varValue) {
         let expr, value;
-        const variables = ['x', 'y', 'z', 'n', 'm'];
-        const varName = variables[Math.floor(Math.random() * variables.length)];
-        const varValue = Math.floor(Math.random() * 10) + 1; // Random value for the variable
         
         if (difficulty === 'easy') {
             const type = Math.floor(Math.random() * 3);
@@ -47,21 +44,18 @@ class ExpressionComparisonGame {
                 const constant = Math.floor(Math.random() * 10) + 1;
                 expr = `${coeff}${varName} + ${constant}`;
                 value = coeff * varValue + constant;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 1) {
                 // Simple: coefficient * variable - constant (e.g., 4x - 3)
                 const coeff = Math.floor(Math.random() * 5) + 2;
                 const constant = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} - ${constant}`;
                 value = coeff * varValue - constant;
-                this.lastVarValues = { [varName]: varValue };
             } else {
                 // Simple: constant + coefficient * variable (e.g., 5 + 2x)
                 const constant = Math.floor(Math.random() * 10) + 1;
                 const coeff = Math.floor(Math.random() * 5) + 1;
                 expr = `${constant} + ${coeff}${varName}`;
                 value = constant + coeff * varValue;
-                this.lastVarValues = { [varName]: varValue };
             }
         } else if (difficulty === 'medium') {
             const type = Math.floor(Math.random() * 4);
@@ -73,7 +67,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} + ${const1} + ${const2}`;
                 value = coeff * varValue + const1 + const2;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 1) {
                 // Mixed operations: ax + b - c (e.g., 4x + 7 - 2)
                 const coeff = Math.floor(Math.random() * 6) + 1;
@@ -81,14 +74,12 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} + ${const1} - ${const2}`;
                 value = coeff * varValue + const1 - const2;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 2) {
                 // Parentheses: (x + a) * b (e.g., (x + 3) × 2)
                 const const1 = Math.floor(Math.random() * 8) + 1;
                 const multiplier = Math.floor(Math.random() * 4) + 2;
                 expr = `(${varName} + ${const1}) × ${multiplier}`;
                 value = (varValue + const1) * multiplier;
-                this.lastVarValues = { [varName]: varValue };
             } else {
                 // Multiple coefficient: ax - b + c (e.g., 5x - 4 + 6)
                 const coeff = Math.floor(Math.random() * 6) + 2;
@@ -96,7 +87,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} - ${const1} + ${const2}`;
                 value = coeff * varValue - const1 + const2;
-                this.lastVarValues = { [varName]: varValue };
             }
         } else { // hard
             const type = Math.floor(Math.random() * 5);
@@ -109,7 +99,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 10) + 1;
                 expr = `(${coeff}${varName} + ${const1}) × ${multiplier} - ${const2}`;
                 value = (coeff * varValue + const1) * multiplier - const2;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 1) {
                 // Division: (ax + b) ÷ c (e.g., (6x + 9) ÷ 3)
                 const divisor = Math.floor(Math.random() * 3) + 2;
@@ -117,7 +106,6 @@ class ExpressionComparisonGame {
                 const const1 = divisor * Math.floor(Math.random() * 5); // Ensure divisible
                 expr = `(${coeff}${varName} + ${const1}) ÷ ${divisor}`;
                 value = (coeff * varValue + const1) / divisor;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 2) {
                 // Nested: a(x + b) + c (e.g., 3(x + 4) + 7)
                 const coeff = Math.floor(Math.random() * 5) + 2;
@@ -125,7 +113,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 10) + 1;
                 expr = `${coeff}(${varName} + ${const1}) + ${const2}`;
                 value = coeff * (varValue + const1) + const2;
-                this.lastVarValues = { [varName]: varValue };
             } else if (type === 3) {
                 // Complex nested: (ax - b) × c + d (e.g., (4x - 2) × 3 + 5)
                 const coeff = Math.floor(Math.random() * 5) + 2;
@@ -134,7 +121,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 10) + 1;
                 expr = `(${coeff}${varName} - ${const1}) × ${multiplier} + ${const2}`;
                 value = (coeff * varValue - const1) * multiplier + const2;
-                this.lastVarValues = { [varName]: varValue };
             } else {
                 // Advanced: ax × b - c + d (e.g., 2x × 3 - 4 + 7)
                 const coeff = Math.floor(Math.random() * 5) + 1;
@@ -143,7 +129,6 @@ class ExpressionComparisonGame {
                 const const2 = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} × ${multiplier} - ${const1} + ${const2}`;
                 value = coeff * varValue * multiplier - const1 + const2;
-                this.lastVarValues = { [varName]: varValue };
             }
         }
         
@@ -151,10 +136,12 @@ class ExpressionComparisonGame {
     }
 
     generateNewProblem() {
-        const left = this.generateExpression(this.difficulty);
-        const leftVars = { ...this.lastVarValues };
-        const right = this.generateExpression(this.difficulty);
-        const rightVars = { ...this.lastVarValues };
+        const variables = ['x', 'y', 'z', 'n', 'm'];
+        const varName = variables[Math.floor(Math.random() * variables.length)];
+        const varValue = Math.floor(Math.random() * 10) + 1;
+
+        const left = this.generateExpression(this.difficulty, varName, varValue);
+        const right = this.generateExpression(this.difficulty, varName, varValue);
         
         // Occasionally make them equal
         if (Math.random() < 0.15) {
@@ -162,8 +149,10 @@ class ExpressionComparisonGame {
         }
         
         this.currentProblem = {
-            left: { ...left, varValues: leftVars },
-            right: { ...right, varValues: rightVars }
+            left: left,
+            right: right,
+            varName: varName,
+            varValue: varValue
         };
         
         // Determine correct answer
@@ -177,6 +166,7 @@ class ExpressionComparisonGame {
         
         document.getElementById('expression1').textContent = left.expr;
         document.getElementById('expression2').textContent = right.expr;
+        document.getElementById('variable-display').textContent = `Where ${this.currentProblem.varName} = ${this.currentProblem.varValue}`;
         document.getElementById('feedback').textContent = '';
         document.getElementById('feedback').className = 'feedback';
         document.getElementById('explanation').textContent = '';
@@ -236,18 +226,10 @@ class ExpressionComparisonGame {
             document.getElementById('feedback').textContent = '✗ Not quite.';
             document.getElementById('feedback').className = 'feedback incorrect';
             
-            // Build variable values explanation
-            const leftVars = this.currentProblem.left.varValues;
-            const rightVars = this.currentProblem.right.varValues;
-            const allVars = { ...leftVars, ...rightVars };
-            const varExplanation = Object.entries(allVars)
-                .map(([v, val]) => `${v} = ${val}`)
-                .join(', ');
+            const { varName, varValue, left, right } = this.currentProblem;
             
-            const leftVal = this.currentProblem.left.value;
-            const rightVal = this.currentProblem.right.value;
             document.getElementById('explanation').textContent = 
-                `Where ${varExplanation}: ${this.currentProblem.left.expr} = ${leftVal}, ${this.currentProblem.right.expr} = ${rightVal}`;
+                `Where ${varName} = ${varValue}: ${left.expr} = ${left.value}, ${right.expr} = ${right.value}`;
             
             this.updateStats();
             document.getElementById('nextBtn').style.display = 'inline-block';
@@ -261,18 +243,10 @@ class ExpressionComparisonGame {
         document.getElementById('feedback').textContent = '⏭️ Skipped.';
         document.getElementById('feedback').className = 'feedback';
         
-        // Build variable values explanation
-        const leftVars = this.currentProblem.left.varValues;
-        const rightVars = this.currentProblem.right.varValues;
-        const allVars = { ...leftVars, ...rightVars };
-        const varExplanation = Object.entries(allVars)
-            .map(([v, val]) => `${v} = ${val}`)
-            .join(', ');
+        const { varName, varValue, left, right } = this.currentProblem;
         
-        const leftVal = this.currentProblem.left.value;
-        const rightVal = this.currentProblem.right.value;
         document.getElementById('explanation').textContent = 
-            `Where ${varExplanation}: ${this.currentProblem.left.expr} = ${leftVal}, ${this.currentProblem.right.expr} = ${rightVal}`;
+            `Where ${varName} = ${varValue}: ${left.expr} = ${left.value}, ${right.expr} = ${right.value}`;
         
         this.updateStats();
         this.generateNewProblem();

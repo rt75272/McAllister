@@ -3,40 +3,116 @@
 {% block title %}About - Mrs. McAllister & Mrs. Sweeneys' Learning Center{% endblock %}
 
 {% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .about-container { max-width: 900px; margin: 24px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);} 
-        .about-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-        .about-title { margin:0; color:#4CAF50; }
-        .about-section { margin-top:12px; line-height:1.6; color:#333; }
-        .credits { margin-top:16px; font-size:0.95rem; color:#555; }
-        .small-link { font-size:0.95rem; color:#1f6feb; text-decoration:none; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+        .main-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .about-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .about-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .about-title {
+            font-size: 2.8rem;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .about-subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 0.5rem;
+        }
+        .about-section {
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .about-section h3 {
+            font-size: 1.5rem;
+            color: #45a049;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+        }
+        .about-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .about-section li {
+            padding-left: 2rem;
+            position: relative;
+            margin-bottom: 0.8rem;
+        }
+        .about-section li::before {
+            content: '⭐';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #ffc107;
+        }
+        .credits {
+            text-align: center;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #777;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .back-link:hover {
+            background: #5a6fd5;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-    <div class="about-container">
+<div class="main-container">
+    <div class="about-card">
         <div class="about-header">
-            <h2 class="about-title">Mrs. McAllister & Mrs. Sweeneys' Learning Center</h2>
-            <a class="small-link" href="{{ url_for('home') }}">Back Home</a>
+            <h1 class="about-title">About the Learning Center</h1>
+            <p class="about-subtitle">Fun, Engaging, and Educational Games for Students</p>
         </div>
 
         <div class="about-section">
-            <p>Welcome! This site is a small collection of interactive math and ELA games designed to make math and ELA practice engaging and visual for students.</p>
-
-            <h3>Goals</h3>
+            <p>Welcome! This site is a thoughtfully curated collection of interactive math and English Language Arts (ELA) games. Our mission is to make learning an exciting and visually engaging experience for every student.</p>
+            <img src="{{ url_for('static', filename='jolynne.jpg') }}" alt="Mrs. McAllister" style="float:right; width:200px; margin:0 0 1rem 1rem; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            <h3>Our Educational Goals</h3>
             <ul>
-                <li>Provide bite sized, game like activities to practice core math and ELA skills.</li>
-                <li>Offer progressive difficulty where relevant so learners can improve over time.</li>
-                <li>Give immediate feedback and encourage repeated practice.</li>
+                <li>To provide enjoyable, bite-sized activities that reinforce core academic skills.</li>
+                <li>To offer progressively challenging levels, allowing learners to grow at their own pace.</li>
+                <li>To deliver instant, constructive feedback that encourages practice and mastery.</li>
             </ul>
 
-            <h3>How to Use</h3>
-            <p>Choose a game from the home page. Most games will provide simple instructions in the top area.</p>
+            <h3>How to Get Started</h3>
+            <p>Simply choose a game from the home page to begin your learning adventure. Each game includes simple, clear instructions to get you started right away.</p>
+        </div>
 
-            <div class="credits">
-                <strong>Built with:</strong> Python, Flask, HTML/CSS, and JavaScript.<br>
-                <strong>Contact / Credits:</strong> For improvements or feedback, the project <a href="https://github.com/rt75272/McAllister">repository</a>.
-            </div>
+        <div class="credits">
+            <p><strong>Built with:</strong> Python, Flask, HTML/CSS, and JavaScript.</p>
+            <p>This project is open-source. View the code and contribute on <a href="https://github.com/rt75272/McAllister">GitHub</a>.</p>
+            <a class="back-link" href="{{ url_for('home') }}">← Back to Home</a>
         </div>
     </div>
+</div>
 {% endblock %}
