@@ -136,6 +136,12 @@ def about():
     """About page."""
     return render_template('about.html')
 
+
+@app.route('/d20', methods=['GET'])
+def d20():
+    """A simple page showing a 20-sided (D20) dice."""
+    return render_template('d20.html')
+
 @app.route('/math-practice', methods=['GET', 'POST'])
 def math_practice():
     """Main page for math practice."""

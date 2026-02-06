@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}D20 Dice{% endblock %}
+
+{% block extra_styles %}
+<style>
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 72px 16px 24px;
+  }
+
+  .layout {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 0.65fr 1.95fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .dice-panel {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .dice-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .dice-stage {
+    perspective: 900px;
+  }
+
+  .dice-tumble {
+    transform-style: preserve-3d;
+    transform-origin: 50% 50%;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .dice {
+    width: min(240px, 60vw);
+    height: auto;
+  }
+
+  .dice-btn {
+    cursor: pointer;
+    transform-origin: 50% 50%;
+    user-select: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dice-btn:focus,
+  .dice-btn:focus-visible {
+    outline: none;
+  }
+
+  .dice-tumble.is-rolling {
+    animation: d20-roll-3d 650ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+
+  @keyframes d20-roll-3d {
+    0%   { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+    20%  { transform: rotateX(55deg) rotateY(35deg) rotateZ(120deg) scale(1.03); }
+    50%  { transform: rotateX(160deg) rotateY(140deg) rotateZ(250deg) scale(0.99); }
+    80%  { transform: rotateX(280deg) rotateY(260deg) rotateZ(330deg) scale(1.02); }
+    100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dice-tumble.is-rolling {
+      animation: none;
+    }
+  }
+
+  .home-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    padding: 10px 14px;
+    background: #1f6feb;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  .home-btn:hover {
+    background: #0d4fb2;
+  }
+
+  .quiz {
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .quiz-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .quiz-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .quiz-main {
+    min-width: 0;
+  }
+
+  .quiz-side {
+    min-width: 0;
+  }
+
+  .quiz h1 {
+    margin: 0 0 10px 0;
+    font-size: 1.35em;
+    color: #111;
+  }
+
+  .quiz p {
+    margin: 0 0 12px 0;
+    color: #333;
+  }
+
+  .characters {
+    margin: 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  .characters h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.05em;
+    color: #111;
+  }
+
+  .characters ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #111;
+  }
+
+  .characters li {
+    margin: 6px 0;
+    line-height: 1.35;
+  }
+
+  .step-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    align-items: center;
+  }
+
+  .q {
+    margin: 12px 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  .q legend {
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+  }
+
+  .opt {
+    display: block;
+    margin: 8px 0;
+    color: #111;
+    cursor: pointer;
+    line-height: 1.35;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .opt.selected {
+    background: rgba(31, 111, 235, 0.14);
+    border: 2px solid #1f6feb;
+  }
+
+  .opt input {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    transform: none;
+    vertical-align: middle;
+  }
+
+  .btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background: #1f6feb;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .btn:hover {
+    background: #0d4fb2;
+  }
+
+  .btn.secondary {
+    background: #4b5563;
+  }
+
+  .btn.secondary:hover {
+    background: #374151;
+  }
+
+  .result {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #111;
+  }
+
+  .result-title {
+    margin: 0 0 6px 0;
+    font-weight: 800;
+  }
+
+  .result-body {
+    margin: 0;
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="page">
+    <a class="home-btn" href="{{ url_for('home') }}" aria-label="Go to home page">Home</a>
+    <p class="sr-only" id="rollResult" aria-live="polite"></p>
+
+    <div class="layout">
+      <div class="dice-panel">
+        <div class="dice-wrap">
+          <div class="dice-stage">
+            <div class="dice-tumble" id="d20Tumble">
+              <!-- Original inline SVG (no external image). A stylized icosahedron-like D20. -->
+              <svg class="dice dice-btn" id="d20" viewBox="0 0 420 420" role="img" aria-label="Click to roll a 20-sided D20 dice" xmlns="http://www.w3.org/2000/svg" tabindex="0">
+                <defs>
+                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f6f8ff"/>
+                    <stop offset="1" stop-color="#dfe7ff"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Outer silhouette -->
+                <polygon points="210,28 360,128 392,290 210,392 28,290 60,128" fill="url(#g)" stroke="#2f2f2f" stroke-width="4" />
+
+                <!-- Facet lines (stylized) -->
+                <g fill="none" stroke="#2f2f2f" stroke-width="3" stroke-linejoin="round">
+                  <path d="M210 28 L210 392" />
+                  <path d="M60 128 L360 128" />
+                  <path d="M28 290 L392 290" />
+                  <path d="M60 128 L210 392" />
+                  <path d="M360 128 L210 392" />
+                  <path d="M60 128 L210 28" />
+                  <path d="M360 128 L210 28" />
+                  <path d="M28 290 L210 28" />
+                  <path d="M392 290 L210 28" />
+                </g>
+
+                <!-- Center number -->
+                <g>
+                  <circle cx="210" cy="220" r="66" fill="#ffffff" opacity="0.92" />
+                  <text id="d20Value" x="210" y="238" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">20</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz" aria-label="Ratio Guard character quiz">
+        <div class="quiz-layout">
+          <div class="quiz-main">
+            <h1>Which Member of the "Ratio Guard" Are You?</h1>
+            <p>Answer one question at a time. After the last question, see your result.</p>
+
+            <form id="ratioGuardQuiz">
+              <fieldset class="q" data-step="1">
+            <p>1. Your team find a path that is not on your map. What do you do first?</p>
+            <label class="opt"><input type="radio" name="q1" value="A">A) Pull out my notebook. I want to write down exactly where we are.</label>
+            <label class="opt"><input type="radio" name="q1" value="B">B) Step to the front. I want to make sure my friends stay safe.</label>
+            <label class="opt"><input type="radio" name="q1" value="C">C) Look at the plants and dirt. I want to see if they give us a clue.</label>
+            <label class="opt"><input type="radio" name="q1" value="D">D) Trust my gut. I can usually tell if a path is a dead end.</label>
+            <label class="opt"><input type="radio" name="q1" value="E">E) Pick the path that looks like it will be the most fun.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="2" hidden>
+            <p>2. You find a heavy stone chest with symbols on it. How do you help open it?</p>
+            <label class="opt"><input type="radio" name="q2" value="A">A) I study the symbols. I want to see if they match the rules I learned at school.</label>
+            <label class="opt"><input type="radio" name="q2" value="B">B) I hold my shield up. I want to be ready if something jumps out.</label>
+            <label class="opt"><input type="radio" name="q2" value="C">C) I look at the lock. I want to see if I can find a simple way to open it.</label>
+            <label class="opt"><input type="radio" name="q2" value="D">D) I look at the floor. I want to see if the chest has been moved lately.</label>
+            <label class="opt"><input type="radio" name="q2" value="E">E) I try to get my friends to do the hard work while I look for treasure.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="3" hidden>
+            <p>3. Your team is very tired after a long day of hiking. What do you do?</p>
+            <label class="opt"><input type="radio" name="q3" value="A">A) Remind them that we are following a good plan.</label>
+            <label class="opt"><input type="radio" name="q3" value="B">B) Offer to carry their heavy bags for a while.</label>
+            <label class="opt"><input type="radio" name="q3" value="C">C) Mix a special drink to help everyone feel better.</label>
+            <label class="opt"><input type="radio" name="q3" value="D">D) Point to a mountain far away to show how far we have walked.</label>
+            <label class="opt"><input type="radio" name="q3" value="E">E) Tell a funny story to make everyone laugh.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="4" hidden>
+            <p>4. What is the most important thing in your backpack?</p>
+            <label class="opt"><input type="radio" name="q4" value="A">A) My notebook full of facts and notes.</label>
+            <label class="opt"><input type="radio" name="q4" value="B">B) My strong shield that protects my team.</label>
+            <label class="opt"><input type="radio" name="q4" value="C">C) A kit full of jars and tools for mixing things.</label>
+            <label class="opt"><input type="radio" name="q4" value="D">D) My hiking boots and a map of the hills.</label>
+            <label class="opt"><input type="radio" name="q4" value="E">E) A lucky coin to help me make choices.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="5" hidden>
+            <p>5. You reach the Painted Hills and the trail looks different. What do you do?</p>
+            <label class="opt"><input type="radio" name="q5" value="A">A) Write down the changes so my notes are still perfect.</label>
+            <label class="opt"><input type="radio" name="q5" value="B">B) Stay close to the group so no one gets lost.</label>
+            <label class="opt"><input type="radio" name="q5" value="C">C) Look at the new colors in the dirt to see what they are.</label>
+            <label class="opt"><input type="radio" name="q5" value="D">D) Find a high spot to look for a new way to go.</label>
+            <label class="opt"><input type="radio" name="q5" value="E">E) Explore the new area to see if we can find something cool.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="6" hidden>
+            <p>6. You need to cross a fast river. What is your job?</p>
+            <label class="opt"><input type="radio" name="q6" value="A">A) Use what I know to find the safest place to cross.</label>
+            <label class="opt"><input type="radio" name="q6" value="B">B) Use my shield to help my friends stay steady in the water.</label>
+            <label class="opt"><input type="radio" name="q6" value="C">C) Figure out the best way to move our heavy gear across.</label>
+            <label class="opt"><input type="radio" name="q6" value="D">D) Look for a log or rocks we can walk on.</label>
+            <label class="opt"><input type="radio" name="q6" value="E">E) Jump across the rocks first to see if I can do it.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="7" hidden>
+            <p>7. You find a hidden cave behind a waterfall. What do you hope is inside?</p>
+            <label class="opt"><input type="radio" name="q7" value="A">A) Old books or scrolls with secret information.</label>
+            <label class="opt"><input type="radio" name="q7" value="B">B) A dry place for the team to rest and be safe.</label>
+            <label class="opt"><input type="radio" name="q7" value="C">C) Rare rocks or plants that I can use later.</label>
+            <label class="opt"><input type="radio" name="q7" value="D">D) A secret tunnel that leads to the other side of the woods.</label>
+            <label class="opt"><input type="radio" name="q7" value="E">E) A pile of gold or a magic item.</label>
+          </fieldset>
+
+          <fieldset class="q" data-step="8" hidden>
+            <p>8. A friend asks for help cleaning their room. How do you help?</p>
+            <label class="opt"><input type="radio" name="q8" value="A">A) Make a list of every toy and where it goes.</label>
+            <label class="opt"><input type="radio" name="q8" value="B">B) Do the heavy lifting to move the big boxes.</label>
+            <label class="opt"><input type="radio" name="q8" value="C">C) Find the best way to fit small items into big bins.</label>
+            <label class="opt"><input type="radio" name="q8" value="D">D) Look at the room and know exactly how to fix it.</label>
+            <label class="opt"><input type="radio" name="q8" value="E">E) Turn the cleaning into a fun game.</label>
+          </fieldset>
+
+              <div class="step-actions">
+                <button class="btn" type="button" id="nextStep">Next</button>
+                <button class="btn secondary" type="button" id="resetQuiz">Reset</button>
+              </div>
+
+              <div class="result" id="quizResult" aria-live="polite" hidden>
+                <p class="result-title" id="quizResultTitle"></p>
+                <p class="result-body" id="quizResultBody"></p>
+              </div>
+            </form>
+          </div>
+
+          <aside class="quiz-side">
+            <div class="characters" aria-label="Available characters">
+              <h2>Available Characters:</h2>
+              <ul>
+                <li><strong>THE SAGE</strong> — You love to learn and remember the rules.</li>
+                <br/>
+                <li><strong>THE GUARDIAN</strong> — You are a loyal friend who keeps the team safe.</li>
+                <br/>
+                <li><strong>THE ALCHEMIST</strong> — You are careful and like to see how things mix together.</li>
+                <br/>
+                <li><strong>THE TRAILBLAZER</strong> — You are a leader who can always find the way.</li>
+                <br/>
+                <li><strong>THE ROGUE</strong> — You are a fun explorer who likes new adventures!</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    const d20 = document.getElementById('d20');
+    const d20Tumble = document.getElementById('d20Tumble');
+    const valueEl = document.getElementById('d20Value');
+    const resultEl = document.getElementById('rollResult');
+
+    const quizForm = document.getElementById('ratioGuardQuiz');
+    const nextStepBtn = document.getElementById('nextStep');
+    const resetQuizBtn = document.getElementById('resetQuiz');
+    const quizResult = document.getElementById('quizResult');
+    const quizResultTitle = document.getElementById('quizResultTitle');
+    const quizResultBody = document.getElementById('quizResultBody');
+
+    const steps = Array.from(quizForm.querySelectorAll('.q[data-step]'));
+    const maxStep = steps.length;
+    let currentStep = 1;
+
+    function playRollAnimation() {
+      d20Tumble.classList.remove('is-rolling');
+      // Force reflow so the animation retriggers on rapid clicks.
+      void d20Tumble.getBoundingClientRect();
+      d20Tumble.classList.add('is-rolling');
+    }
+
+    function rollD20() {
+      playRollAnimation();
+      const roll = Math.floor(Math.random() * 20) + 1;
+      valueEl.textContent = String(roll);
+      resultEl.textContent = `You rolled: ${roll}`;
+    }
+
+    d20Tumble.addEventListener('animationend', () => {
+      d20Tumble.classList.remove('is-rolling');
+    });
+
+    d20.addEventListener('click', rollD20);
+    d20.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        rollD20();
+      }
+    });
+
+    function getQuizSelectionCounts() {
+      const counts = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+      for (let i = 1; i <= 8; i++) {
+        const chosen = quizForm.querySelector(`input[name=\"q${i}\"]:checked`);
+        if (chosen && counts[chosen.value] !== undefined) {
+          counts[chosen.value] += 1;
+        }
+      }
+      return counts;
+    }
+
+    function showStep(stepNumber) {
+      currentStep = Math.max(1, Math.min(maxStep, stepNumber));
+      for (const fs of steps) {
+        const fsStep = Number(fs.getAttribute('data-step'));
+        fs.hidden = fsStep !== currentStep;
+      }
+      quizResult.hidden = true;
+      quizResultTitle.textContent = '';
+      quizResultBody.textContent = '';
+
+      if (currentStep >= maxStep) {
+        nextStepBtn.textContent = 'See Result';
+      } else {
+        nextStepBtn.textContent = 'Next';
+      }
+    }
+
+    function currentStepAnswered() {
+      const chosen = quizForm.querySelector(`input[name=\"q${currentStep}\"]:checked`);
+      return Boolean(chosen);
+    }
+
+    function computeTopLetter(counts) {
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+      let topLetter = 'A';
+      let topCount = -1;
+      for (const letter of letters) {
+        if (counts[letter] > topCount) {
+          topCount = counts[letter];
+          topLetter = letter;
+        }
+      }
+      const tied = letters.filter((l) => counts[l] === topCount);
+      return { topLetter, topCount, tied };
+    }
+
+    function characterFor(letter) {
+      switch (letter) {
+        case 'A':
+          return { name: 'THE SAGE', desc: 'You love to learn and remember the rules.' };
+        case 'B':
+          return { name: 'THE GUARDIAN', desc: 'You are a loyal friend who keeps the team safe.' };
+        case 'C':
+          return { name: 'THE ALCHEMIST', desc: 'You are careful and like to see how things mix together.' };
+        case 'D':
+          return { name: 'THE TRAILBLAZER', desc: 'You are a leader who can always find the way.' };
+        case 'E':
+          return { name: 'THE ROGUE', desc: 'You are a fun explorer who likes new adventures!' };
+        default:
+          return { name: 'UNKNOWN', desc: '' };
+      }
+    }
+
+    function showQuizResult() {
+      const counts = getQuizSelectionCounts();
+      const answered = Object.values(counts).reduce((a, b) => a + b, 0);
+      if (answered < 8) {
+        quizResult.hidden = false;
+        quizResultTitle.textContent = 'Answer all 8 questions';
+        quizResultBody.textContent = `You answered ${answered}/8. Please answer the remaining questions.`;
+        return;
+      }
+
+      const { topLetter, tied } = computeTopLetter(counts);
+      const character = characterFor(topLetter);
+      quizResult.hidden = false;
+
+      if (tied.length > 1) {
+        quizResultTitle.textContent = `Tie! You are closest to: ${character.name}`;
+        quizResultBody.textContent = `${character.desc} (Tie between: ${tied.join(', ')})`;
+      } else {
+        quizResultTitle.textContent = character.name;
+        quizResultBody.textContent = character.desc;
+      }
+    }
+
+    function resetQuiz() {
+      quizForm.reset();
+      for (const label of quizForm.querySelectorAll('label.opt.selected')) {
+        label.classList.remove('selected');
+      }
+      quizResult.hidden = true;
+      quizResultTitle.textContent = '';
+      quizResultBody.textContent = '';
+      showStep(1);
+    }
+
+    function goNext() {
+      if (!currentStepAnswered()) {
+        quizResult.hidden = false;
+        quizResultTitle.textContent = 'Choose an answer';
+        quizResultBody.textContent = 'Please select A, B, C, D, or E to continue.';
+        return;
+      }
+
+      if (currentStep >= maxStep) {
+        // Final step: show results.
+        showQuizResult();
+        // Hide all questions after showing the result.
+        for (const fs of steps) fs.hidden = true;
+        nextStepBtn.hidden = true;
+        return;
+      }
+
+      showStep(currentStep + 1);
+    }
+
+    // When the user changes an answer, clear any warning.
+    quizForm.addEventListener('change', () => {
+      if (!quizResult.hidden && currentStepAnswered()) {
+        quizResult.hidden = true;
+        quizResultTitle.textContent = '';
+        quizResultBody.textContent = '';
+      }
+    });
+
+    // Make selected option visually obvious.
+    quizForm.addEventListener('change', (e) => {
+      const target = e.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      if (target.type !== 'radio') return;
+
+      const fieldset = target.closest('fieldset.q');
+      if (!fieldset) return;
+
+      for (const label of fieldset.querySelectorAll('label.opt')) {
+        label.classList.remove('selected');
+      }
+      const selectedLabel = target.closest('label.opt');
+      if (selectedLabel) selectedLabel.classList.add('selected');
+    });
+
+    nextStepBtn.addEventListener('click', goNext);
+
+    resetQuizBtn.addEventListener('click', resetQuiz);
+
+    // Initialize to the first question.
+    showStep(1);
+  })();
+</script>
+{% endblock %}
