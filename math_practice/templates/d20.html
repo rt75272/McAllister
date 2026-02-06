@@ -44,13 +44,55 @@
 
   .dice-wrap {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 10px;
+    gap: 10px;
+  }
+
+  .dice-controls {
+    display: inline-flex;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.45));
+    border: 1px solid rgba(31, 111, 235, 0.25);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(6px);
+  }
+
+  .dice-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    color: #111;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(31, 111, 235, 0.12);
+    font-weight: 700;
+  }
+
+  .dice-choice.is-selected {
+    background: rgba(31, 111, 235, 0.14);
+    border: 2px solid #1f6feb;
+  }
+
+  .dice-choice input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
   }
 
   .dice-stage {
     perspective: 900px;
+  }
+
+  .dice-tumble {
+    filter: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.28));
   }
 
   .dice-tumble {
@@ -73,6 +115,30 @@
   .dice {
     width: min(240px, 60vw);
     height: auto;
+  }
+
+  .die-svg {
+    display: none;
+  }
+
+  .die-svg.is-active {
+    display: block;
+  }
+
+  .die-svg [data-role="value"] {
+    fill: #111;
+    paint-order: stroke fill;
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    filter:
+      drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75))
+      drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  }
+
+  .die-svg [data-role="badge"] {
+    fill: #ffffff;
+    opacity: 0.92;
   }
 
   .dice-btn {
@@ -123,9 +189,11 @@
   }
 
   .quiz {
-    background: rgba(255, 255, 255, 0.94);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.90));
     border-radius: 14px;
     padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
   }
 
   .quiz-layout {
@@ -164,7 +232,8 @@
     margin: 0;
     padding: 12px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.75);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.68));
+    border: 1px solid rgba(31, 111, 235, 0.14);
   }
 
   .characters h2 {
@@ -196,7 +265,8 @@
     margin: 12px 0;
     padding: 12px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.75);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.70));
+    border: 1px solid rgba(31, 111, 235, 0.10);
   }
 
   .q legend {
@@ -207,12 +277,12 @@
 
   .opt {
     display: block;
-    margin: 8px 0;
+    /* margin: 8px 0; */
     color: #111;
     cursor: pointer;
-    line-height: 1.35;
-    padding: 8px 10px;
-    border-radius: 10px;
+    /* line-height: 1.35; */
+    padding: 2.5px;
+    border-radius: 2px;
   }
 
   .opt.selected {
@@ -222,6 +292,7 @@
 
   .opt input {
     margin-right: 8px;
+    /* margin-left: 8px; */
     width: 16px;
     height: 16px;
     transform: none;
@@ -278,21 +349,96 @@
     <div class="layout">
       <div class="dice-panel">
         <div class="dice-wrap">
+          <div class="dice-controls" role="radiogroup" aria-label="Select a die">
+            <label class="dice-choice"><input type="radio" name="diceSides" value="6">D6</label>
+            <label class="dice-choice"><input type="radio" name="diceSides" value="8">D8</label>
+            <label class="dice-choice"><input type="radio" name="diceSides" value="10">D10</label>
+            <label class="dice-choice"><input type="radio" name="diceSides" value="20" checked>D20</label>
+          </div>
+
           <div class="dice-stage">
             <div class="dice-tumble" id="d20Tumble">
-              <!-- Original inline SVG (no external image). A stylized icosahedron-like D20. -->
-              <svg class="dice dice-btn" id="d20" viewBox="0 0 420 420" role="img" aria-label="Click to roll a 20-sided D20 dice" xmlns="http://www.w3.org/2000/svg" tabindex="0">
+              <!-- D6 -->
+              <svg class="dice die-svg dice-btn" id="die6" viewBox="0 0 420 420" role="img" aria-label="Click to roll a 6-sided D6" xmlns="http://www.w3.org/2000/svg" tabindex="-1" aria-hidden="true">
                 <defs>
-                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                  <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f6f8ff"/>
+                    <stop offset="1" stop-color="#dfe7ff"/>
+                  </linearGradient>
+                </defs>
+                <!-- Stylized cube -->
+                <g stroke="#2f2f2f" stroke-width="4" stroke-linejoin="round">
+                  <polygon points="140,120 280,120 320,170 180,170" fill="url(#g6)" />
+                  <polygon points="140,120 180,170 180,320 140,270" fill="url(#g6)" opacity="0.95" />
+                  <polygon points="280,120 320,170 320,320 280,270" fill="url(#g6)" opacity="0.9" />
+                  <polygon points="180,170 320,170 320,320 180,320" fill="url(#g6)" />
+                  <path d="M140 120 L140 270 L180 320 L320 320 L320 170 L280 120 Z" fill="none" />
+                  <path d="M140 120 L280 120 L320 170" fill="none" />
+                  <path d="M180 170 L180 320" fill="none" />
+                  <path d="M280 120 L280 270" fill="none" />
+                </g>
+                <g>
+                  <circle data-role="badge" cx="250" cy="245" r="66" />
+                  <text data-role="value" x="250" y="263" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">6</text>
+                </g>
+              </svg>
+
+              <!-- D8 -->
+              <svg class="dice die-svg dice-btn" id="die8" viewBox="0 0 420 420" role="img" aria-label="Click to roll an 8-sided D8" xmlns="http://www.w3.org/2000/svg" tabindex="-1" aria-hidden="true">
+                <defs>
+                  <linearGradient id="g8" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f6f8ff"/>
+                    <stop offset="1" stop-color="#dfe7ff"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="210,48 356,210 210,372 64,210" fill="url(#g8)" stroke="#2f2f2f" stroke-width="4" />
+                <g fill="none" stroke="#2f2f2f" stroke-width="3" stroke-linejoin="round">
+                  <path d="M210 48 L210 372" />
+                  <path d="M64 210 L356 210" />
+                  <path d="M210 48 L64 210" />
+                  <path d="M210 48 L356 210" />
+                  <path d="M210 372 L64 210" />
+                  <path d="M210 372 L356 210" />
+                </g>
+                <g>
+                  <circle data-role="badge" cx="210" cy="224" r="66" />
+                  <text data-role="value" x="210" y="244" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">8</text>
+                </g>
+              </svg>
+
+              <!-- D10 -->
+              <svg class="dice die-svg dice-btn" id="die10" viewBox="0 0 420 420" role="img" aria-label="Click to roll a 10-sided D10" xmlns="http://www.w3.org/2000/svg" tabindex="-1" aria-hidden="true">
+                <defs>
+                  <linearGradient id="g10" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f6f8ff"/>
+                    <stop offset="1" stop-color="#dfe7ff"/>
+                  </linearGradient>
+                </defs>
+                <!-- Stylized decagon -->
+                <polygon points="210,52 278,74 330,126 352,194 330,262 278,314 210,336 142,314 90,262 68,194 90,126 142,74" fill="url(#g10)" stroke="#2f2f2f" stroke-width="4" />
+                <g fill="none" stroke="#2f2f2f" stroke-width="3" stroke-linejoin="round">
+                  <path d="M210 52 L210 336" />
+                  <path d="M68 194 L352 194" />
+                  <path d="M142 74 L278 314" />
+                  <path d="M278 74 L142 314" />
+                </g>
+                <g>
+                  <circle data-role="badge" cx="210" cy="210" r="66" />
+                  <text data-role="value" x="210" y="230" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">10</text>
+                </g>
+              </svg>
+
+              <!-- D20 -->
+              <svg class="dice die-svg is-active dice-btn" id="die20" viewBox="0 0 420 420" role="img" aria-label="Click to roll a 20-sided D20" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-hidden="false">
+                <defs>
+                  <linearGradient id="g20" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0" stop-color="#f6f8ff"/>
                     <stop offset="1" stop-color="#dfe7ff"/>
                   </linearGradient>
                 </defs>
 
-                <!-- Outer silhouette -->
-                <polygon points="210,28 360,128 392,290 210,392 28,290 60,128" fill="url(#g)" stroke="#2f2f2f" stroke-width="4" />
+                <polygon points="210,28 360,128 392,290 210,392 28,290 60,128" fill="url(#g20)" stroke="#2f2f2f" stroke-width="4" />
 
-                <!-- Facet lines (stylized) -->
                 <g fill="none" stroke="#2f2f2f" stroke-width="3" stroke-linejoin="round">
                   <path d="M210 28 L210 392" />
                   <path d="M60 128 L360 128" />
@@ -305,10 +451,9 @@
                   <path d="M392 290 L210 28" />
                 </g>
 
-                <!-- Center number -->
                 <g>
-                  <circle cx="210" cy="220" r="66" fill="#ffffff" opacity="0.92" />
-                  <text id="d20Value" x="210" y="238" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">20</text>
+                  <circle data-role="badge" cx="210" cy="220" r="66" />
+                  <text data-role="value" x="210" y="238" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="#111">20</text>
                 </g>
               </svg>
             </div>
@@ -432,10 +577,20 @@
 {% block extra_scripts %}
 <script>
   (function () {
-    const d20 = document.getElementById('d20');
     const d20Tumble = document.getElementById('d20Tumble');
-    const valueEl = document.getElementById('d20Value');
     const resultEl = document.getElementById('rollResult');
+
+    const diceRadios = Array.from(document.querySelectorAll('input[name="diceSides"]'));
+    const diceSvgs = {
+      6: document.getElementById('die6'),
+      8: document.getElementById('die8'),
+      10: document.getElementById('die10'),
+      20: document.getElementById('die20'),
+    };
+
+    let currentSides = 20;
+    let currentSvg = diceSvgs[currentSides];
+    let currentValueEl = currentSvg.querySelector('[data-role="value"]');
 
     const quizForm = document.getElementById('ratioGuardQuiz');
     const nextStepBtn = document.getElementById('nextStep');
@@ -455,24 +610,64 @@
       d20Tumble.classList.add('is-rolling');
     }
 
-    function rollD20() {
+    function rollDie() {
       playRollAnimation();
-      const roll = Math.floor(Math.random() * 20) + 1;
-      valueEl.textContent = String(roll);
-      resultEl.textContent = `You rolled: ${roll}`;
+      const roll = Math.floor(Math.random() * currentSides) + 1;
+      currentValueEl.textContent = String(roll);
+      resultEl.textContent = `You rolled a D${currentSides}: ${roll}`;
+    }
+
+    function setDieSides(sides) {
+      const nextSides = Number(sides);
+      if (![6, 8, 10, 20].includes(nextSides)) return;
+
+      currentSides = nextSides;
+      for (const [s, svg] of Object.entries(diceSvgs)) {
+        const isActive = Number(s) === currentSides;
+        svg.classList.toggle('is-active', isActive);
+        svg.setAttribute('aria-hidden', String(!isActive));
+        svg.setAttribute('tabindex', isActive ? '0' : '-1');
+      }
+      currentSvg = diceSvgs[currentSides];
+      currentValueEl = currentSvg.querySelector('[data-role="value"]');
+
+      // Update accessible label on the visible die.
+      currentSvg.setAttribute('aria-label', `Click to roll a ${currentSides}-sided D${currentSides}`);
+      // Clear last announced roll.
+      resultEl.textContent = '';
+    }
+
+    function syncDiceChoiceStyles() {
+      for (const radio of diceRadios) {
+        const label = radio.closest('label');
+        if (!label) continue;
+        label.classList.toggle('is-selected', radio.checked);
+      }
     }
 
     d20Tumble.addEventListener('animationend', () => {
       d20Tumble.classList.remove('is-rolling');
     });
 
-    d20.addEventListener('click', rollD20);
-    d20.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        rollD20();
-      }
-    });
+    // Roll on click/Enter/Space for whichever die SVG is visible.
+    for (const svg of Object.values(diceSvgs)) {
+      svg.addEventListener('click', rollDie);
+      svg.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          rollDie();
+        }
+      });
+    }
+
+    for (const radio of diceRadios) {
+      radio.addEventListener('change', () => {
+        if (radio.checked) {
+          setDieSides(radio.value);
+          syncDiceChoiceStyles();
+        }
+      });
+    }
 
     function getQuizSelectionCounts() {
       const counts = { A: 0, B: 0, C: 0, D: 0, E: 0 };
@@ -569,6 +764,7 @@
       quizResult.hidden = true;
       quizResultTitle.textContent = '';
       quizResultBody.textContent = '';
+      nextStepBtn.hidden = false;
       showStep(1);
     }
 
@@ -623,6 +819,10 @@
 
     // Initialize to the first question.
     showStep(1);
+
+    // Initialize dice selection to D20.
+    setDieSides(20);
+    syncDiceChoiceStyles();
   })();
 </script>
 {% endblock %}
