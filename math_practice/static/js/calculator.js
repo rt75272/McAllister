@@ -12,38 +12,39 @@ function createCalculatorHTML() {
 
         <!-- Calculator Popup -->
         <div class="calculator-popup" id="calculatorPopup">
-            <div class="calculator-container">
-                <div class="calculator-header">
-                    <h3 class="calculator-title">Calculator</h3>
-                    <button class="calculator-close" onclick="toggleCalculator()">×</button>
+            <div class="global-calculator-container">
+                <div class="global-calculator-header">
+                    <h3 class="global-calculator-title">Calculator</h3>
+                    <button class="global-calculator-close" onclick="toggleCalculator()">×</button>
                 </div>
                 
-                <input type="text" class="calculator-display" id="calcDisplay" readonly value="0">
+                <input type="text" class="global-calculator-display" id="calcDisplay" readonly value="0">
                 
-                <div class="calculator-buttons">
-                    <button class="calc-btn clear" onclick="clearCalculator()">C</button>
-                    <button class="calc-btn clear" onclick="clearEntry()">CE</button>
-                    <button class="calc-btn operator" onclick="deleteLast()">⌫</button>
-                    <button class="calc-btn operator" onclick="appendOperator('/')" title="Divide">÷</button>
+                <div class="global-calculator-buttons">
+                    <button class="global-calc-btn clear" onclick="clearCalculator()">C</button>
+                    <button class="global-calc-btn clear" onclick="clearEntry()">CE</button>
+                    <button class="global-calc-btn operator" onclick="deleteLast()">⌫</button>
+                    <button class="global-calc-btn operator" onclick="appendOperator('/')" title="Divide">÷</button>
                     
-                    <button class="calc-btn number" onclick="appendNumber('7')">7</button>
-                    <button class="calc-btn number" onclick="appendNumber('8')">8</button>
-                    <button class="calc-btn number" onclick="appendNumber('9')">9</button>
-                    <button class="calc-btn operator" onclick="appendOperator('*')" title="Multiply">×</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('7')">7</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('8')">8</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('9')">9</button>
+                    <button class="global-calc-btn operator" onclick="appendOperator('*')" title="Multiply">×</button>
                     
-                    <button class="calc-btn number" onclick="appendNumber('4')">4</button>
-                    <button class="calc-btn number" onclick="appendNumber('5')">5</button>
-                    <button class="calc-btn number" onclick="appendNumber('6')">6</button>
-                    <button class="calc-btn operator" onclick="appendOperator('-')" title="Subtract">−</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('4')">4</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('5')">5</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('6')">6</button>
+                    <button class="global-calc-btn operator" onclick="appendOperator('-')" title="Subtract">−</button>
                     
-                    <button class="calc-btn number" onclick="appendNumber('1')">1</button>
-                    <button class="calc-btn number" onclick="appendNumber('2')">2</button>
-                    <button class="calc-btn number" onclick="appendNumber('3')">3</button>
-                    <button class="calc-btn operator" onclick="appendOperator('+')" title="Add">+</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('1')">1</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('2')">2</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('3')">3</button>
+                    <button class="global-calc-btn operator" onclick="appendOperator('+')" title="Add">+</button>
                     
-                    <button class="calc-btn number wide" onclick="appendNumber('0')">0</button>
-                    <button class="calc-btn number" onclick="appendDecimal()">.</button>
-                    <button class="calc-btn equals" onclick="calculate()">=</button>
+                    <button class="global-calc-btn number" onclick="appendNumber('0')">0</button>
+                    <button class="global-calc-btn operator" onclick="appendOperator('^')" title="Power">^</button>
+                    <button class="global-calc-btn number" onclick="appendDecimal()">.</button>
+                    <button class="global-calc-btn equals" onclick="calculate()">=</button>
                 </div>
             </div>
         </div>
@@ -101,7 +102,7 @@ function appendOperator(operator) {
     if (operator === '−') calcOperator = '-';
     
     // Don't add operator if display is empty or ends with an operator
-    if (calculatorDisplay === '' || /[+\-*/]$/.test(calculatorDisplay)) {
+    if (calculatorDisplay === '' || /[+\-*/^]$/.test(calculatorDisplay)) {
         return;
     }
     
@@ -116,12 +117,12 @@ function appendDecimal() {
     }
     
     // Get the current number (after the last operator)
-    const parts = calculatorDisplay.split(/[+\-*/]/);
+    const parts = calculatorDisplay.split(/[+\-*/^]/);
     const currentNumber = parts[parts.length - 1];
     
     // Only add decimal if current number doesn't already have one
     if (!currentNumber.includes('.')) {
-        if (calculatorDisplay === '' || /[+\-*/]$/.test(calculatorDisplay)) {
+        if (calculatorDisplay === '' || /[+\-*/^]$/.test(calculatorDisplay)) {
             calculatorDisplay += '0.';
         } else {
             calculatorDisplay += '.';
@@ -156,7 +157,8 @@ function calculate() {
         let expression = calculatorDisplay
             .replace(/×/g, '*')
             .replace(/÷/g, '/')
-            .replace(/−/g, '-');
+            .replace(/−/g, '-')
+            .replace(/\^/g, '**');
         
         // Evaluate the expression
         let result = eval(expression);
@@ -196,8 +198,8 @@ function setupCalculatorEvents() {
         } else if (key === '*') {
             appendOperator('*');
             event.preventDefault();
-        } else if (key === '/') {
-            appendOperator('/');
+        } else if (key === '/' || key === '^') {
+            appendOperator(key);
             event.preventDefault();
         } else if (key === '.') {
             appendDecimal();
@@ -234,8 +236,8 @@ function setupCalculatorEvents() {
 function setupCalculatorDrag() {
     // Wait a bit more to ensure DOM is ready
     setTimeout(() => {
-        const calculatorContainer = document.querySelector('.calculator-container');
-        const calculatorHeader = document.querySelector('.calculator-header');
+        const calculatorContainer = document.querySelector('.global-calculator-container');
+        const calculatorHeader = document.querySelector('.global-calculator-header');
         
         console.log('Setting up calculator drag...', { calculatorContainer, calculatorHeader });
         
@@ -421,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Debug function to test calculator drag
 window.testCalculatorDrag = function() {
-    const calculatorContainer = document.querySelector('.calculator-container');
+    const calculatorContainer = document.querySelector('.global-calculator-container');
     if (calculatorContainer) {
         console.log('Calculator found, testing movement...');
         calculatorContainer.classList.add('positioned');
@@ -438,7 +440,7 @@ window.testCalculatorDrag = function() {
 // Debug function to reset calculator position  
 window.resetCalculatorPosition = function() {
     localStorage.removeItem('calculatorPosition');
-    const calculatorContainer = document.querySelector('.calculator-container');
+    const calculatorContainer = document.querySelector('.global-calculator-container');
     if (calculatorContainer) {
         calculatorContainer.classList.remove('positioned');
         calculatorContainer.style.left = '';

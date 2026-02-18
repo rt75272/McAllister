@@ -72,42 +72,15 @@
             <div id="feedback" class="feedback"></div>
         </div>
 
-        <!-- Calculator Panel -->
-        <div class="calculator-panel">
-            <h3>🧮 Calculator</h3>
-            <div class="calculator">
-                <div class="calculator-display">
-                    <input type="text" id="calc-display" readonly>
-                </div>
-                <div class="calculator-buttons">
-                    <button class="calc-btn clear" data-value="C">C</button>
-                    <button class="calc-btn operator" data-value="/">/</button>
-                    <button class="calc-btn operator" data-value="*">×</button>
-                    <button class="calc-btn operator" data-value="^">x^y</button>
-                    
-                    <button class="calc-btn number" data-value="7">7</button>
-                    <button class="calc-btn number" data-value="8">8</button>
-                    <button class="calc-btn number" data-value="9">9</button>
-                    <button class="calc-btn operator" data-value="-">-</button>
-                    
-                    <button class="calc-btn number" data-value="4">4</button>
-                    <button class="calc-btn number" data-value="5">5</button>
-                    <button class="calc-btn number" data-value="6">6</button>
-                    <button class="calc-btn operator" data-value="+">+</button>
-                    
-                    <button class="calc-btn number" data-value="1">1</button>
-                    <button class="calc-btn number" data-value="2">2</button>
-                    <button class="calc-btn number" data-value="3">3</button>
-                    <button class="calc-btn equals" data-value="=">=</button>
-                    
-                    <button class="calc-btn number zero" data-value="0">0</button>
-                    <button class="calc-btn number" data-value=".">.</button>
-                </div>
-                <div class="calculator-actions">
-                    <button id="transfer-btn" class="transfer-btn">→ Use Result</button>
-                </div>
-            </div>
-        </div>
+        <!-- Calculator Panel Removed from here -->
+        
+    <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+    <script>
+        if(typeof createCalculatorHTML === 'function') {
+            createCalculatorHTML();
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
 
         <!-- Stats Panel -->
         <div class="stats-panel">
@@ -149,7 +122,7 @@
     </div>
 
     <!-- Power Calculator Helper (Hidden by default) -->
-    <div id="calculator-modal" class="modal">
+    <div id="calculation-steps-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h3>🧮 Power Calculator Steps</h3>

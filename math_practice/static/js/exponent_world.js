@@ -1,163 +1,3 @@
-// Exponent World Game JavaScript
-
-class Calculator {
-    constructor() {
-        this.display = document.getElementById('calc-display');
-        this.currentValue = '0';
-        this.previousValue = '';
-        this.operation = null;
-        this.waitingForOperand = false;
-        this.displayExpression = '0';
-        this.fullExpression = '';
-        
-        this.init();
-        this.updateDisplay();
-    }
-    
-    init() {
-        const buttons = document.querySelectorAll('.calc-btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                const value = button.dataset.value;
-                this.handleInput(value);
-            });
-        });
-        
-        // Keyboard support
-        document.addEventListener('keydown', (e) => {
-            if (e.target.id === 'answer-input') return; // Don't interfere with answer input
-            
-            if (e.key >= '0' && e.key <= '9') this.handleInput(e.key);
-            else if (e.key === '.') this.handleInput('.');
-            else if (e.key === '+') this.handleInput('+');
-            else if (e.key === '-') this.handleInput('-');
-            else if (e.key === '*') this.handleInput('*');
-            else if (e.key === '/') this.handleInput('/');
-            else if (e.key === '^') this.handleInput('^');
-            else if (e.key === 'Enter') this.handleInput('=');
-            else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') this.handleInput('C');
-        });
-        
-        // Transfer button
-        document.getElementById('transfer-btn').addEventListener('click', () => {
-            document.getElementById('answer-input').value = this.currentValue;
-            document.getElementById('answer-input').focus();
-        });
-    }
-    
-    handleInput(value) {
-        if (value >= '0' && value <= '9') {
-            this.inputDigit(value);
-        } else if (value === '.') {
-            this.inputDecimal();
-        } else if (value === 'C') {
-            this.clear();
-        } else if (['+', '-', '*', '/', '^'].includes(value)) {
-            this.setOperation(value);
-        } else if (value === '=') {
-            this.calculate();
-        }
-    }
-    
-    inputDigit(digit) {
-        if (this.waitingForOperand) {
-            this.currentValue = digit;
-            this.waitingForOperand = false;
-            this.fullExpression += digit;
-        } else {
-            this.currentValue = this.currentValue === '0' ? digit : this.currentValue + digit;
-            if (this.fullExpression === '' || this.fullExpression === '0') {
-                this.fullExpression = digit;
-            } else {
-                this.fullExpression += digit;
-            }
-        }
-        this.updateDisplayExpression();
-    }
-    
-    inputDecimal() {
-        if (this.waitingForOperand) {
-            this.currentValue = '0.';
-            this.waitingForOperand = false;
-            this.fullExpression += '0.';
-        } else if (this.currentValue.indexOf('.') === -1) {
-            this.currentValue += '.';
-            this.fullExpression += '.';
-        }
-        this.updateDisplayExpression();
-    }
-    
-    clear() {
-        this.currentValue = '0';
-        this.previousValue = '';
-        this.operation = null;
-        this.waitingForOperand = false;
-        this.displayExpression = '0';
-        this.fullExpression = '';
-        this.updateDisplay();
-    }
-    
-    setOperation(op) {
-        const opSymbol = op === '*' ? ' × ' : op === '/' ? ' ÷ ' : ` ${op} `;
-        
-        if (this.currentValue === '0' && this.fullExpression === '') return;
-        
-        // Don't auto-calculate, just add the operator
-        this.previousValue = this.currentValue;
-        this.operation = op;
-        this.waitingForOperand = true;
-        
-        if (this.fullExpression === '' || this.fullExpression === '0') {
-            this.fullExpression = this.currentValue + opSymbol;
-        } else if (!this.fullExpression.endsWith(' ')) {
-            this.fullExpression += opSymbol;
-        }
-        
-        this.updateDisplayExpression();
-    }
-    
-    calculate() {
-        if (!this.fullExpression || this.waitingForOperand) return;
-        
-        try {
-            // Replace visual symbols with JavaScript operators
-            let expression = this.fullExpression
-                .replace(/×/g, '*')
-                .replace(/÷/g, '/')
-                .replace(/\^/g, '**');
-            
-            // Evaluate the expression
-            let result = eval(expression);
-            
-            this.currentValue = result.toString();
-            this.previousValue = '';
-            this.operation = null;
-            this.waitingForOperand = false;
-            
-            // Show full expression with result
-            this.displayExpression = `${this.fullExpression} = ${this.currentValue}`;
-            this.updateDisplay();
-            
-            // Reset for next calculation
-            this.fullExpression = this.currentValue;
-        } catch (error) {
-            this.currentValue = 'Error';
-            this.displayExpression = 'Error';
-            this.updateDisplay();
-            this.clear();
-        }
-    }
-    
-    updateDisplayExpression() {
-        this.displayExpression = this.fullExpression || this.currentValue;
-        this.updateDisplay();
-    }
-    
-    updateDisplay() {
-        this.display.value = this.displayExpression;
-    }
-}
-
 class ExponentWorldGame {
     constructor() {
         this.currentProblem = {};
@@ -229,19 +69,23 @@ class ExponentWorldGame {
         });
         
         // Modal close functionality
-        document.querySelector('.close').addEventListener('click', () => {
-            this.explanationModal.style.display = 'none';
-        });
+        if (document.querySelector('.close')) {
+            document.querySelector('.close').addEventListener('click', () => {
+                if(this.explanationModal) this.explanationModal.style.display = 'none';
+            });
+        }
         
-        document.querySelector('.close-hint').addEventListener('click', () => {
-            this.hintModal.style.display = 'none';
-        });
+        if (document.querySelector('.close-hint')) {
+            document.querySelector('.close-hint').addEventListener('click', () => {
+                if(this.hintModal) this.hintModal.style.display = 'none';
+            });
+        }
         
         window.addEventListener('click', (e) => {
-            if (e.target === this.explanationModal) {
+            if (this.explanationModal && e.target === this.explanationModal) {
                 this.explanationModal.style.display = 'none';
             }
-            if (e.target === this.hintModal) {
+            if (this.hintModal && e.target === this.hintModal) {
                 this.hintModal.style.display = 'none';
             }
         });
@@ -596,14 +440,7 @@ class ExponentWorldGame {
         this.constructionCount.textContent = this.categoryCounts.construction;
         this.scienceCount.textContent = this.categoryCounts.science;
         this.funCount.textContent = this.categoryCounts.fun;
-    }
-    
-    showFeedback(message, type) {
-        this.feedback.innerHTML = message;
-        this.feedback.className = `feedback ${type}`;
-    }
-    
-    clearFeedback() {
+        
         this.feedback.textContent = '';
         this.feedback.className = 'feedback';
     }
@@ -612,5 +449,4 @@ class ExponentWorldGame {
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new ExponentWorldGame();
-    window.calculator = new Calculator();
 });

@@ -334,6 +334,10 @@ def expression_comparison():
 def math_adventure():
     return render_template('math_adventure.html')
 
+@app.route('/percentage_quest')
+def percentage_quest():
+    return render_template('percentage_quest.html')
+
 # The big red activation button.
 if __name__ == '__main__':
     app.run(debug=True)

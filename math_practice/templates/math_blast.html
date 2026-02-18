@@ -8,9 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/math_blast.css') }}">
 </head>
 <body>
-
-</head>
-<body>
     <!-- Navigation back to home -->
     <div class="nav-header">
         <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
@@ -38,5 +35,12 @@
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/math_blast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+    <script>
+        if(typeof createCalculatorHTML === 'function') {
+            createCalculatorHTML();
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
 </body>
 </html>

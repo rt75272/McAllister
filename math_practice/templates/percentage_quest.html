@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Percentage Quest{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/percentage_quest.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <h1 class="game-title">Percentage Quest: The Dragon's Hoard</h1>
+    
+    <div class="arena">
+        <div class="player-container">
+            <div class="boss-sprite player-sprite">🧙‍♂️</div>
+            <div class="stats player-stats">
+                <p>Hero</p>
+                <p>Level <span id="player-level">1</span></p>
+                <!-- Player HP could be added here later -->
+            </div>
+        </div>
+
+        <div class="boss-container">
+            <div id="boss-sprite" class="boss-sprite">🐉</div>
+            <div class="stats boss-stats">
+                <p id="boss-name">Ancient Dragon</p>
+                <div class="health-bar-container">
+                    <div id="boss-health-bar" class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <p><span id="boss-hp">100</span> / <span id="boss-max-hp">100</span> HP</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-menu">
+        <p id="story-text" class="question-text">The dragon guards its gold! Answer quickly to strike!</p>
+        <div id="question-area">
+            <p id="math-problem" class="question-text">Loading problem...</p>
+            <div class="control-panel">
+                <input type="number" id="answer-input" placeholder="?" step="0.01" autocomplete="off">
+                <button id="attack-btn" class="attack-btn">Attack!</button>
+            </div>
+            <p id="feedback-msg" style="height: 1.5em; text-align: center; color: #d32f2f; font-weight: bold;"></p>
+        </div>
+        <div id="battle-log" class="battle-log">
+            <div class="log-entry">You encounter a fearsome dragon! Prepare for battle!</div>
+        </div>
+    </div>
+    
+    <div style="text-align: center;">
+        <a href="{{ url_for('math_games') }}" class="nav-link">Return to Games Hall</a>
+    </div>
+
+    <!-- Victory/Defeat Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" class="modal-title">Victory!</h2>
+            <p id="modal-message">The dragon has been defeated. You claim the hoard!</p>
+            <button id="restart-btn" class="restart-btn">Challenge Next Boss</button>
+            <br><br>
+            <a href="{{ url_for('math_games') }}" style="color: #aaa;">Leave Dungeon</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/percentage_quest.js') }}"></script>
+{% endblock %}

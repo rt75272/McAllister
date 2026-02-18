@@ -6,12 +6,23 @@
     <title>{% block title %}Learning Center{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Calculator Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
     
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
     <!-- Page Content -->
     {% block content %}{% endblock %}
+    
+    <!-- Calculator JS -->
+    <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+    <script>
+        // Initialize calculator if function exists
+        if(typeof createCalculatorHTML === 'function') {
+            createCalculatorHTML();
+        }
+    </script>
 
     {% block extra_scripts %}{% endblock %}
 </body>

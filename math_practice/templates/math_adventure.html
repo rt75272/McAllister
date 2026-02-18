@@ -88,5 +88,12 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/math_adventure.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+    <script>
+        if(typeof createCalculatorHTML === 'function') {
+            createCalculatorHTML();
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
 </body>
 </html>

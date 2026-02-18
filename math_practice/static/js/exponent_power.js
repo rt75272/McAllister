@@ -1,163 +1,3 @@
-// Exponent Power Game JavaScript
-
-class Calculator {
-    constructor() {
-        this.display = document.getElementById('calc-display');
-        this.currentValue = '0';
-        this.previousValue = '';
-        this.operation = null;
-        this.waitingForOperand = false;
-        this.displayExpression = '0';
-        this.fullExpression = '';
-        
-        this.init();
-        this.updateDisplay();
-    }
-    
-    init() {
-        const buttons = document.querySelectorAll('.calc-btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                const value = button.dataset.value;
-                this.handleInput(value);
-            });
-        });
-        
-        // Keyboard support
-        document.addEventListener('keydown', (e) => {
-            if (e.target.id === 'answer-input') return; // Don't interfere with answer input
-            
-            if (e.key >= '0' && e.key <= '9') this.handleInput(e.key);
-            else if (e.key === '.') this.handleInput('.');
-            else if (e.key === '+') this.handleInput('+');
-            else if (e.key === '-') this.handleInput('-');
-            else if (e.key === '*') this.handleInput('*');
-            else if (e.key === '/') this.handleInput('/');
-            else if (e.key === '^') this.handleInput('^');
-            else if (e.key === 'Enter') this.handleInput('=');
-            else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') this.handleInput('C');
-        });
-        
-        // Transfer button
-        document.getElementById('transfer-btn').addEventListener('click', () => {
-            document.getElementById('answer-input').value = this.currentValue;
-            document.getElementById('answer-input').focus();
-        });
-    }
-    
-    handleInput(value) {
-        if (value >= '0' && value <= '9') {
-            this.inputDigit(value);
-        } else if (value === '.') {
-            this.inputDecimal();
-        } else if (value === 'C') {
-            this.clear();
-        } else if (['+', '-', '*', '/', '^'].includes(value)) {
-            this.setOperation(value);
-        } else if (value === '=') {
-            this.calculate();
-        }
-    }
-    
-    inputDigit(digit) {
-        if (this.waitingForOperand) {
-            this.currentValue = digit;
-            this.waitingForOperand = false;
-            this.fullExpression += digit;
-        } else {
-            this.currentValue = this.currentValue === '0' ? digit : this.currentValue + digit;
-            if (this.fullExpression === '' || this.fullExpression === '0') {
-                this.fullExpression = digit;
-            } else {
-                this.fullExpression += digit;
-            }
-        }
-        this.updateDisplayExpression();
-    }
-    
-    inputDecimal() {
-        if (this.waitingForOperand) {
-            this.currentValue = '0.';
-            this.waitingForOperand = false;
-            this.fullExpression += '0.';
-        } else if (this.currentValue.indexOf('.') === -1) {
-            this.currentValue += '.';
-            this.fullExpression += '.';
-        }
-        this.updateDisplayExpression();
-    }
-    
-    clear() {
-        this.currentValue = '0';
-        this.previousValue = '';
-        this.operation = null;
-        this.waitingForOperand = false;
-        this.displayExpression = '0';
-        this.fullExpression = '';
-        this.updateDisplay();
-    }
-    
-    setOperation(op) {
-        const opSymbol = op === '*' ? ' × ' : op === '/' ? ' ÷ ' : ` ${op} `;
-        
-        if (this.currentValue === '0' && this.fullExpression === '') return;
-        
-        // Don't auto-calculate, just add the operator
-        this.previousValue = this.currentValue;
-        this.operation = op;
-        this.waitingForOperand = true;
-        
-        if (this.fullExpression === '' || this.fullExpression === '0') {
-            this.fullExpression = this.currentValue + opSymbol;
-        } else if (!this.fullExpression.endsWith(' ')) {
-            this.fullExpression += opSymbol;
-        }
-        
-        this.updateDisplayExpression();
-    }
-    
-    calculate() {
-        if (!this.fullExpression || this.waitingForOperand) return;
-        
-        try {
-            // Replace visual symbols with JavaScript operators
-            let expression = this.fullExpression
-                .replace(/×/g, '*')
-                .replace(/÷/g, '/')
-                .replace(/\^/g, '**');
-            
-            // Evaluate the expression
-            let result = eval(expression);
-            
-            this.currentValue = result.toString();
-            this.previousValue = '';
-            this.operation = null;
-            this.waitingForOperand = false;
-            
-            // Show full expression with result
-            this.displayExpression = `${this.fullExpression} = ${this.currentValue}`;
-            this.updateDisplay();
-            
-            // Reset for next calculation
-            this.fullExpression = this.currentValue;
-        } catch (error) {
-            this.currentValue = 'Error';
-            this.displayExpression = 'Error';
-            this.updateDisplay();
-            this.clear();
-        }
-    }
-    
-    updateDisplayExpression() {
-        this.displayExpression = this.fullExpression || this.currentValue;
-        this.updateDisplay();
-    }
-    
-    updateDisplay() {
-        this.display.value = this.displayExpression;
-    }
-}
-
 class ExponentPowerGame {
     constructor() {
         this.difficulty = 'easy';
@@ -193,7 +33,7 @@ class ExponentPowerGame {
         this.progressFill = document.getElementById('progress-fill');
         this.progressText = document.getElementById('progress-text');
         this.achievementList = document.getElementById('achievement-list');
-        this.calculatorModal = document.getElementById('calculator-modal');
+        this.calculatorModal = document.getElementById('calculation-steps-modal');
         this.calculationSteps = document.getElementById('calculation-steps');
     }
     
@@ -214,12 +54,14 @@ class ExponentPowerGame {
         });
         
         // Modal close functionality
-        document.querySelector('.close').addEventListener('click', () => {
-            this.calculatorModal.style.display = 'none';
-        });
+        if (document.querySelector('.close')) {
+            document.querySelector('.close').addEventListener('click', () => {
+                if(this.calculatorModal) this.calculatorModal.style.display = 'none';
+            });
+        }
         
         window.addEventListener('click', (e) => {
-            if (e.target === this.calculatorModal) {
+            if (this.calculatorModal && e.target === this.calculatorModal) {
                 this.calculatorModal.style.display = 'none';
             }
         });
@@ -401,8 +243,10 @@ class ExponentPowerGame {
             `;
         }
         
-        this.calculationSteps.innerHTML = steps;
-        this.calculatorModal.style.display = 'block';
+        if (this.calculationSteps && this.calculatorModal) {
+            this.calculationSteps.innerHTML = steps;
+            this.calculatorModal.style.display = 'block';
+        }
     }
     
     getPointsForDifficulty() {
@@ -512,5 +356,5 @@ class ExponentPowerGame {
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new ExponentPowerGame();
-    window.calculator = new Calculator();
+    // window.calculator = new Calculator(); // Removed
 });

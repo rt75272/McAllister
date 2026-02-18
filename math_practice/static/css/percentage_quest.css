@@ -1,0 +1,261 @@
+/* Dark, D&D Themed Styles */
+:root {
+    --bg-color: #1a1a1d;
+    --text-color: #e0e0e0;
+    --accent-color: #c3073f; /* Blood Red */
+    --secondary-color: #950740;
+    --parchment: #f4e4bc;
+    --parchment-text: #3b2e2a;
+    --border-color: #4e4e50;
+    --success-color: #4caf50;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Cinzel', serif; /* Or similar fantasy font if available, falling back to serif */
+}
+
+.game-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    background-color: #2c2c2e;
+    border: 4px double var(--border-color);
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+h1.game-title {
+    text-align: center;
+    color: var(--accent-color);
+    font-family: 'MedievalSharp', cursive, serif;
+    font-size: 3rem;
+    text-shadow: 2px 2px 4px #000;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+}
+
+/* Battle Arena */
+.arena {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://img.freepik.com/free-photo/dark-castle-interior-3d-render_1048-11116.jpg?w=1380&t=st=1698765432~exp=1698766032~hmac=...'); /* Placeholder or generic dark background */
+    background-size: cover;
+    background-position: center;
+    height: 300px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    padding: 20px;
+    position: relative;
+}
+
+.boss-container, .player-container {
+    text-align: center;
+    width: 200px;
+}
+
+.boss-sprite {
+    font-size: 8rem; /* Emoji boss for simplicity, or we can use an image */
+    filter: drop-shadow(0 0 10px var(--accent-color));
+    transition: transform 0.2s;
+}
+
+.boss-sprite.hit {
+    animation: shake 0.5s;
+    filter: sepia(100%) hue-rotate(-50deg) saturate(600%) contrast(0.8);
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.boss-sprite.defeated {
+    transform: rotate(90deg) scale(0.8);
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.health-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #333;
+    border: 1px solid #000;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+    box-shadow: inset 0 0 5px #000;
+}
+
+.health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4e50, #f9d423);
+    width: 100%;
+    transition: width 0.5s ease-out;
+}
+
+.stats {
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* Question Scroll - The Action Menu */
+.action-menu {
+    background-color: var(--parchment);
+    color: var(--parchment-text);
+    padding: 2rem;
+    border-radius: 4px;
+    border: 8px solid #5d4037; /* Leather-like border */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    position: relative;
+    min-height: 200px;
+}
+
+.action-menu::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 20px rgba(139, 69, 19, 0.2);
+}
+
+.question-text {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.control-panel {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+input[type="number"] {
+    padding: 10px;
+    font-size: 1.2rem;
+    width: 150px;
+    border: 2px solid #8b4513;
+    border-radius: 4px;
+    background-color: #fff8dc;
+    font-family: 'Courier Prime', monospace;
+}
+
+button.attack-btn {
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    background-color: var(--secondary-color);
+    color: white;
+    border: 2px solid #5a0426;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button.attack-btn:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.05);
+}
+
+button.attack-btn:active {
+    transform: scale(0.95);
+}
+
+/* Feedback/Log */
+.battle-log {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    height: 100px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    font-family: monospace;
+    color: #ccc;
+    font-style: italic;
+}
+
+.log-entry {
+    margin-bottom: 0.5rem;
+}
+
+.log-entry.player-hit { color: #81c784; }
+.log-entry.player-miss { color: #e57373; }
+.log-entry.boss-defeat { color: #ffd700; font-weight: bold; font-size: 1.1em; }
+
+/* Overlay for Victory/Defeat */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-content {
+    background: var(--bg-color);
+    border: 4px solid var(--accent-color);
+    padding: 2rem;
+    text-align: center;
+    border-radius: 8px;
+    max-width: 500px;
+}
+
+.modal-title {
+    font-size: 2.5rem;
+    color: #ffd700;
+    margin-bottom: 1rem;
+}
+
+.restart-btn {
+    margin-top: 1.5rem;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.nav-link {
+    display: inline-block;
+    margin-top: 2rem;
+    color: #bbb;
+    text-decoration: none;
+    border-bottom: 1px dashed #bbb;
+}
+.nav-link:hover {
+    color: #fff;
+    border-bottom: 1px solid #fff;
+}
