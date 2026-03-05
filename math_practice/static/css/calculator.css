@@ -3,9 +3,8 @@
 /* Calculator Toggle Button - KEEP ORIGINAL NAME as it is used by JS toggle function outside of container */
 .calculator-toggle {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 20px;
+    left: 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
@@ -16,15 +15,15 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     z-index: 1001;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .calculator-toggle:hover {
-    transform: translateX(-50%) translateY(-2px);
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
@@ -195,10 +194,10 @@ button.global-calc-btn,
 
 @media (max-width: 768px) {
     .calculator-toggle {
-        top: 15px;
-        right: 15px;
-        width: 45px;
-        height: 45px;
+        bottom: 15px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
         font-size: 1.1em;
         padding: 10px 14px;
     }
