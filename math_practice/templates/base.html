@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <!-- Calculator Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
+    <!-- Chatbot Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
     
     {% block extra_styles %}{% endblock %}
 </head>
@@ -23,6 +25,9 @@
             createCalculatorHTML();
         }
     </script>
+
+    <!-- Chatbot JS -->
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
 
     {% block extra_scripts %}{% endblock %}
 </body>
