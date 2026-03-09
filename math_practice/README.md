@@ -19,6 +19,7 @@ A comprehensive web-based math practice platform featuring multiple interactive 
 - **Progressive Difficulty System** - Automatically advances from easy → medium → hard based on performance
 - **Performance Tracking** - Session-based score tracking and statistics
 - **Immediate Feedback** - Real-time answer validation with detailed responses
+- **Gemini Student Helper** - Student-safe chatbot powered by Google Gemini 2.5 Flash with website-aware help
 - **Responsive Design** - Mobile-friendly interface that works on all devices
 - **Clean UI** - Modern, intuitive design optimized for student use
 
@@ -111,12 +112,17 @@ math_practice/
    pip install -r requirements.txt
    ```
 
-4. **Run the application**:
+4. **Set your Gemini API key**:
+   ```bash
+   export GEMINI_API_KEY="your-api-key-here"
+   ```
+
+5. **Run the application**:
    ```bash
    python app.py
    ```
 
-5. **Open your browser** and navigate to `http://localhost:5000`
+6. **Open your browser** and navigate to `http://localhost:5000`
 
 ### For Production Deployment
 
@@ -156,6 +162,10 @@ Comprehensive exponent practice with three difficulty levels. Learn fundamental 
 Real-world word problem scenarios that require exponent calculations to solve. Covers applications in population growth, technology, construction, science, and fun scenarios. Each problem includes hints, step-by-step explanations, and categorized learning to show how exponents are used in everyday life.
 
 ## 🔧 Configuration
+
+### Gemini Chatbot
+
+The chatbot uses the `gemini-2.5-flash` model through a Flask backend route. The API key must be provided as the `GEMINI_API_KEY` environment variable so it stays on the server and never gets exposed to the browser.
 
 ### Customizing Difficulty Settings
 

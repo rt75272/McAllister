@@ -51,10 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // State
     let isChatOpen = false;
-    let suggestionTimer = null;
+    let isSending = false;
     
     // Add initial bot message
-    appendMessage('bot', 'Hi there! I am the chatbot for commonly asked questions. Ask me questions such as "How do I play?", "What games do you have?", or "How do I reset my score?".');
+    appendMessage('bot', 'Hi there. I can help with this website, school navigation questions, and short math or ELA hints. Try asking things like "How do I play this game?", "Where do I find my work?", or "Can you give me a hint?".');
     
     // Event listeners
     toggleButton.addEventListener('click', () => {
@@ -62,145 +62,24 @@ document.addEventListener('DOMContentLoaded', function() {
         chatWindow.style.display = isChatOpen ? 'flex' : 'none';
         if (isChatOpen) {
             inputField.focus();
-            resetSuggestionTimer();
-        } else {
-            clearTimeout(suggestionTimer);
         }
     });
     
     document.getElementById('chatbot-close').addEventListener('click', () => {
         isChatOpen = false;
         chatWindow.style.display = 'none';
-        clearTimeout(suggestionTimer);
     });
     
     sendButton.addEventListener('click', () => {
         sendMessage();
-        resetSuggestionTimer();
     });
     inputField.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
-            resetSuggestionTimer();
         }
     });
-    
-    inputField.addEventListener('input', resetSuggestionTimer);
-    
-    function resetSuggestionTimer() {
-        clearTimeout(suggestionTimer);
-        if (isChatOpen) {
-            // Wait 2.5 seconds of inactivity before showing suggestions
-            suggestionTimer = setTimeout(showSuggestions, 2500);
-        }
-    }
-    
-    function showSuggestions() {
-        // Only show if the last message was from the bot and there are no suggestions currently
-        const lastMessage = messages.lastElementChild;
-        if (lastMessage && lastMessage.classList.contains('bot-message') && !document.querySelector('.chatbot-suggestions')) {
-            const suggestions = [
-                "Hi!",
-                "Hello!",
-                "Hey!",
-                "Missing class",
-                "Find class",
-                "Where is my work",
-                "Finding work",
-                "Module",
-                "Engageli",
-                "Live class",
-                "Meeting",
-                "Link",
-                "Join",
-                "Online class",
-                "Empty calendar",
-                "Not load",
-                "Broken",
-                "Can't get into class",
-                "Loading forever",
-                "Technical difficulties",
-                "Late",
-                "Due date",
-                "Turn in",
-                "Submit",
-                "Upload",
-                "Hand in",
-                "Grades",
-                "How am I doing",
-                "Score",
-                "Report card",
-                "Am I failing",
-                "Star360",
-                "Renaissance",
-                "Testing",
-                "Reading test",
-                "Math test",
-                "ID",
-                "Student number",
-                "Email",
-                "Username",
-                "Newsletter",
-                "Contact",
-                "Talk to my teacher",
-                "I'm confused",
-                "Tech support",
-                "Help desk",
-                "Phone number",
-                "Break",
-                "Holiday",
-                "No school",
-                "Spring break",
-                "Easter",
-                "When is school over",
-                "Last day",
-                "Days off",
-                "Canvas down",
-                "Pacing",
-                "Done for the day",
-                "Address",
-                "Phone",
-                "Street",
-                "Password",
-                "Calculate",
-                "Plus",
-                "Equals",
-                "Math help",
-                "Help"
-            ];
-            
-            // Pick 2 random suggestions
-            const shuffled = suggestions.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, 2);
-            
-            const suggestionContainer = document.createElement('div');
-            suggestionContainer.classList.add('chatbot-suggestions');
-            
-            selected.forEach(text => {
-                const btn = document.createElement('button');
-                btn.classList.add('chatbot-suggestion-btn');
-                btn.innerText = text;
-                btn.addEventListener('click', () => {
-                    inputField.value = text;
-                    sendMessage();
-                    suggestionContainer.remove();
-                    resetSuggestionTimer();
-                });
-                suggestionContainer.appendChild(btn);
-            });
-            
-            messages.appendChild(suggestionContainer);
-            messages.scrollTop = messages.scrollHeight;
-        }
-    }
 
     function appendMessage(sender, text) {
-        // Remove existing suggestions if any
-        const existingSuggestions = document.querySelector('.chatbot-suggestions');
-        if (existingSuggestions) {
-            existingSuggestions.remove();
-        }
-
         const msgElement = document.createElement('div');
         msgElement.classList.add('chatbot-message');
         if (sender === 'user') {
@@ -215,10 +94,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function sendMessage() {
         const text = inputField.value.trim();
-        if (!text) return;
+        if (!text || isSending) return;
         
         appendMessage('user', text);
         inputField.value = '';
+        setSendingState(true);
+        appendMessage('bot', 'Thinking...');
+        const pendingMessage = messages.lastElementChild;
         
         try {
             const response = await fetch('/ask-chatbot', {
@@ -226,17 +108,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({
+                    message: text,
+                    pagePath: window.location.pathname
+                })
             });
             const data = await response.json();
-            if (data.answer) {
+            pendingMessage.remove();
+            if (response.ok && data.answer) {
                 appendMessage('bot', data.answer);
             } else {
-                appendMessage('bot', 'Sorry, I encounted an error processing your query.');
+                appendMessage('bot', 'Sorry, I ran into a problem answering that. Please try again.');
             }
         } catch (error) {
             console.error('Chatbot error:', error);
+            pendingMessage.remove();
             appendMessage('bot', 'Sorry, I am offline right now.');
+        } finally {
+            setSendingState(false);
         }
+    }
+
+    function setSendingState(sending) {
+        isSending = sending;
+        sendButton.disabled = sending;
+        inputField.disabled = sending;
+        sendButton.innerText = sending ? '...' : 'Send';
     }
 });

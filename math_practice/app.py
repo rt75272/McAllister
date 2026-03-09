@@ -1,6 +1,11 @@
+import json
+import os
 import random
+import re
 from collections import deque
 from datetime import datetime
+from urllib import error, request as urllib_request
+
 from flask import Flask, render_template, request, jsonify, session
 # ########################################################################################################
 # Math Practice Web App.
@@ -14,6 +19,205 @@ from flask import Flask, render_template, request, jsonify, session
 # Flask app setup.
 app = Flask(__name__)
 app.secret_key = 'secure_random_secret_key'
+
+GEMINI_MODEL = 'gemini-2.5-flash'
+GEMINI_API_URL = (
+    'https://generativelanguage.googleapis.com/v1beta/models/'
+    f'{GEMINI_MODEL}:generateContent?key={{api_key}}'
+)
+CHATBOT_HISTORY_LIMIT = 6
+
+CHATBOT_FAQ = {
+    'hi': "Hi! I'm your Math Bot! I'm here to help with games on this website, Canvas navigation, and simple learning questions. I can give hints and directions, but you should still do the thinking. Keep personal information private. What do you need help with today?",
+    'hello': "Hi! I'm your Math Bot! I'm here to help with games on this website, Canvas navigation, and simple learning questions. I can give hints and directions, but you should still do the thinking. Keep personal information private. What do you need help with today?",
+    'hey': "Hi! I'm your Math Bot! I'm here to help with games on this website, Canvas navigation, and simple learning questions. I can give hints and directions, but you should still do the thinking. Keep personal information private. What do you need help with today?",
+    'missing class': 'Click Courses > All Courses and click the Star next to your class to see it on your Dashboard.',
+    'find class': 'Click Courses > All Courses and click the Star next to your class to see it on your Dashboard.',
+    'where is my work': 'Always look in the Modules tab for your weekly assignments.',
+    'finding work': 'Always look in the Modules tab for your weekly assignments.',
+    'module': 'Always look in the Modules tab for your weekly assignments.',
+    'engageli': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'live class': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'meeting': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'link': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'join': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'online class': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
+    'empty calendar': 'Check the boxes next to your class names on the right side of the Calendar screen to make them appear.',
+    'not load': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
+    'broken': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
+    "can't get into class": "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
+    'loading forever': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
+    'technical difficulties': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
+    'late': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
+    'due date': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
+    '2 weeks': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
+    'turn in': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
+    'submit': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
+    'upload': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
+    'hand in': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
+    'grades': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
+    'how am i doing': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
+    'score': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
+    'report card': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
+    'am i failing': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
+    'star360': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
+    'renaissance': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
+    'testing': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
+    'reading test': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
+    'math test': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
+    'id': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
+    'student number': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
+    'email': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
+    'username': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
+    'newsletter': 'You can find our March Newsletter at this link: https://www.smore.com/ Check it for important dates and school updates!',
+    'contact': 'You can email Jmcallister@onlineoregon.org or use the Inbox icon on the left side of Canvas to send a message.',
+    'talk to my teacher': "It sounds like you need a human expert. Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email Jmcallister@onlineoregon.org or click the Canvas Inbox.",
+    "i'm confused": "It sounds like you need a human expert. Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email Jmcallister@onlineoregon.org or click the Canvas Inbox.",
+    'tech support': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
+    'help desk': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
+    'phone number': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
+    'break': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'holiday': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'no school': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'spring break': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'easter': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'when is school over': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'last day': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'days off': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'canvas down': "Sometimes Canvas has a hiccup. Wait 5 minutes and try again. Make sure your Wi-Fi is still connected. Use this time to read your school book or practice math facts offline!",
+    'pacing': "Try to finish at least one lesson in each subject every day. Look at the To-Do list on your Dashboard. It's better to do one lesson correctly than three lessons too fast.",
+    'done for the day': 'Did you submit all your assignments and see the confetti? Did you check Canvas Inbox? Is your laptop plugged in? Great job. See you at the next Engageli session!',
+    'address': 'Privacy check: keep your personal info safe. Never share private details with an AI or on a public site.',
+    'phone': 'Privacy check: keep your personal info safe. Never share private details with an AI or on a public site.',
+    'street': 'Privacy check: keep your personal info safe. Never share private details with an AI or on a public site.',
+    'password': 'Privacy check: keep your personal info safe. Never share private details with an AI or on a public site.',
+    'calculate': "I can help with steps and hints, but you should double-check the final answer and show your work.",
+    'plus': "I can help with steps and hints, but you should double-check the final answer and show your work.",
+    'equals': "I can help with steps and hints, but you should double-check the final answer and show your work.",
+    'math help': "I can help with steps and hints, but you should double-check the final answer and show your work.",
+    'help': "I can help with website games, Canvas questions, assignment steps, grades, class links, school tools, and simple math or ELA hints."
+}
+
+CHATBOT_SYSTEM_PROMPT = """
+You are the student helper chatbot for Mrs. McAllister's learning website.
+
+Audience and tone:
+- Write for students in simple, encouraging language.
+- Keep answers short: usually 2 to 5 sentences.
+- You can talk about anything the student wants to talk about, including telling jokes, sharing fun facts, and having general conversations.
+
+Behavior rules:
+- Give hints, steps, and explanations instead of only final answers when a student asks for academic help.
+- If the student asks about Canvas, grades, assignments, class links, or school routines, use the known site information provided.
+- If you are uncertain about a school policy or a site-specific fact, say so briefly and suggest asking Mrs. McAllister or tech support.
+- Never ask for or encourage sharing personal, private, or account information.
+- If a student shares private information, remind them to keep it private.
+- Do not help with harmful, unsafe, or adult topics. Redirect back to learning or safe fun topics.
+
+Known teacher/site facts:
+{faq_context}
+""".strip()
+
+
+def get_faq_context():
+    """Return FAQ content as grounding text for Gemini."""
+    return '\n'.join(f'- {key}: {value}' for key, value in CHATBOT_FAQ.items())
+
+
+def get_faq_response(user_message):
+    """Return a deterministic FAQ response for obvious site questions."""
+    normalized_message = user_message.lower()
+    for key in sorted(CHATBOT_FAQ.keys(), key=len, reverse=True):
+        pattern = rf'(?<!\w){re.escape(key)}(?!\w)'
+        if re.search(pattern, normalized_message):
+            return CHATBOT_FAQ[key]
+    return None
+
+
+def get_chatbot_history():
+    """Fetch recent chatbot history from the session."""
+    history = session.get('chatbot_history', [])
+    if not isinstance(history, list):
+        return []
+    return history[-CHATBOT_HISTORY_LIMIT:]
+
+
+def save_chatbot_history(history):
+    """Persist a capped chatbot history in the session."""
+    session['chatbot_history'] = history[-CHATBOT_HISTORY_LIMIT:]
+
+
+def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
+    """Call Gemini to generate a student-safe chatbot reply."""
+    api_key = os.environ.get('GEMINI_API_KEY', 'AIzaSyCBrwvmjM0k_UGco8UFq7RS0_fVOr-3ofQ')
+    if not api_key:
+        raise RuntimeError('GEMINI_API_KEY is not configured.')
+
+    contents = []
+    for item in history[-CHATBOT_HISTORY_LIMIT:]:
+        role = item.get('role')
+        text = item.get('text', '').strip()
+        if role not in {'user', 'model'} or not text:
+            continue
+        contents.append({'role': role, 'parts': [{'text': text}]})
+
+    user_prompt = (
+        f'Current page: {page_path or "/"}\n'
+        f'Student message: {user_message}\n'
+    )
+    if faq_reply:
+        user_prompt += (
+            f'Known scripted answer for this topic: {faq_reply}\n'
+            'If that scripted answer directly fits the question, use it or lightly rephrase it. '
+            'If the student needs more than that, answer naturally using the same facts.\n'
+        )
+    user_prompt += (
+        '\nAnswer as the website helper. If the student needs site-specific help, use the known facts. '
+        'If they are asking for math or ELA help, give short coaching and do not overwhelm them. '
+        'If they ask for a joke or general conversation, feel free to respond!'
+    )
+    contents.append({'role': 'user', 'parts': [{'text': user_prompt}]})
+
+    payload = {
+        'system_instruction': {
+            'parts': [{
+                'text': CHATBOT_SYSTEM_PROMPT.format(faq_context=get_faq_context())
+            }]
+        },
+        'contents': contents,
+        'generationConfig': {
+            'temperature': 0.4,
+            'maxOutputTokens': 220,
+            'topP': 0.9,
+            'topK': 20
+        }
+    }
+
+    http_request = urllib_request.Request(
+        GEMINI_API_URL.format(api_key=api_key),
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json'},
+        method='POST'
+    )
+
+    try:
+        with urllib_request.urlopen(http_request, timeout=15) as response:
+            result = json.loads(response.read().decode('utf-8'))
+    except error.HTTPError as exc:
+        error_body = exc.read().decode('utf-8', errors='ignore')
+        raise RuntimeError(f'Gemini request failed: {exc.code} {error_body}') from exc
+    except error.URLError as exc:
+        raise RuntimeError(f'Gemini request failed: {exc.reason}') from exc
+
+    candidates = result.get('candidates', [])
+    if not candidates:
+        raise RuntimeError('Gemini returned no candidates.')
+
+    parts = candidates[0].get('content', {}).get('parts', [])
+    answer = ' '.join(part.get('text', '').strip() for part in parts if part.get('text')).strip()
+    if not answer:
+        raise RuntimeError('Gemini returned an empty answer.')
+    return answer
 
 @app.context_processor
 def inject_current_year():
@@ -138,93 +342,41 @@ def about():
 
 @app.route('/ask-chatbot', methods=['POST'])
 def ask_chatbot():
-    """Chatbot API for commonly asked questions."""
+    """Chatbot API backed by Gemini with a local FAQ fast path."""
     data = request.get_json()
     if not data or 'message' not in data:
         return jsonify({'error': 'No message provided'}), 400
-    
-    user_message = data['message'].lower()
-    
-    # Dictionary of common questions and answers
-    faq = {
-        'hi': "Hi! I'm your Stride Bot! 🚀 I'm here to help you find links, check grades, and navigate Cascade Virtual Academy. Before we start, remember: I am a helper: I give tips, but you do the thinking. I'm not a calculator: Double-check my math! Stay Safe: Keep your private info (like your address) to yourself. What can I help you find today?",
-        'hello': "Hi! I'm your Stride Bot! 🚀 I'm here to help you find links, check grades, and navigate Cascade Virtual Academy. Before we start, remember: I am a helper: I give tips, but you do the thinking. I'm not a calculator: Double-check my math! Stay Safe: Keep your private info (like your address) to yourself. What can I help you find today?",
-        'hey': "Hi! I'm your Stride Bot! 🚀 I'm here to help you find links, check grades, and navigate Cascade Virtual Academy. Before we start, remember: I am a helper: I give tips, but you do the thinking. I'm not a calculator: Double-check my math! Stay Safe: Keep your private info (like your address) to yourself. What can I help you find today?",
-        'missing class': "Click Courses > All Courses and click the Star next to your class to see it on your Dashboard.",
-        'find class': "Click Courses > All Courses and click the Star next to your class to see it on your Dashboard.",
-        'where is my work': "Always look in the Modules tab for your weekly assignments.",
-        'finding work': "Always look in the Modules tab for your weekly assignments.",
-        'module': "Always look in the Modules tab for your weekly assignments.",
-        'engageli': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'live class': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'meeting': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'link': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'join': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'online class': "Go to your Canvas Calendar. Click the event for today's date to find your Engageli link. If the calendar is empty, make sure your classes are checked on the right side of the screen!",
-        'empty calendar': "Check the boxes next to your class names on the right side of the Calendar screen to make them appear.",
-        'not load': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
-        'broken': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
-        'can\'t get into class': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
-        'loading forever': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
-        'technical difficulties': "Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!",
-        'late': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
-        'due date': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
-        '2 weeks': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
-        'turn in': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti! 🎉",
-        'submit': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti! 🎉",
-        'upload': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti! 🎉",
-        'hand in': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti! 🎉",
-        'grades': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
-        'how am i doing': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
-        'score': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
-        'report card': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
-        'am i failing': "Click View Grades on your Dashboard, or the Grades tab inside a course. You can even type in 'What-If' scores to see how a grade might change!",
-        'star360': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
-        'renaissance': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
-        'testing': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
-        'reading test': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
-        'math test': "Go to Resources > ClassLink > Renaissance (the big 'R' app). You will take this reading and math test at the beginning, middle, and end of the year.",
-        'id': "Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.",
-        'student number': "Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.",
-        'email': "Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.",
-        'username': "Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.",
-        'newsletter': "You can find our March Newsletter at this link: https://www.smore.com/ Check it for important dates and school updates!",
-        'contact': "You can email Jmcallister@onlineoregon.org or use the Inbox icon on the left side of Canvas to send a message.",
-        'talk to my teacher': "It sounds like you need a human expert! 🧠 Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email me: Jmcallister@onlineoregon.org or click the Canvas Inbox!",
-        'i\'m confused': "It sounds like you need a human expert! 🧠 Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email me: Jmcallister@onlineoregon.org or click the Canvas Inbox!",
-        'tech support': "Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!",
-        'help desk': "Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!",
-        'phone number': "Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!",
-        'break': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'holiday': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'no school': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'spring break': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'easter': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'when is school over': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'last day': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'days off': "Looking for a break? 🏝️ Here are the upcoming days with No School: Spring Break: March 23–27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5",
-        'canvas down': "Sometimes Canvas has a 'hiccup'. Wait 5 minutes and try again. Make sure your Wi-Fi is still connected. Use this time to read your school book or practice math facts offline!",
-        'pacing': "Try to finish at least one lesson in each subject every day. Look at the To-Do list on your Dashboard. It's better to do one lesson correctly than three lessons too fast.",
-        'done for the day': "✅ Did you submit all your assignments and see the Confetti? ✅ Did you check Canvas Inbox? ✅ Is your laptop plugged in? Great job! See you at the next Engageli session! 🌟",
-        'address': "🚩 Privacy Check! Remember to keep your personal info safe. Even though your teacher isn't reading this chat, it's a great habit to never share private details with an AI!",
-        'phone': "🚩 Privacy Check! Remember to keep your personal info safe. Even though your teacher isn't reading this chat, it's a great habit to never share private details with an AI!",
-        'street': "🚩 Privacy Check! Remember to keep your personal info safe. Even though your teacher isn't reading this chat, it's a great habit to never share private details with an AI!",
-        'password': "🚩 Privacy Check! Remember to keep your personal info safe. Even though your teacher isn't reading this chat, it's a great habit to never share private details with an AI!",
-        'calculate': "⚠️ Double-check me! Large language models like me are helpful for steps, but we can sometimes get the final math answer wrong. Don't forget to use your own thinking!",
-        'plus': "⚠️ Double-check me! Large language models like me are helpful for steps, but we can sometimes get the final math answer wrong. Don't forget to use your own thinking!",
-        'equals': "⚠️ Double-check me! Large language models like me are helpful for steps, but we can sometimes get the final math answer wrong. Don't forget to use your own thinking!",
-        'math help': "⚠️ Double-check me! Large language models like me are helpful for steps, but we can sometimes get the final math answer wrong. Don't forget to use your own thinking!",
-        'help': "I can help with: 'Navigating Canvas', 'Troubleshooting the Calendar', 'Turning in Assignments', 'Checking Your Grades', 'Engageli Live Classes', 'Late Work', 'Star360 Testing', and 'Support'."    }
-    
-    # Simple keyword matching
-    bot_reply = "I'm not sure about that. Try asking about our games, how to play, how to score, or how to reset your progress."
-    # Sort keys by length (longest first) so specific matching takes priority
-    for key in sorted(faq.keys(), key=len, reverse=True):
-        if key in user_message:
-            bot_reply = faq[key]
-            break
-            
-    return jsonify({'answer': bot_reply})
+
+    user_message = str(data['message']).strip()
+    if not user_message:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+
+    page_path = str(data.get('pagePath', '/')).strip() or '/'
+    faq_reply = get_faq_response(user_message)
+
+    history = get_chatbot_history()
+    try:
+        bot_reply = generate_gemini_reply(user_message, page_path, history, faq_reply=faq_reply)
+        history.extend([
+            {'role': 'user', 'text': user_message},
+            {'role': 'model', 'text': bot_reply}
+        ])
+        save_chatbot_history(history)
+        return jsonify({'answer': bot_reply, 'source': 'gemini'})
+    except Exception as e:
+        app.logger.error(f"Chatbot failed: {e}")
+        if faq_reply:
+            history.extend([
+                {'role': 'user', 'text': user_message},
+                {'role': 'model', 'text': faq_reply}
+            ])
+            save_chatbot_history(history)
+            return jsonify({'answer': faq_reply, 'source': 'faq-fallback'})
+        fallback_reply = (
+            "I can help with website games, Canvas questions, and simple math or ELA hints. "
+            "Try asking about a game on this page, how to turn in work, where to find grades, or ask for a step-by-step hint."
+        )
+        return jsonify({'answer': fallback_reply, 'source': 'fallback'})
 
 
 @app.route('/d20', methods=['GET'])
