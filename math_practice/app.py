@@ -147,9 +147,25 @@ def save_chatbot_history(history):
     session['chatbot_history'] = history[-CHATBOT_HISTORY_LIMIT:]
 
 
+def get_chatbot_error_reply(error_message):
+    """Return a user-facing reply for chatbot configuration or API failures."""
+    normalized_message = error_message.lower()
+    if 'api key was reported as leaked' in normalized_message:
+        return (
+            'The chatbot is temporarily offline because the Gemini API key was disabled. '
+            'Please add a new Gemini API key in the server environment and try again.'
+        )
+    if 'gemini_api_key is not configured' in normalized_message:
+        return (
+            'The chatbot is not configured yet. Please add a Gemini API key to the '
+            'GEMINI_API_KEY environment variable.'
+        )
+    return None
+
+
 def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
     """Call Gemini to generate a student-safe chatbot reply."""
-    api_key = os.environ.get('GEMINI_API_KEY', 'AIzaSyCBrwvmjM0k_UGco8UFq7RS0_fVOr-3ofQ')
+    api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
         raise RuntimeError('GEMINI_API_KEY is not configured.')
 
@@ -365,6 +381,9 @@ def ask_chatbot():
         return jsonify({'answer': bot_reply, 'source': 'gemini'})
     except Exception as e:
         app.logger.error(f"Chatbot failed: {e}")
+        error_reply = get_chatbot_error_reply(str(e))
+        if error_reply:
+            return jsonify({'answer': error_reply, 'source': 'error'})
         if faq_reply:
             history.extend([
                 {'role': 'user', 'text': user_message},
