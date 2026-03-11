@@ -275,6 +275,11 @@ def ela_games():
     """ELA games selection page."""
     return render_template('ela_games.html')
 
+@app.route('/baking-club', methods=['GET'])
+def baking_club():
+    """Baking Club page."""
+    return render_template('baking_club.html')
+
 @app.route('/context-clues', methods=['GET'])
 def context_clues():
     """Context Clues game page (infer word meanings)."""

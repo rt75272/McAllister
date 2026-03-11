@@ -95,6 +95,11 @@
             background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
         }
         
+        .baking-section .section-header {
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+            color: #333;
+        }
+        
         .section-icon {
             font-size: 4em;
             margin-bottom: 0.3em;
@@ -137,6 +142,11 @@
             color: #c62828;
         }
         
+        .baking-section .game-count {
+            background: #ffebee;
+            color: #d81b60;
+        }
+        
         .features-list {
             list-style: none;
             padding: 0;
@@ -166,6 +176,10 @@
             color: #FF6B6B;
         }
         
+        .baking-section .features-list li:before {
+            color: #FF9A9E;
+        }
+        
         .cta-button {
             display: inline-block;
             padding: 1em 2em;
@@ -184,6 +198,11 @@
         
         .ela-section .cta-button {
             background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+        }
+        
+        .baking-section .cta-button {
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+            color: #333;
         }
         
         .cta-button:hover {
@@ -300,6 +319,28 @@
                         <li>More games coming soon!</li>
                     </ul>
                     <span class="cta-button">Explore ELA Games →</span>
+                </div>
+            </a>
+
+            <!-- Baking Club Section -->
+            <a href="{{ url_for('baking_club') }}" class="section-card baking-section">
+                <div class="section-header">
+                    <div class="section-icon">🧁</div>
+                    <h2 class="section-title">Baking Club</h2>
+                </div>
+                <div class="section-content">
+                    <div class="game-count">Join the Fun!</div>
+                    <p class="section-description">
+                        Explore delicious cooking recipes, share pictures, and connect with other baking enthusiasts on our interactive Padlet!
+                    </p>
+                    <ul class="features-list">
+                        <li>Share your favorite recipes</li>
+                        <li>Post pictures of your creations</li>
+                        <li>Connect via interactive Padlet</li>
+                        <li>Learn new baking skills</li>
+                        <li>Discover sweet treats</li>
+                    </ul>
+                    <span class="cta-button">Join Baking Club →</span>
                 </div>
             </a>
         </div>
