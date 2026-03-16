@@ -39,7 +39,8 @@ The application is deployed and available at: [mcallister2.onrender.com](https:/
 ```
 math_practice/
 ├── app.py                  # Main Flask application
-├── requirements.txt        # Python dependencies
+├── pyproject.toml        # Python project configuration
+├── uv.lock               # Locked dependencies
 ├── templates/             # HTML templates
 │   ├── base.html          # Base template with common layout
 │   ├── index.html         # Homepage with game selection
@@ -64,7 +65,7 @@ math_practice/
 │   ├── plot_points.css/.js # Graphing functionality
 │   ├── exponent_power.css/.js # Exponent game logic
 │   └── exponent_world.css/.js # Exponent word problems
-└── mcallister/           # Python virtual environment
+└── .venv/                # Python virtual environment (managed by uv)
 ```
 
 ## 🎯 How the Progressive System Works
@@ -88,8 +89,8 @@ math_practice/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.12+
-- pip package manager
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) package manager
 
 ### Installation
 
@@ -99,37 +100,29 @@ math_practice/
    cd math_practice
    ```
 
-2. **Create and activate virtual environment**:
+2. **Sync the environment and install dependencies**:
    ```bash
-   python -m venv mcallister
-   source mcallister/bin/activate  # On Linux/Mac
-   # OR
-   mcallister\Scripts\activate     # On Windows
+   uv sync
    ```
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set your Gemini API key**:
+3. **Set your Gemini API key**:
    ```bash
    export GEMINI_API_KEY="your-api-key-here"
    ```
 
-5. **Run the application**:
+4. **Run the application**:
    ```bash
-   python app.py
+   uv run python app.py
    ```
 
-6. **Open your browser** and navigate to `http://localhost:5000`
+5. **Open your browser** and navigate to `http://localhost:5000`
 
 ### For Production Deployment
 
 The app is configured for deployment with Gunicorn:
 
 ```bash
-gunicorn app:app
+uv run gunicorn app:app
 ```
 
 ## 🎮 Game Descriptions

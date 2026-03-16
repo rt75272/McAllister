@@ -1,2 +1,3 @@
 teaching/*
 __pycache__/
+.venv/
