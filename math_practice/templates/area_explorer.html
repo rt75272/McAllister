@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Area Explorer - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/area_explorer.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="game-wrapper">
+        <!-- Navigation -->
+        <nav class="game-nav">
+            <a href="{{ url_for('math_games') }}" class="home-btn">← Math Games</a>
+            <h1 class="game-title">📐 Area Explorer</h1>
+            <div class="nav-spacer"></div>
+        </nav>
+
+        <!-- Game Container -->
+        <div class="game-container">
+            <!-- Level Info Bar -->
+            <div class="level-info">
+                <div class="info-card">
+                    <span class="info-label">Level</span>
+                    <span class="info-value" id="level-display">1</span>
+                </div>
+                <div class="info-card">
+                    <span class="info-label">Score</span>
+                    <span class="info-value" id="score-display">0</span>
+                </div>
+                <div class="info-card">
+                    <span class="info-label">Streak</span>
+                    <span class="info-value" id="streak-display">0 🔥</span>
+                </div>
+            </div>
+
+            <!-- Level Description -->
+            <div class="level-description">
+                <h2 id="level-name">Level 1: Rectangles</h2>
+                <p id="level-desc">Find the area of rectangles by multiplying length × width.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                <span class="progress-text" id="progress-text">0 / 8</span>
+            </div>
+
+            <!-- Shape Display Area -->
+            <div class="shape-area">
+                <canvas id="shape-canvas" width="400" height="350"></canvas>
+                <p class="question-text" id="question-text">What is the area of this shape?</p>
+            </div>
+
+            <!-- Answer Section -->
+            <div class="answer-section">
+                <div class="answer-input-group">
+                    <input type="number" id="answer-input" class="answer-input" placeholder="Enter area..." step="any" autocomplete="off">
+                    <span class="unit-label" id="unit-label">square units</span>
+                </div>
+                <button class="submit-btn" id="submit-btn" onclick="game.submitAnswer()">Check Answer ✓</button>
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback" id="feedback"></div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-btn hint-btn" onclick="game.showHint()">💡 Hint</button>
+                <button class="control-btn new-btn" onclick="game.generateProblem()">🔄 New Shape</button>
+                <button class="control-btn skip-btn" onclick="game.skipProblem()">⏭ Skip</button>
+            </div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div class="modal-overlay" id="level-complete-modal">
+            <div class="modal-content">
+                <h2>🎉 Level Complete!</h2>
+                <p id="level-complete-stats"></p>
+                <button class="modal-btn" onclick="game.nextLevel()">Next Level →</button>
+            </div>
+        </div>
+
+        <!-- Game Complete Modal -->
+        <div class="modal-overlay" id="game-complete-modal">
+            <div class="modal-content">
+                <h2>🏆 Area Explorer Complete!</h2>
+                <p id="game-complete-stats"></p>
+                <button class="modal-btn" onclick="game.resetGame()">Play Again 🔄</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='js/area_explorer.js') }}"></script>
+    <script>
+        let game;
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new AreaExplorer();
+        });
+    </script>
+{% endblock %}

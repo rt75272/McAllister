@@ -27,22 +27,14 @@
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
-/* Calculator Popup - KEEP ORIGINAL NAME */
+/* Calculator Popup - container that holds the floating calculator */
 .calculator-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
     display: none;
-    justify-content: center;
-    align-items: center;
     z-index: 1000;
 }
 
 .calculator-popup.show {
-    display: flex;
+    display: block;
 }
 
 /* Renamed classes to avoid conflicts with exponent_*.css */
@@ -51,13 +43,25 @@
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    max-width: 350px;
-    width: 90%;
-    position: relative;
-    box-sizing: border-box; /* Ensure padding is included in width */
-    height: auto; /* Allow height to grow with content */
+    width: 320px;
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    box-sizing: border-box;
+    height: auto;
     display: flex;
     flex-direction: column;
+    user-select: none;
+    transition: box-shadow 0.2s;
+}
+
+.global-calculator-container.dragging {
+    box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+    opacity: 0.95;
+}
+
+.global-calculator-container.positioned {
+    bottom: auto;
 }
 
 .global-calculator-container * {
@@ -71,6 +75,11 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 2px solid #f0f0f0;
+    cursor: grab;
+}
+
+.global-calculator-header:active {
+    cursor: grabbing;
 }
 
 .global-calculator-title {
@@ -193,6 +202,11 @@ button.global-calc-btn,
 }
 
 @media (max-width: 768px) {
+    .global-calculator-container {
+        width: 300px;
+        padding: 15px;
+    }
+
     .calculator-toggle {
         bottom: 15px;
         left: 15px;
@@ -200,11 +214,6 @@ button.global-calc-btn,
         height: 50px;
         font-size: 1.1em;
         padding: 10px 14px;
-    }
-
-    .global-calculator-container {
-        max-width: 300px;
-        padding: 15px;
     }
 
     .global-calc-btn {
@@ -220,7 +229,7 @@ button.global-calc-btn,
 
 @media (max-width: 480px) {
     .global-calculator-container {
-        max-width: 280px;
+        width: 280px;
         padding: 12px;
     }
 

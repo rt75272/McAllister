@@ -585,6 +585,11 @@ def math_adventure():
 def percentage_quest():
     return render_template('percentage_quest.html')
 
+@app.route('/area-explorer', methods=['GET'])
+def area_explorer():
+    """Area Explorer game page."""
+    return render_template('area_explorer.html')
+
 # The big red activation button.
 if __name__ == '__main__':
     app.run(debug=True)

@@ -52,11 +52,6 @@ function createCalculatorHTML() {
     
     // Add calculator HTML to body
     document.body.insertAdjacentHTML('afterbegin', calculatorHTML);
-    
-    // Setup drag functionality after HTML is added
-    setTimeout(() => {
-        setupCalculatorDrag();
-    }, 0);
 }
 
 function toggleCalculator() {
@@ -218,184 +213,125 @@ function setupCalculatorEvents() {
             event.preventDefault();
         }
     });
-
-    // Close calculator when clicking outside
-    const popup = document.getElementById('calculatorPopup');
-    if (popup) {
-        popup.addEventListener('click', function(event) {
-            if (event.target === this) {
-                toggleCalculator();
-            }
-        });
-    }
     
     // Setup drag functionality
     setupCalculatorDrag();
 }
 
+/* ── Smooth drag-to-move for the calculator panel ── */
 function setupCalculatorDrag() {
-    // Wait a bit more to ensure DOM is ready
-    setTimeout(() => {
-        const calculatorContainer = document.querySelector('.global-calculator-container');
-        const calculatorHeader = document.querySelector('.global-calculator-header');
-        
-        console.log('Setting up calculator drag...', { calculatorContainer, calculatorHeader });
-        
-        if (!calculatorContainer || !calculatorHeader) {
-            console.log('Calculator elements not found, retrying...');
-            // Retry after another delay
-            setTimeout(setupCalculatorDrag, 500);
-            return;
-        }
-        
-        // Remove any existing event listeners to prevent duplicates
-        calculatorHeader.removeEventListener('mousedown', startDrag);
-        calculatorHeader.removeEventListener('touchstart', startDragTouch);
-        
-        let isDragging = false;
-        let dragOffset = { x: 0, y: 0 };
-        
-        // Mouse events
-        calculatorHeader.addEventListener('mousedown', startDrag);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', stopDrag);
-        
-        // Touch events for mobile
-        calculatorHeader.addEventListener('touchstart', startDragTouch, { passive: false });
-        document.addEventListener('touchmove', dragTouch, { passive: false });
-        document.addEventListener('touchend', stopDrag);
-        
-        function startDrag(e) {
-            console.log('Starting drag...');
-            isDragging = true;
-            calculatorContainer.classList.add('dragging');
-            
-            const rect = calculatorContainer.getBoundingClientRect();
-            dragOffset.x = e.clientX - rect.left;
-            dragOffset.y = e.clientY - rect.top;
-            
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        function startDragTouch(e) {
-            if (e.touches.length === 1) {
-                console.log('Starting touch drag...');
-                const touch = e.touches[0];
-                isDragging = true;
-                calculatorContainer.classList.add('dragging');
-                
-                const rect = calculatorContainer.getBoundingClientRect();
-                dragOffset.x = touch.clientX - rect.left;
-                dragOffset.y = touch.clientY - rect.top;
-                
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-        
-        function drag(e) {
-            if (!isDragging) return;
-            
-            const x = e.clientX - dragOffset.x;
-            const y = e.clientY - dragOffset.y;
-            
-            moveCalculator(x, y);
-            e.preventDefault();
-        }
-        
-        function dragTouch(e) {
-            if (!isDragging || e.touches.length !== 1) return;
-            
-            const touch = e.touches[0];
-            const x = touch.clientX - dragOffset.x;
-            const y = touch.clientY - dragOffset.y;
-            
-            moveCalculator(x, y);
-            e.preventDefault();
-        }
-        
-        function moveCalculator(x, y) {
-            // Get viewport dimensions
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const calcWidth = calculatorContainer.offsetWidth;
-            const calcHeight = calculatorContainer.offsetHeight;
-            
-            // Constrain to viewport boundaries with some padding
-            const padding = 10;
-            const constrainedX = Math.max(padding, Math.min(x, viewportWidth - calcWidth - padding));
-            const constrainedY = Math.max(padding, Math.min(y, viewportHeight - calcHeight - padding));
-            
-            // Add positioned class to override CSS positioning
-            calculatorContainer.classList.add('positioned');
-            
-            // Apply the position
-            calculatorContainer.style.left = constrainedX + 'px';
-            calculatorContainer.style.top = constrainedY + 'px';
-            calculatorContainer.style.right = 'auto';
-            calculatorContainer.style.bottom = 'auto';
-            
-            console.log('Moving calculator to:', { x: constrainedX, y: constrainedY });
-            
-            // Save position to localStorage
-            localStorage.setItem('calculatorPosition', JSON.stringify({
-                x: constrainedX,
-                y: constrainedY
-            }));
-        }
-        
-        function stopDrag() {
-            if (isDragging) {
-                console.log('Stopping drag...');
-                isDragging = false;
-                calculatorContainer.classList.remove('dragging');
-            }
-        }
-        
-        // Restore saved position
-        restoreCalculatorPosition();
-        
-        console.log('Calculator drag setup complete!');
-    }, 50);
+    const container = document.querySelector('.global-calculator-container');
+    const header = document.querySelector('.global-calculator-header');
+    if (!container || !header) return;
+
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    /* — pointer start — */
+    function onPointerDown(e) {
+        // Only drag from the header (not the close button)
+        if (e.target.closest('.global-calculator-close')) return;
+
+        isDragging = true;
+        const rect = container.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        container.classList.add('dragging');
+        e.preventDefault();
+    }
+
+    /* — pointer move — */
+    function onPointerMove(e) {
+        if (!isDragging) return;
+
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+
+        // Constrain to viewport
+        const pad = 10;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const cw = container.offsetWidth;
+        const ch = container.offsetHeight;
+        const cx = Math.max(pad, Math.min(x, vw - cw - pad));
+        const cy = Math.max(pad, Math.min(y, vh - ch - pad));
+
+        container.classList.add('positioned');
+        container.style.left = cx + 'px';
+        container.style.top = cy + 'px';
+
+        e.preventDefault();
+    }
+
+    /* — pointer end — */
+    function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        container.classList.remove('dragging');
+
+        // Persist position
+        localStorage.setItem('calculatorPosition', JSON.stringify({
+            x: parseInt(container.style.left, 10),
+            y: parseInt(container.style.top, 10)
+        }));
+    }
+
+    /* Mouse events */
+    header.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
+
+    /* Touch events */
+    header.addEventListener('touchstart', function(e) {
+        if (e.touches.length !== 1) return;
+        onPointerDown({
+            clientX: e.touches[0].clientX,
+            clientY: e.touches[0].clientY,
+            target: e.target,
+            preventDefault: function() { e.preventDefault(); }
+        });
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        if (e.touches.length !== 1) return;
+        onPointerMove({
+            clientX: e.touches[0].clientX,
+            clientY: e.touches[0].clientY,
+            preventDefault: function() { e.preventDefault(); }
+        });
+    }, { passive: false });
+
+    document.addEventListener('touchend', onPointerUp);
+
+    // Restore saved position
+    restoreCalculatorPosition(container);
 }
 
-function restoreCalculatorPosition() {
-    const calculatorContainer = document.querySelector('.calculator-container');
-    if (!calculatorContainer) {
-        console.log('Calculator container not found for position restoration');
-        return;
-    }
-    
-    const savedPosition = localStorage.getItem('calculatorPosition');
-    if (savedPosition) {
-        try {
-            const position = JSON.parse(savedPosition);
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const calcWidth = calculatorContainer.offsetWidth;
-            const calcHeight = calculatorContainer.offsetHeight;
-            
-            // Ensure position is still within viewport (in case screen size changed)
-            const padding = 10;
-            const constrainedX = Math.max(padding, Math.min(position.x, viewportWidth - calcWidth - padding));
-            const constrainedY = Math.max(padding, Math.min(position.y, viewportHeight - calcHeight - padding));
-            
-            // Add positioned class to override CSS positioning
-            calculatorContainer.classList.add('positioned');
-            
-            calculatorContainer.style.left = constrainedX + 'px';
-            calculatorContainer.style.top = constrainedY + 'px';
-            calculatorContainer.style.right = 'auto';
-            calculatorContainer.style.bottom = 'auto';
-            
-            console.log('Calculator position restored to:', { x: constrainedX, y: constrainedY });
-        } catch (e) {
-            // If parsing fails, use default position
-            console.log('Failed to restore calculator position:', e);
-        }
-    } else {
-        console.log('No saved calculator position found');
+function restoreCalculatorPosition(container) {
+    if (!container) container = document.querySelector('.global-calculator-container');
+    if (!container) return;
+
+    const saved = localStorage.getItem('calculatorPosition');
+    if (!saved) return;
+
+    try {
+        const pos = JSON.parse(saved);
+        const pad = 10;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const cw = container.offsetWidth;
+        const ch = container.offsetHeight;
+        const cx = Math.max(pad, Math.min(pos.x, vw - cw - pad));
+        const cy = Math.max(pad, Math.min(pos.y, vh - ch - pad));
+
+        container.classList.add('positioned');
+        container.style.left = cx + 'px';
+        container.style.top = cy + 'px';
+    } catch (_) {
+        // ignore bad data
     }
 }
 
@@ -414,28 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize operator key
     initializeOperatorKey();
-    
-    // Always setup drag functionality regardless of how calculator was created
-    setTimeout(() => {
-        setupCalculatorDrag();
-    }, 100);
 });
-
-// Debug function to test calculator drag
-window.testCalculatorDrag = function() {
-    const calculatorContainer = document.querySelector('.global-calculator-container');
-    if (calculatorContainer) {
-        console.log('Calculator found, testing movement...');
-        calculatorContainer.classList.add('positioned');
-        calculatorContainer.style.left = '100px';
-        calculatorContainer.style.top = '100px';
-        calculatorContainer.style.right = 'auto';
-        calculatorContainer.style.bottom = 'auto';
-        console.log('Calculator should have moved to 100,100');
-    } else {
-        console.log('Calculator not found!');
-    }
-};
 
 // Debug function to reset calculator position  
 window.resetCalculatorPosition = function() {
