@@ -1,0 +1,53 @@
+/* Dyslexia-Friendly Global Overrides */
+
+/* Use Lexend, designed for dyslexia and reading proficiency, with Comic Sans MS fallback */
+:root {
+    --dyslexia-font: 'Lexend', 'Comic Sans MS', 'Arial', sans-serif;
+}
+
+/* Apply readable fonts, line-heights, and spacing to all text elements */
+body, p, a, span, div, li, td, th, button:not(.global-calc-btn), input:not(.global-calculator-display), textarea, h1, h2, h3, h4, h5, h6 {
+    font-family: var(--dyslexia-font) !important;
+}
+
+/* Improve paragraph and text readability */
+body, p, li, div {
+    line-height: 1.6 !important;
+    letter-spacing: 0.03em !important;
+    word-spacing: 0.1em !important;
+}
+
+/* Headers can have slightly more spacing */
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: 0.05em !important;
+    word-spacing: 0.1em !important;
+    line-height: 1.4 !important;
+}
+
+/* Prevent justified text which creates rivers of white space */
+p, .section-description, .instructions, .message-content, .card-text {
+    text-align: left !important;
+}
+
+/* Avoid pure white backgrounds for large reading areas to reduce visual stress and glare */
+.container, .hero-section, .section-card, .game-container, .modal-content, .message.bot .message-content {
+    background-color: #fbfbf8 !important; /* Soft off-white/cream */
+}
+
+/* Avoid pure black text for better contrast without glare */
+body, p, .section-description, .instructions, .message-content {
+    color: #2b2b2b !important;
+}
+
+/* Convert italics to bold, as italics are often hard for dyslexic users to read */
+em, i {
+    font-style: normal !important;
+    font-weight: 700 !important;
+}
+
+/* Ensure links are clearly identifiable (not just by color) */
+p a, .section-description a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 3px !important;
+}
