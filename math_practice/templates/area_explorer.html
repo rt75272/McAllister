@@ -15,8 +15,31 @@
             <div class="nav-spacer"></div>
         </nav>
 
-        <!-- Game Container -->
-        <div class="game-container">
+        <!-- Difficulty Selection Screen -->
+        <div class="game-container" id="difficulty-screen">
+            <h2 class="screen-heading">Choose Your Difficulty</h2>
+            <p class="screen-subtext">Each difficulty changes the numbers and shapes you'll see.</p>
+            <div class="difficulty-cards">
+                <button class="diff-card diff-easy" onclick="game.startGame('easy')">
+                    <span class="diff-icon">🟢</span>
+                    <span class="diff-name">Easy</span>
+                    <span class="diff-detail">Small whole numbers<br>Basic shapes</span>
+                </button>
+                <button class="diff-card diff-medium" onclick="game.startGame('medium')">
+                    <span class="diff-icon">🟡</span>
+                    <span class="diff-name">Medium</span>
+                    <span class="diff-detail">Larger numbers &amp; decimals<br>All shapes including composites</span>
+                </button>
+                <button class="diff-card diff-hard" onclick="game.startGame('hard')">
+                    <span class="diff-icon">🔴</span>
+                    <span class="diff-name">Hard</span>
+                    <span class="diff-detail">Decimals &amp; fractions<br>All shapes, tighter tolerance</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Container (hidden until difficulty chosen) -->
+        <div class="game-container" id="game-screen" style="display:none;">
             <!-- Level Info Bar -->
             <div class="level-info">
                 <div class="info-card">
@@ -30,6 +53,10 @@
                 <div class="info-card">
                     <span class="info-label">Streak</span>
                     <span class="info-value" id="streak-display">0 🔥</span>
+                </div>
+                <div class="info-card diff-badge-card">
+                    <span class="info-label">Difficulty</span>
+                    <span class="info-value" id="diff-display">Easy</span>
                 </div>
             </div>
 
@@ -68,6 +95,7 @@
                 <button class="control-btn hint-btn" onclick="game.showHint()">💡 Hint</button>
                 <button class="control-btn new-btn" onclick="game.generateProblem()">🔄 New Shape</button>
                 <button class="control-btn skip-btn" onclick="game.skipProblem()">⏭ Skip</button>
+                <button class="control-btn diff-change-btn" onclick="game.showDifficultyScreen()">⚙ Difficulty</button>
             </div>
         </div>
 

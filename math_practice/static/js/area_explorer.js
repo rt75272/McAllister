@@ -1,21 +1,21 @@
 /**
- * Area Explorer – a multi-level shape-area game.
+ * Area Explorer – a multi-level shape-area game with difficulty settings.
  *
- * Levels:
- *   1  Rectangles
- *   2  Squares
- *   3  Triangles
- *   4  Parallelograms
- *   5  Trapezoids
- *   6  Circles
- *   7  Composite shapes (L-shapes, T-shapes)
- *   8  Mixed review
+ * Difficulty:
+ *   Easy   – small whole numbers, basic shapes (rect, square, triangle)
+ *   Medium – larger whole numbers + simple decimals, all shapes
+ *   Hard   – decimals & fractions, all shapes, tighter tolerance
  *
- * Each level has 8 questions. Answers are rounded to 1 decimal place for
- * circles; whole numbers for everything else.
+ * Levels per difficulty:
+ *   Easy   (5 levels): Rectangles → Squares → Triangles → Parallelograms → Mixed
+ *   Medium (7 levels): + Trapezoids, Circles, Mixed
+ *   Hard   (8 levels): + Composite shapes
+ *
+ * Each level has 8 questions.
  */
 class AreaExplorer {
     constructor() {
+        this.difficulty = null;      // set when user picks
         this.currentLevel = 1;
         this.score = 0;
         this.streak = 0;
@@ -26,21 +26,74 @@ class AreaExplorer {
         this.currentHint = '';
         this.levelStats = { correct: 0, incorrect: 0, hints: 0, skips: 0 };
 
-        this.levels = {
-            1: { type: 'rectangle',      name: 'Level 1: Rectangles',       desc: 'Find the area of rectangles. Area = length × width.' },
-            2: { type: 'square',          name: 'Level 2: Squares',          desc: 'Find the area of squares. Area = side × side.' },
-            3: { type: 'triangle',        name: 'Level 3: Triangles',        desc: 'Find the area of triangles. Area = ½ × base × height.' },
-            4: { type: 'parallelogram',   name: 'Level 4: Parallelograms',   desc: 'Find the area of parallelograms. Area = base × height.' },
-            5: { type: 'trapezoid',       name: 'Level 5: Trapezoids',       desc: 'Find the area of trapezoids. Area = ½ × (base₁ + base₂) × height.' },
-            6: { type: 'circle',          name: 'Level 6: Circles',          desc: 'Find the area of circles. Area = π × r². Round to 1 decimal.' },
-            7: { type: 'composite',       name: 'Level 7: Composite Shapes', desc: 'Find the area of L-shapes and T-shapes made from rectangles.' },
-            8: { type: 'mixed',           name: 'Level 8: Mixed Review',     desc: 'A mix of all shapes you have learned!' }
+        this.levelSets = {
+            easy: [
+                { pool: ['rectangle', 'square', 'triangle'],
+                  name: 'Level 1: Basic Shapes',        desc: 'Rectangles, squares, and triangles – all mixed together!' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram'],
+                  name: 'Level 2: + Parallelograms',    desc: 'Now parallelograms join the mix. Area = base × height.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid'],
+                  name: 'Level 3: + Trapezoids',        desc: 'Trapezoids added! Area = ½ × (b₁ + b₂) × height.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle'],
+                  name: 'Level 4: + Circles',           desc: 'Circles arrive! Area = π × r². Round to 1 decimal.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle'],
+                  name: 'Level 5: All Shapes Review',   desc: 'A random mix of every shape. Show what you know!' }
+            ],
+            medium: [
+                { pool: ['rectangle', 'square', 'triangle'],
+                  name: 'Level 1: Basic Shapes',        desc: 'Rectangles, squares, and triangles with bigger numbers!' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram'],
+                  name: 'Level 2: + Parallelograms',    desc: 'Parallelograms join. Watch for decimal dimensions!' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid'],
+                  name: 'Level 3: + Trapezoids',        desc: 'Trapezoids with decimal values. Area = ½ × (b₁ + b₂) × h.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle'],
+                  name: 'Level 4: + Circles',           desc: 'Circles with decimal radii! Round to 1 decimal.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus'],
+                  name: 'Level 5: + Rhombuses',         desc: 'Rhombuses appear! Area = ½ × d₁ × d₂.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 6: + Composite Shapes',  desc: 'L-shapes and T-shapes made from rectangles.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 7: Ultimate Mix',        desc: 'All shapes with decimals – prove your mastery!' }
+            ],
+            hard: [
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram'],
+                  name: 'Level 1: Basics with Fractions',  desc: 'Familiar shapes, but dimension values include fractions!' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle'],
+                  name: 'Level 2: More Shapes',            desc: 'Trapezoids and circles with fractional/decimal values.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus'],
+                  name: 'Level 3: + Rhombuses',            desc: 'Rhombuses with tricky dimensions. Area = ½ × d₁ × d₂.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 4: + Composites',           desc: 'L-shapes and T-shapes with larger numbers.' },
+                { pool: ['rectangle', 'triangle', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 5: Challenge Round 1',      desc: 'Decimals and fractions everywhere. Stay focused!' },
+                { pool: ['parallelogram', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 6: Challenge Round 2',      desc: 'Harder shapes only – no simple rectangles here!' },
+                { pool: ['trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 7: Expert Shapes',          desc: 'Only the toughest shapes remain.' },
+                { pool: ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'rhombus', 'composite'],
+                  name: 'Level 8: Ultimate Challenge',     desc: 'Every shape, fractions, decimals – the final test!' }
+            ]
         };
 
         this.canvas = document.getElementById('shape-canvas');
         this.ctx = this.canvas.getContext('2d');
+    }
 
-        // Allow Enter key to submit
+    /* ══════════ Difficulty / Start ══════════ */
+    startGame(diff) {
+        this.difficulty = diff;
+        this.currentLevel = 1;
+        this.score = 0;
+        this.streak = 0;
+        this.questionsCompleted = 0;
+        this.levelStats = { correct: 0, incorrect: 0, hints: 0, skips: 0 };
+        this.totalLevels = this.levelSets[diff].length;
+
+        document.getElementById('difficulty-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('diff-display').textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+
+        // Bind enter key now that input is visible
         document.getElementById('answer-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') this.submitAnswer();
         });
@@ -49,20 +102,117 @@ class AreaExplorer {
         this.generateProblem();
     }
 
-    /* ── Random helpers ── */
+    showDifficultyScreen() {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('difficulty-screen').style.display = 'block';
+    }
+
+    /* ══════════ Number generators based on difficulty ══════════ */
     randInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    /* ── Problem generators ── */
-    generateProblem() {
-        const level = this.levels[this.currentLevel];
-        let type = level.type;
+    /** Return a nice decimal: e.g. 4.5, 7.25 */
+    randDecimal(min, max, places) {
+        const factor = Math.pow(10, places);
+        return Math.round((Math.random() * (max - min) + min) * factor) / factor;
+    }
 
-        if (type === 'mixed') {
-            const types = ['rectangle', 'square', 'triangle', 'parallelogram', 'trapezoid', 'circle', 'composite'];
-            type = types[this.randInt(0, types.length - 1)];
+    /** Return a value from a small set of common fractions as a decimal + display string. */
+    randFraction() {
+        const fracs = [
+            { n: 1, d: 2, v: 0.5,     s: '½' },
+            { n: 1, d: 4, v: 0.25,    s: '¼' },
+            { n: 3, d: 4, v: 0.75,    s: '¾' },
+            { n: 1, d: 3, v: 1/3,     s: '⅓' },
+            { n: 2, d: 3, v: 2/3,     s: '⅔' },
+            { n: 3, d: 2, v: 1.5,     s: '1½' },
+            { n: 5, d: 2, v: 2.5,     s: '2½' },
+            { n: 7, d: 2, v: 3.5,     s: '3½' },
+            { n: 5, d: 4, v: 1.25,    s: '1¼' },
+            { n: 7, d: 4, v: 1.75,    s: '1¾' },
+        ];
+        return fracs[this.randInt(0, fracs.length - 1)];
+    }
+
+    /** Generate a dimension value appropriate for the current difficulty.
+     *  Returns { value: number, label: string }  */
+    dimEasy(min, max) {
+        const v = this.randInt(min, max);
+        return { value: v, label: `${v}` };
+    }
+
+    dimMedium(min, max) {
+        if (this.currentFormat === 'decimal') {
+            // decimal
+            const v = this.randDecimal(min, max, 1);
+            return { value: v, label: `${v}` };
         }
+        const v = this.randInt(min, max);
+        return { value: v, label: `${v}` };
+    }
+
+    dimHard(min, max) {
+        if (this.currentFormat === 'fraction') {
+            // fraction mixed with whole
+            const whole = this.randInt(min, Math.max(min, max - 2));
+            const frac = this.randFraction();
+            const v = whole + frac.v;
+            return { value: v, label: `${whole}${frac.s}` };
+        } else if (this.currentFormat === 'decimal') {
+            // decimal
+            const v = this.randDecimal(min, max, 2);
+            return { value: v, label: `${v}` };
+        }
+        const v = this.randInt(min, max);
+        return { value: v, label: `${v}` };
+    }
+
+    dim(min, max) {
+        switch (this.difficulty) {
+            case 'easy':   return this.dimEasy(min, max);
+            case 'medium': return this.dimMedium(min, max);
+            case 'hard':   return this.dimHard(min, max);
+            default:       return this.dimEasy(min, max);
+        }
+    }
+
+    /** Round the answer to a sensible precision based on difficulty. */
+    roundAnswer(val) {
+        if (this.difficulty === 'easy') return Math.round(val * 10) / 10;
+        return Math.round(val * 100) / 100;
+    }
+
+    /** Format a number for display (strip trailing zeros). */
+    fmt(n) {
+        return parseFloat(n.toFixed(4)).toString();
+    }
+
+    /** Tolerance for answer checking. */
+    get tolerance() {
+        if (this.difficulty === 'hard') return 0.05;
+        if (this.difficulty === 'medium') return 0.15;
+        return 0.5;                 // easy – generous
+    }
+
+    /* ══════════ Problem dispatch ══════════ */
+    generateProblem() {
+        if (this.difficulty === 'hard') {
+            const r = Math.random();
+            if (r < 0.35) this.currentFormat = 'fraction';
+            else if (r < 0.65) this.currentFormat = 'decimal';
+            else this.currentFormat = 'whole';
+        } else if (this.difficulty === 'medium') {
+            if (Math.random() < 0.4) this.currentFormat = 'decimal';
+            else this.currentFormat = 'whole';
+        } else {
+            this.currentFormat = 'whole';
+        }
+
+        const levels = this.levelSets[this.difficulty];
+        const level = levels[this.currentLevel - 1];
+        const pool = level.pool;
+        const type = pool[this.randInt(0, pool.length - 1)];
 
         switch (type) {
             case 'rectangle':      this.genRectangle(); break;
@@ -72,6 +222,7 @@ class AreaExplorer {
             case 'trapezoid':      this.genTrapezoid(); break;
             case 'circle':         this.genCircle(); break;
             case 'composite':      this.genComposite(); break;
+            case 'rhombus':        this.genRhombus(); break;
         }
 
         document.getElementById('answer-input').value = '';
@@ -80,72 +231,68 @@ class AreaExplorer {
         document.getElementById('answer-input').focus();
     }
 
-    /* ── Rectangle ── */
+    /* ══════════ Shape generators ══════════ */
+
     genRectangle() {
-        const w = this.randInt(3, 14);
-        const h = this.randInt(2, 10);
-        this.currentAnswer = w * h;
-        this.currentHint = `Area = length × width = ${w} × ${h}`;
+        const w = this.dim(3, 14);
+        const h = this.dim(2, 10);
+        this.currentAnswer = this.roundAnswer(w.value * h.value);
+        this.currentHint = `Area = length × width = ${w.label} × ${h.label} = ${this.fmt(this.currentAnswer)}`;
         document.getElementById('question-text').textContent = 'What is the area of this rectangle?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawRectangle(w, h);
     }
 
-    /* ── Square ── */
     genSquare() {
-        const s = this.randInt(2, 12);
-        this.currentAnswer = s * s;
-        this.currentHint = `Area = side × side = ${s} × ${s}`;
+        const s = this.dim(2, 12);
+        this.currentAnswer = this.roundAnswer(s.value * s.value);
+        this.currentHint = `Area = side × side = ${s.label} × ${s.label} = ${this.fmt(this.currentAnswer)}`;
         document.getElementById('question-text').textContent = 'What is the area of this square?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawSquare(s);
     }
 
-    /* ── Triangle ── */
     genTriangle() {
-        const base = this.randInt(3, 14);
-        const height = this.randInt(2, 10);
-        this.currentAnswer = (base * height) / 2;
-        this.currentHint = `Area = ½ × base × height = ½ × ${base} × ${height}`;
+        const base = this.dim(3, 14);
+        const height = this.dim(2, 10);
+        this.currentAnswer = this.roundAnswer((base.value * height.value) / 2);
+        this.currentHint = `Area = ½ × base × height = ½ × ${base.label} × ${height.label} = ${this.fmt(this.currentAnswer)}`;
         document.getElementById('question-text').textContent = 'What is the area of this triangle?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawTriangle(base, height);
     }
 
-    /* ── Parallelogram ── */
     genParallelogram() {
-        const base = this.randInt(4, 14);
-        const height = this.randInt(2, 10);
-        this.currentAnswer = base * height;
-        this.currentHint = `Area = base × height = ${base} × ${height}`;
+        const base = this.dim(4, 14);
+        const height = this.dim(2, 10);
+        this.currentAnswer = this.roundAnswer(base.value * height.value);
+        this.currentHint = `Area = base × height = ${base.label} × ${height.label} = ${this.fmt(this.currentAnswer)}`;
         document.getElementById('question-text').textContent = 'What is the area of this parallelogram?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawParallelogram(base, height);
     }
 
-    /* ── Trapezoid ── */
     genTrapezoid() {
-        const b1 = this.randInt(4, 12);
-        const b2 = this.randInt(3, 10);
-        const h  = this.randInt(3, 8);
-        this.currentAnswer = ((b1 + b2) * h) / 2;
-        this.currentHint = `Area = ½ × (b₁ + b₂) × h = ½ × (${b1} + ${b2}) × ${h}`;
+        const b1 = this.dim(4, 12);
+        const b2 = this.dim(3, 10);
+        const h  = this.dim(3, 8);
+        this.currentAnswer = this.roundAnswer(((b1.value + b2.value) * h.value) / 2);
+        this.currentHint = `Area = ½ × (b₁ + b₂) × h = ½ × (${b1.label} + ${b2.label}) × ${h.label} = ${this.fmt(this.currentAnswer)}`;
         document.getElementById('question-text').textContent = 'What is the area of this trapezoid?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawTrapezoid(b1, b2, h);
     }
 
-    /* ── Circle ── */
     genCircle() {
-        const r = this.randInt(2, 10);
-        this.currentAnswer = Math.round(Math.PI * r * r * 10) / 10;
-        this.currentHint = `Area = π × r² = π × ${r}² ≈ ${this.currentAnswer}`;
-        document.getElementById('question-text').textContent = 'What is the area of this circle? (Round to 1 decimal place, use π ≈ 3.14159)';
+        const r = this.dim(2, 10);
+        const area = Math.PI * r.value * r.value;
+        this.currentAnswer = Math.round(area * 10) / 10;   // always 1 decimal for circles
+        this.currentHint = `Area = π × r² = π × ${r.label}² ≈ ${this.currentAnswer}`;
+        document.getElementById('question-text').textContent = 'What is the area of this circle? (Round to 1 decimal place)';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawCircle(r);
     }
 
-    /* ── Composite (L-shape or T-shape) ── */
     genComposite() {
         if (Math.random() < 0.5) {
             this.genLShape();
@@ -155,12 +302,13 @@ class AreaExplorer {
     }
 
     genLShape() {
+        // Composites use whole numbers even on hard to keep it sane
         const w1 = this.randInt(3, 7);
         const h1 = this.randInt(5, 10);
         const w2 = this.randInt(3, 7);
         const h2 = this.randInt(2, 4);
         this.currentAnswer = (w1 * h1) + (w2 * h2);
-        this.currentHint = `Split into two rectangles: (${w1} × ${h1}) + (${w2} × ${h2})`;
+        this.currentHint = `Split into two rectangles: (${w1} × ${h1}) + (${w2} × ${h2}) = ${this.currentAnswer}`;
         document.getElementById('question-text').textContent = 'What is the total area of this L-shape?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawLShape(w1, h1, w2, h2);
@@ -172,10 +320,20 @@ class AreaExplorer {
         const stemW = this.randInt(2, Math.min(5, topW - 1));
         const stemH = this.randInt(3, 7);
         this.currentAnswer = (topW * topH) + (stemW * stemH);
-        this.currentHint = `Split into two rectangles: top (${topW} × ${topH}) + stem (${stemW} × ${stemH})`;
+        this.currentHint = `Split into two rectangles: top (${topW} × ${topH}) + stem (${stemW} × ${stemH}) = ${this.currentAnswer}`;
         document.getElementById('question-text').textContent = 'What is the total area of this T-shape?';
         document.getElementById('unit-label').textContent = 'square units';
         this.drawTShape(topW, topH, stemW, stemH);
+    }
+
+    genRhombus() {
+        const d1 = this.dim(4, 14);
+        const d2 = this.dim(3, 12);
+        this.currentAnswer = this.roundAnswer((d1.value * d2.value) / 2);
+        this.currentHint = `Area = ½ × d₁ × d₂ = ½ × ${d1.label} × ${d2.label} = ${this.fmt(this.currentAnswer)}`;
+        document.getElementById('question-text').textContent = 'What is the area of this rhombus?';
+        document.getElementById('unit-label').textContent = 'square units';
+        this.drawRhombus(d1, d2);
     }
 
     /* ──────────── Drawing Methods ──────────── */
@@ -184,14 +342,13 @@ class AreaExplorer {
     }
 
     getScale(maxDim) {
-        // Fit the shape nicely inside the canvas with padding
         const available = Math.min(this.canvas.width, this.canvas.height) - 100;
         return Math.min(available / maxDim, 30);
     }
 
-    drawLabel(text, x, y) {
+    drawLabel(text, x, y, color = '#2563eb') {
         this.ctx.font = 'bold 16px Arial';
-        this.ctx.fillStyle = '#333';
+        this.ctx.fillStyle = color;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(text, x, y);
@@ -204,7 +361,6 @@ class AreaExplorer {
         ctx.lineWidth = 1.5;
         ctx.setLineDash([5, 3]);
 
-        // Offset direction
         const dx = x2 - x1, dy = y2 - y1;
         const len = Math.sqrt(dx * dx + dy * dy);
         const nx = -dy / len * offset, ny = dx / len * offset;
@@ -215,7 +371,6 @@ class AreaExplorer {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Arrow ticks
         const tickLen = 6;
         ctx.beginPath();
         ctx.moveTo(x1 + nx - ny / len * tickLen, y1 + ny + nx / len * tickLen);
@@ -227,7 +382,6 @@ class AreaExplorer {
         ctx.lineTo(x2 + nx + ny / len * tickLen, y2 + ny - nx / len * tickLen);
         ctx.stroke();
 
-        // Label
         const mx = (x1 + x2) / 2 + nx + nx * 0.5;
         const my = (y1 + y2) / 2 + ny + ny * 0.5;
         ctx.font = 'bold 15px Arial';
@@ -238,10 +392,15 @@ class AreaExplorer {
         ctx.restore();
     }
 
+    /* Drawing helpers accept {value, label} dim objects or plain numbers */
+    _v(d) { return typeof d === 'object' ? d.value : d; }
+    _l(d) { return typeof d === 'object' ? d.label : `${d}`; }
+
     drawRectangle(w, h) {
         this.clearCanvas();
-        const scale = this.getScale(Math.max(w, h));
-        const pw = w * scale, ph = h * scale;
+        const wv = this._v(w), hv = this._v(h);
+        const scale = this.getScale(Math.max(wv, hv));
+        const pw = wv * scale, ph = hv * scale;
         const x = (this.canvas.width - pw) / 2;
         const y = (this.canvas.height - ph) / 2;
 
@@ -253,15 +412,15 @@ class AreaExplorer {
         this.ctx.fill();
         this.ctx.stroke();
 
-        // Labels
-        this.drawDimensionLine(x, y + ph, x + pw, y + ph, `${w}`, 20);
-        this.drawDimensionLine(x + pw, y + ph, x + pw, y, `${h}`, 20);
+        this.drawDimensionLine(x, y + ph, x + pw, y + ph, this._l(w), 20);
+        this.drawDimensionLine(x + pw, y + ph, x + pw, y, this._l(h), 20);
     }
 
     drawSquare(s) {
         this.clearCanvas();
-        const scale = this.getScale(s);
-        const ps = s * scale;
+        const sv = this._v(s);
+        const scale = this.getScale(sv);
+        const ps = sv * scale;
         const x = (this.canvas.width - ps) / 2;
         const y = (this.canvas.height - ps) / 2;
 
@@ -273,7 +432,6 @@ class AreaExplorer {
         this.ctx.fill();
         this.ctx.stroke();
 
-        // Right-angle marker
         const m = 12;
         this.ctx.strokeStyle = '#2563eb';
         this.ctx.lineWidth = 2;
@@ -283,14 +441,15 @@ class AreaExplorer {
         this.ctx.lineTo(x + ps, y + ps - m);
         this.ctx.stroke();
 
-        this.drawDimensionLine(x, y + ps, x + ps, y + ps, `${s}`, 20);
-        this.drawDimensionLine(x + ps, y + ps, x + ps, y, `${s}`, 20);
+        this.drawDimensionLine(x, y + ps, x + ps, y + ps, this._l(s), 20);
+        this.drawDimensionLine(x + ps, y + ps, x + ps, y, this._l(s), 20);
     }
 
     drawTriangle(base, height) {
         this.clearCanvas();
-        const scale = this.getScale(Math.max(base, height));
-        const pb = base * scale, ph = height * scale;
+        const bv = this._v(base), hv = this._v(height);
+        const scale = this.getScale(Math.max(bv, hv));
+        const pb = bv * scale, ph = hv * scale;
         const startX = (this.canvas.width - pb) / 2;
         const startY = (this.canvas.height + ph) / 2;
 
@@ -298,9 +457,9 @@ class AreaExplorer {
         this.ctx.strokeStyle = '#d97706';
         this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.moveTo(startX, startY);                     // bottom-left
-        this.ctx.lineTo(startX + pb, startY);                // bottom-right
-        this.ctx.lineTo(startX + pb / 2, startY - ph);      // top
+        this.ctx.moveTo(startX, startY);
+        this.ctx.lineTo(startX + pb, startY);
+        this.ctx.lineTo(startX + pb / 2, startY - ph);
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
@@ -317,15 +476,15 @@ class AreaExplorer {
         this.ctx.setLineDash([]);
         this.ctx.restore();
 
-        // Labels
-        this.drawDimensionLine(startX, startY, startX + pb, startY, `${base}`, 22);
-        this.drawLabel(`h = ${height}`, startX + pb / 2 - 40, startY - ph / 2);
+        this.drawDimensionLine(startX, startY, startX + pb, startY, this._l(base), 22);
+        this.drawLabel(`h = ${this._l(height)}`, startX + pb / 2 - 40, startY - ph / 2);
     }
 
     drawParallelogram(base, height) {
         this.clearCanvas();
-        const scale = this.getScale(Math.max(base + 3, height));
-        const pb = base * scale, ph = height * scale;
+        const bv = this._v(base), hv = this._v(height);
+        const scale = this.getScale(Math.max(bv + 3, hv));
+        const pb = bv * scale, ph = hv * scale;
         const skew = 2.5 * scale;
         const startX = (this.canvas.width - pb - skew) / 2;
         const startY = (this.canvas.height + ph) / 2;
@@ -342,7 +501,6 @@ class AreaExplorer {
         this.ctx.fill();
         this.ctx.stroke();
 
-        // Height line (dashed)
         this.ctx.save();
         this.ctx.strokeStyle = '#5b21b6';
         this.ctx.lineWidth = 1.5;
@@ -354,14 +512,15 @@ class AreaExplorer {
         this.ctx.setLineDash([]);
         this.ctx.restore();
 
-        this.drawDimensionLine(startX, startY, startX + pb, startY, `${base}`, 22);
-        this.drawLabel(`h = ${height}`, startX + skew - 42, startY - ph / 2);
+        this.drawDimensionLine(startX, startY, startX + pb, startY, this._l(base), 22);
+        this.drawLabel(`h = ${this._l(height)}`, startX + skew - 42, startY - ph / 2);
     }
 
     drawTrapezoid(b1, b2, h) {
         this.clearCanvas();
-        const scale = this.getScale(Math.max(b1, b2, h));
-        const pb1 = b1 * scale, pb2 = b2 * scale, ph = h * scale;
+        const b1v = this._v(b1), b2v = this._v(b2), hv = this._v(h);
+        const scale = this.getScale(Math.max(b1v, b2v, hv));
+        const pb1 = b1v * scale, pb2 = b2v * scale, ph = hv * scale;
         const cx = this.canvas.width / 2;
         const bottomY = (this.canvas.height + ph) / 2;
         const topY = bottomY - ph;
@@ -370,15 +529,14 @@ class AreaExplorer {
         this.ctx.strokeStyle = '#db2777';
         this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.moveTo(cx - pb1 / 2, bottomY);       // bottom-left
-        this.ctx.lineTo(cx + pb1 / 2, bottomY);       // bottom-right
-        this.ctx.lineTo(cx + pb2 / 2, topY);          // top-right
-        this.ctx.lineTo(cx - pb2 / 2, topY);          // top-left
+        this.ctx.moveTo(cx - pb1 / 2, bottomY);
+        this.ctx.lineTo(cx + pb1 / 2, bottomY);
+        this.ctx.lineTo(cx + pb2 / 2, topY);
+        this.ctx.lineTo(cx - pb2 / 2, topY);
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
 
-        // Height
         const hx = cx - pb1 / 2 - 5;
         this.ctx.save();
         this.ctx.strokeStyle = '#9d174d';
@@ -391,15 +549,16 @@ class AreaExplorer {
         this.ctx.setLineDash([]);
         this.ctx.restore();
 
-        this.drawDimensionLine(cx - pb1 / 2, bottomY, cx + pb1 / 2, bottomY, `b₁ = ${b1}`, 22);
-        this.drawDimensionLine(cx - pb2 / 2, topY, cx + pb2 / 2, topY, `b₂ = ${b2}`, -20);
-        this.drawLabel(`h = ${h}`, hx - 35, (bottomY + topY) / 2);
+        this.drawDimensionLine(cx - pb1 / 2, bottomY, cx + pb1 / 2, bottomY, `b₁ = ${this._l(b1)}`, 22);
+        this.drawDimensionLine(cx - pb2 / 2, topY, cx + pb2 / 2, topY, `b₂ = ${this._l(b2)}`, -20);
+        this.drawLabel(`h = ${this._l(h)}`, hx - 35, (bottomY + topY) / 2);
     }
 
     drawCircle(r) {
         this.clearCanvas();
-        const scale = this.getScale(r * 2);
-        const pr = r * scale;
+        const rv = this._v(r);
+        const scale = this.getScale(rv * 2);
+        const pr = rv * scale;
         const cx = this.canvas.width / 2;
         const cy = this.canvas.height / 2;
 
@@ -411,7 +570,6 @@ class AreaExplorer {
         this.ctx.fill();
         this.ctx.stroke();
 
-        // Radius line
         this.ctx.strokeStyle = '#c2410c';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
@@ -419,13 +577,53 @@ class AreaExplorer {
         this.ctx.lineTo(cx + pr, cy);
         this.ctx.stroke();
 
-        // Dot at center
         this.ctx.fillStyle = '#c2410c';
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, 4, 0, Math.PI * 2);
         this.ctx.fill();
 
-        this.drawLabel(`r = ${r}`, cx + pr / 2, cy - 16);
+        this.drawLabel(`r = ${this._l(r)}`, cx + pr / 2, cy - 16);
+    }
+
+    drawRhombus(d1, d2) {
+        this.clearCanvas();
+        const d1v = this._v(d1), d2v = this._v(d2);
+        const scale = this.getScale(Math.max(d1v, d2v));
+        const pw = d1v * scale;   // horizontal diagonal
+        const ph = d2v * scale;   // vertical diagonal
+        const cx = this.canvas.width / 2;
+        const cy = this.canvas.height / 2;
+
+        this.ctx.fillStyle = '#e0f2fe';
+        this.ctx.strokeStyle = '#0284c7';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy - ph / 2);        // top
+        this.ctx.lineTo(cx + pw / 2, cy);        // right
+        this.ctx.lineTo(cx, cy + ph / 2);        // bottom
+        this.ctx.lineTo(cx - pw / 2, cy);        // left
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // Dashed diagonals
+        this.ctx.save();
+        this.ctx.strokeStyle = '#0369a1';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.setLineDash([5, 3]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx - pw / 2, cy);
+        this.ctx.lineTo(cx + pw / 2, cy);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy - ph / 2);
+        this.ctx.lineTo(cx, cy + ph / 2);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+        this.ctx.restore();
+
+        this.drawLabel(`d₁ = ${this._l(d1)}`, cx, cy + ph / 2 + 20);
+        this.drawLabel(`d₂ = ${this._l(d2)}`, cx + pw / 2 + 28, cy);
     }
 
     drawLShape(w1, h1, w2, h2) {
@@ -526,8 +724,7 @@ class AreaExplorer {
             return;
         }
 
-        // Accept answer within 0.2 tolerance (for rounding on circles)
-        if (Math.abs(userAnswer - this.currentAnswer) <= 0.2) {
+        if (Math.abs(userAnswer - this.currentAnswer) <= this.tolerance) {
             this.handleCorrect();
         } else {
             this.handleIncorrect();
@@ -553,7 +750,7 @@ class AreaExplorer {
     handleIncorrect() {
         this.streak = 0;
         this.levelStats.incorrect++;
-        this.showFeedback(`❌ Not quite. The answer is ${this.currentAnswer}. Try the next one!`, 'incorrect');
+        this.showFeedback(`❌ Not quite. The answer is ${this.fmt(this.currentAnswer)}. Try the next one!`, 'incorrect');
         this.animateElement('answer-input', 'shake');
         this.updateDisplay();
         setTimeout(() => this.generateProblem(), 2200);
@@ -566,7 +763,7 @@ class AreaExplorer {
 
     skipProblem() {
         this.levelStats.skips++;
-        this.showFeedback(`⏭ Skipped. The answer was ${this.currentAnswer}.`, 'hint');
+        this.showFeedback(`⏭ Skipped. The answer was ${this.fmt(this.currentAnswer)}.`, 'hint');
         this.questionsCompleted++;
         this.updateDisplay();
 
@@ -616,13 +813,7 @@ class AreaExplorer {
 
     resetGame() {
         document.getElementById('game-complete-modal').classList.remove('show');
-        this.currentLevel = 1;
-        this.score = 0;
-        this.streak = 0;
-        this.questionsCompleted = 0;
-        this.levelStats = { correct: 0, incorrect: 0, hints: 0, skips: 0 };
-        this.updateDisplay();
-        this.generateProblem();
+        this.showDifficultyScreen();
     }
 
     /* ──────────── UI Updates ──────────── */
@@ -631,7 +822,8 @@ class AreaExplorer {
         document.getElementById('score-display').textContent = this.score;
         document.getElementById('streak-display').textContent = `${this.streak} 🔥`;
 
-        const level = this.levels[this.currentLevel];
+        const levels = this.levelSets[this.difficulty];
+        const level = levels[this.currentLevel - 1];
         document.getElementById('level-name').textContent = level.name;
         document.getElementById('level-desc').textContent = level.desc;
 

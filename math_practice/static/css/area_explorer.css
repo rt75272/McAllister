@@ -267,6 +267,79 @@ body {
     color: #11998e;
 }
 
+.diff-change-btn:hover {
+    border-color: #7c3aed;
+    color: #7c3aed;
+}
+
+/* ── Difficulty Selection Screen ── */
+.screen-heading {
+    text-align: center;
+    color: #15803d;
+    margin: 0 0 6px;
+    font-size: 1.5em;
+}
+
+.screen-subtext {
+    text-align: center;
+    color: #666;
+    margin: 0 0 24px;
+}
+
+.difficulty-cards {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.diff-card {
+    flex: 1;
+    min-width: 160px;
+    max-width: 220px;
+    padding: 24px 16px;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.diff-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.diff-easy:hover  { border-color: #22c55e; }
+.diff-medium:hover { border-color: #eab308; }
+.diff-hard:hover   { border-color: #ef4444; }
+
+.diff-icon {
+    font-size: 2em;
+}
+
+.diff-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+}
+
+.diff-detail {
+    font-size: 0.85em;
+    color: #888;
+    line-height: 1.4;
+}
+
+.diff-badge-card .info-value {
+    font-size: 1em;
+    text-transform: capitalize;
+}
+
 /* ── Modals ── */
 .modal-overlay {
     display: none;
@@ -361,6 +434,7 @@ body {
 
     .level-info {
         gap: 10px;
+        flex-wrap: wrap;
     }
 
     .info-card {
@@ -391,5 +465,15 @@ body {
     .control-btn {
         padding: 8px 14px;
         font-size: 0.85em;
+    }
+
+    .difficulty-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .diff-card {
+        max-width: 280px;
+        width: 100%;
     }
 }
