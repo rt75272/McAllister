@@ -259,3 +259,99 @@ button.attack-btn:active {
     color: #fff;
     border-bottom: 1px solid #fff;
 }
+
+@media (max-width: 768px) {
+    h1.game-title {
+        font-size: 2rem;
+        letter-spacing: 1px;
+    }
+
+    .game-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+
+    .arena {
+        height: 220px;
+    }
+
+    .boss-sprite {
+        font-size: 5rem;
+    }
+
+    .boss-container, .player-container {
+        width: 140px;
+    }
+
+    .action-menu {
+        padding: 1.2rem;
+    }
+
+    .question-text {
+        font-size: 1.2rem;
+    }
+
+    .modal-title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1.game-title {
+        font-size: 1.5rem;
+        letter-spacing: 0;
+    }
+
+    .game-container {
+        padding: 0.75rem;
+        margin: 0.5rem;
+        border-width: 2px;
+    }
+
+    .arena {
+        height: 170px;
+        padding: 10px;
+    }
+
+    .boss-sprite {
+        font-size: 3.5rem;
+    }
+
+    .boss-container, .player-container {
+        width: 100px;
+    }
+
+    .action-menu {
+        padding: 0.9rem;
+        border-width: 4px;
+        min-height: auto;
+    }
+
+    .question-text {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    input[type="number"] {
+        width: 110px;
+        font-size: 1rem;
+    }
+
+    button.attack-btn {
+        padding: 8px 18px;
+        font-size: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.6rem;
+    }
+
+    .modal-content {
+        padding: 1.2rem;
+    }
+
+    .battle-log {
+        height: 70px;
+        font-size: 0.8rem;
+    }
+}

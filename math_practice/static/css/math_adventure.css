@@ -462,3 +462,112 @@ body {
     cursor: not-allowed;
     transform: none;
 }
+
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+
+    .nav-header {
+        padding: 0.6rem 1rem;
+    }
+
+    .game-title {
+        font-size: 1.3rem;
+    }
+
+    #game-container {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - 55px);
+    }
+
+    #map-container {
+        flex: none;
+        height: 45vh;
+        border-right: none;
+        border-bottom: 1px solid #444;
+    }
+
+    #game-info {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        justify-content: flex-start;
+        box-shadow: none;
+    }
+
+    #location-name {
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+    }
+
+    #location-description {
+        font-size: 0.95rem;
+    }
+
+    .difficulty-selector {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    #problem-text {
+        font-size: 1.4rem;
+        margin: 1rem 0;
+    }
+
+    #answer-input {
+        width: 90%;
+    }
+
+    #victory-content {
+        padding: 2rem 1.5rem;
+    }
+
+    #victory-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .victory-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 1.1rem;
+    }
+
+    #map-container {
+        height: 38vh;
+    }
+
+    #game-info {
+        padding: 0.75rem;
+    }
+
+    #location-name {
+        font-size: 1.2rem;
+    }
+
+    #problem-text {
+        font-size: 1.2rem;
+    }
+
+    #start-content {
+        padding: 1.5rem;
+    }
+
+    #start-content h2 {
+        font-size: 1.2rem;
+    }
+
+    #victory-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .victory-message {
+        font-size: 1rem;
+    }
+}

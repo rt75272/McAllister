@@ -83,6 +83,44 @@
         .back-link:hover {
             background: #5a6fd5;
         }
+
+        @media (max-width: 768px) {
+            .about-title {
+                font-size: 2rem;
+            }
+            .main-container {
+                padding: 1rem;
+            }
+            .about-card {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-title {
+                font-size: 1.5rem;
+            }
+            .about-subtitle {
+                font-size: 1rem;
+            }
+            .main-container {
+                padding: 0.5rem;
+                margin: 0.75rem auto;
+            }
+            .about-card {
+                padding: 1rem;
+            }
+            .about-section img {
+                float: none !important;
+                display: block;
+                width: 100% !important;
+                max-width: 220px;
+                margin: 0 auto 1rem auto !important;
+            }
+            .about-section h3 {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 {% endblock %}
 

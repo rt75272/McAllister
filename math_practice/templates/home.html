@@ -220,6 +220,25 @@
             margin-top: 1em;
         }
         
+        .audio-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .audio-container {
+                position: static;
+                text-align: center;
+                margin-bottom: 1em;
+            }
+            .audio-container audio {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+
         @media (max-width: 900px) {
             .sections-grid {
                 grid-template-columns: 1fr;
@@ -265,15 +284,15 @@
 {% endblock %}
 
 {% block content %}
-    <div class="audio-container" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
-        <audio controls>
-            <source src="{{ url_for('static', filename='audio/Parallel_Tracks.mp3') }}" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-    </div>
     <div class="main-container">
         <!-- Hero Section -->
         <div class="hero-section">
+            <div class="audio-container">
+                <audio controls>
+                    <source src="{{ url_for('static', filename='audio/Parallel_Tracks.mp3') }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
             <h1 class="hero-title">🎓 Learning Center</h1>
             <p class="hero-subtitle">Making Learning Fun, Engaging, and Educational.</p>
             <div class="hero-links">
