@@ -180,6 +180,24 @@
             color: #FF9A9E;
         }
         
+        .finale-section .section-header {
+            background: linear-gradient(135deg, #1A365D 0%, #2d3a8c 100%);
+        }
+        
+        .finale-section .game-count {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .finale-section .features-list li:before {
+            color: #f59e0b;
+        }
+        
+        .finale-section .cta-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #1a1a2e;
+        }
+        
         .cta-button {
             display: inline-block;
             padding: 1em 2em;
@@ -366,6 +384,28 @@
                         <li>Discover sweet treats</li>
                     </ul>
                     <span class="cta-button">Join Baking Club →</span>
+                </div>
+            </a>
+
+            <!-- Grand Finale Section -->
+            <a href="{{ url_for('grand_finale') }}" class="section-card finale-section">
+                <div class="section-header">
+                    <div class="section-icon">🎓</div>
+                    <h2 class="section-title">Grand Finale</h2>
+                </div>
+                <div class="section-content">
+                    <div class="game-count">3-Day Celebration!</div>
+                    <p class="section-description">
+                        The ultimate end-of-year celebration slideshow! Three days of games, challenges, and fun to wrap up 6th grade math in style!
+                    </p>
+                    <ul class="features-list">
+                        <li>Day 1: Quick-fire warm-ups &amp; Blooket Gold Quest</li>
+                        <li>Day 2: The "24" Game &amp; Gimkit Co-Op Lava Rising</li>
+                        <li>Day 3: Coordinate BINGO Trashketball</li>
+                        <li>Interactive cheat sheet drawer &amp; timer</li>
+                        <li>Confetti celebrations &amp; gratitude activities</li>
+                    </ul>
+                    <span class="cta-button">Launch Grand Finale →</span>
                 </div>
             </a>
         </div>

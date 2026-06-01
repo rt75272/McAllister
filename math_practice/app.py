@@ -280,6 +280,11 @@ def baking_club():
     """Baking Club page."""
     return render_template('baking_club.html')
 
+@app.route('/grand-finale', methods=['GET'])
+def grand_finale():
+    """6th Grade Math Grand Finale celebration slideshow."""
+    return render_template('grand_finale.html')
+
 @app.route('/context-clues', methods=['GET'])
 def context_clues():
     """Context Clues game page (infer word meanings)."""
