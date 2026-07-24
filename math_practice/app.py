@@ -95,6 +95,10 @@ CHATBOT_FAQ = {
     'plus': "I can help with steps and hints, but you should double-check the final answer and show your work.",
     'equals': "I can help with steps and hints, but you should double-check the final answer and show your work.",
     'math help': "I can help with steps and hints, but you should double-check the final answer and show your work.",
+    'math adventure': "Math Adventure is a graphical map quest game where you choose a character (Knight, Wizard, Ninja, or Astronaut) and difficulty level, then solve math challenges to move across the map from the Starting Village to the Castle of Triumph!",
+    'adventure map': "Math Adventure is a graphical map quest game where you choose a character (Knight, Wizard, Ninja, or Astronaut) and difficulty level, then solve math challenges to move across the map from the Starting Village to the Castle of Triumph!",
+    'grand finale': "The Grand Finale is our 3-day end-of-year math celebration! It features interactive slides, quick-fire challenges, Blooket Gold Quest, Gimkit Lava Rising, Coordinate BINGO, and teacher trivia. Use the navigation buttons to jump to Day 1, 2, or 3!",
+    'finale': "The Grand Finale is our 3-day end-of-year math celebration! It features interactive slides, quick-fire challenges, Blooket Gold Quest, Gimkit Lava Rising, Coordinate BINGO, and teacher trivia. Use the navigation buttons to jump to Day 1, 2, or 3!",
     'help': "I can help with website games, Canvas questions, assignment steps, grades, class links, school tools, and simple math or ELA hints."
 }
 
@@ -585,6 +589,16 @@ def expression_comparison():
 @app.route('/math_adventure')
 def math_adventure():
     return render_template('math_adventure.html')
+
+@app.route('/quest-map')
+def quest_map():
+    """The Quest Map - comprehensive 6th grade math curriculum adventure."""
+    return render_template('quest_map.html')
+
+@app.route('/quest-map/planet/<int:planet_id>')
+def planet_hub(planet_id):
+    """A dedicated page for the active planet's curriculum stations."""
+    return render_template('planet_hub.html', planet_id=planet_id)
 
 @app.route('/percentage_quest')
 def percentage_quest():

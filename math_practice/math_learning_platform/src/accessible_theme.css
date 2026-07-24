@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   GLOBAL ACCESSIBILITY & DYSLEXIA-FRIENDLY CONFIGURATIONS (Dark Mode Optimized)
+   ========================================================================== */
+
+:root {
+  /* Dyslexia-friendly spacing & typographic variables */
+  --font-dyslexic: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
+  --line-height-accessible: 1.5;
+  --letter-spacing-accessible: 0.05em; /* Slightly increased tracking for readability */
+  --word-spacing-accessible: 0.12em;
+
+  /* Optimized contrast colors (avoiding high-contrast pure white-on-black eye strain) */
+  --bg-cosmic-dark: #12121e;        /* Soft space-blue dark backdrop */
+  --bg-modal-panel: #1a1a2e;        /* Soft reading panel background */
+  --text-accessible-offwhite: #e0e0ed; /* Muted off-white text to prevent visual blurring */
+  --text-accessible-muted: #abb2bf;    /* Readable slate-grey secondary text */
+
+  /* Highlighting key math terms using gentle soft pastels */
+  --color-highlight-yellow: #fef08a;  /* Pastel Yellow for math values */
+  --color-highlight-cyan: #67e8f9;    /* Soft Cyan for labels */
+  --color-accent-indigo: #818cf8;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-dyslexic);
+  line-height: var(--line-height-accessible);
+  letter-spacing: var(--letter-spacing-accessible);
+  word-spacing: var(--word-spacing-accessible);
+  background-color: var(--bg-cosmic-dark);
+  color: var(--text-accessible-offwhite);
+  text-align: left; /* Strict alignment rule: Left align, never justify */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible highlights for terms inside backticks or strong elements */
+.math-term {
+  color: var(--color-highlight-yellow) !important;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.math-label {
+  color: var(--color-highlight-cyan) !important;
+  font-weight: 700;
+}
+
+/* Form inputs & interactive buttons with bold distinct borders and focus states */
+input, select, textarea {
+  font-family: var(--font-dyslexic) !important;
+  font-size: 14px !important;
+  letter-spacing: var(--letter-spacing-accessible) !important;
+  line-height: var(--line-height-accessible) !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: #38bdf8 !important; /* Bold cyan indicators */
+  background-color: #0b0f19 !important;
+  color: var(--text-accessible-offwhite) !important;
+  border-radius: 12px !important;
+}
+
+input:focus, select:focus {
+  outline: none !important;
+  border-color: #818cf8 !important; /* Pulse to indigo on active focus */
+  box-shadow: 0 0 10px rgba(129, 140, 248, 0.4) !important;
+}
+
+/* Standard readable accessible buttons */
+.btn-accessible {
+  font-family: var(--font-dyslexic);
+  font-weight: bold;
+  letter-spacing: var(--letter-spacing-accessible);
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 16px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.btn-accessible:focus {
+  outline: 4px solid var(--color-accent-indigo);
+  outline-offset: 2px;
+}

@@ -1,0 +1,891 @@
+{% extends "base.html" %}
+
+{% block title %}Planet Hub Console - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        /* Immersive Space Station Theme for the Planet Hub */
+        body {
+            background: #09090e;
+            color: #e0e0ed;
+            font-family: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            letter-spacing: 0.05em;
+            text-align: left;
+        }
+
+        .hub-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Glass panels with thick wood-style borders for medieval-space styling */
+        .glass-station-panel {
+            background: rgba(26, 26, 46, 0.85);
+            border: 4px solid #8b5a2b;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn {
+            background: linear-gradient(to right, #1e293b, #334155);
+            border: 2px solid #8b5a2b;
+            color: #e0e0ed;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            background: #475569;
+        }
+
+        /* Constellation map wrapper */
+        .constellation-map {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            background-color: #050508;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 80%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='1' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E");
+            border: 3px solid #334155;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        /* Station Node Styling */
+        .station-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .station-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #3b82f6, #1e3a8a);
+            border: 3px solid #60a5fa;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 5px 10px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .station-node:hover .station-circle {
+            transform: scale(1.15);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 8px 15px rgba(0,0,0,0.6);
+        }
+
+        .station-node.completed .station-circle {
+            background: radial-gradient(circle at 35% 35%, #10b981, #064e3b);
+            border-color: #34d399;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .station-label {
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 10px;
+            font-weight: 700;
+            color: #abb2bf;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            pointer-events: none;
+        }
+
+        /* Tooltip details overlay */
+        .station-detail-banner {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid #8b5a2b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        /* Accessible Modal custom rules */
+        .accessible-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 11, 20, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .accessible-modal-container {
+            width: 100%;
+            max-width: 480px;
+            background: #1a1a2e;
+            border: 3.5px solid #38bdf8;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            color: #e0e0ed;
+        }
+
+        /* Highlight math terms using gentle soft pastels */
+        .math-term {
+            color: #fef08a !important; /* Pastel Yellow */
+            font-weight: 700;
+        }
+
+        .math-label {
+            color: #67e8f9 !important; /* Soft Cyan */
+            font-weight: 700;
+        }
+
+        /* Reusable buttons */
+        .btn-accessible {
+            background: #312e81;
+            border: 2px solid #818cf8;
+            color: #e0e0ed;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-accessible:hover {
+            transform: scale(1.03);
+            background: #4338ca;
+            border-color: #a5b4fc;
+        }
+
+        /* Chrome Dino runner styles */
+        #dino-canvas, #galaga-canvas {
+            background: #020617;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="hub-container space-y-6">
+    <!-- Back to 3D Space Scene Navigation -->
+    <div class="flex items-center justify-between">
+        <a href="{{ url_for('quest_map') }}" class="back-btn">
+            🚀 Return to Space Flight
+        </a>
+        <div class="flex items-center gap-4 bg-slate-900/90 border-2 border-[#8b5a2b] px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-display-hub">15</span></span>
+            <span class="text-slate-500">|</span>
+            <span class="text-cyan-400 font-bold" id="planet-title-short">Planet Hub</span>
+        </div>
+    </div>
+
+    <!-- Active Planet Header Dashboard -->
+    <div class="glass-station-panel">
+        <div class="flex items-center gap-4 border-b border-slate-800 pb-4 mb-4">
+            <span id="planet-emoji" class="text-4xl animate-bounce">🪐</span>
+            <div>
+                <span class="text-[10px] text-indigo-400 font-black uppercase tracking-widest block">Unit Learning Center</span>
+                <h1 id="planet-title-full" class="text-2xl font-black text-slate-100">Planet Name</h1>
+                <p id="planet-description" class="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">Planet learning objectives are loaded here...</p>
+            </div>
+        </div>
+
+        <!-- 2D Constellation Trail Map -->
+        <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Unit Constellation Pathway</h3>
+        <div class="constellation-map">
+            <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                <path id="connector-line" d="" fill="none" stroke="#1e293b" stroke-width="4" stroke-dasharray="8 6"></path>
+                <path id="completed-line" d="" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="4 4" style="display: none;"></path>
+            </svg>
+
+            <!-- Dynamic Nodes will populate here via script -->
+            <div id="nodes-container" class="absolute inset-0"></div>
+        </div>
+
+        <!-- Tooltip Details overlay -->
+        <div id="station-detail" class="station-detail-banner">
+            <h4 id="detail-title" class="font-bold text-xs text-indigo-400 flex items-center gap-1">🌟 Mission Coordinate Computer</h4>
+            <p id="detail-desc" class="text-xs text-slate-400 mt-1 leading-normal">Hover over any station on the constellation map to examine mathematical coordinates, objectives, and game goals.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ACCESSIBLE MODAL OVERLAY WRAPPER -->
+<div id="accessible-modal" class="accessible-modal-overlay">
+    <div class="accessible-modal-container space-y-5">
+        <!-- Header -->
+        <div class="flex justify-between items-start border-b border-slate-850 pb-3 mb-4">
+            <div>
+                <span id="modal-station-type" class="text-[10px] font-black uppercase text-[#67e8f9] tracking-widest block">STATION TYPE</span>
+                <h3 id="modal-station-title" class="font-extrabold text-sm text-slate-100">Station Title</h3>
+            </div>
+            <button id="modal-close" class="text-slate-400 hover:text-white text-2xl font-bold font-mono focus:outline-none">&times;</button>
+        </div>
+
+        <!-- Content Body -->
+        <div id="modal-body-content" class="text-xs leading-relaxed space-y-4">
+            <!-- Dynamic game/practice interface loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        // Retrieve route params passed by Flask Jinja
+        const planetId = parseInt("{{ planet_id }}") || 1;
+
+        // Planet profiles mapper
+        const planetProfiles = {
+            1: { name: "Sky Garden Planet", icon: "🌸", desc: "Master divisor coordinates, factor flowers, GCF/LCM vines, and distributive property locks." },
+            2: { name: "Gorilla Nebula", icon: "🦍", desc: "Swing through calculations for decimal fuel thrusters and giant fractional split portions." },
+            3: { name: "Bathhouse Battle", icon: "♨️", desc: "Plunge into opposite elevation thermometers, calculate absolute steam pipe lengths, and align pressure valves." },
+            4: { name: "Tenting Trouble", icon: "⛺", desc: "Pitch campground exponents and simplify order of operations CAMPFIRE equations." },
+            5: { name: "Construction Canyon", icon: "🏗️", desc: "Solve variable scaffold loads and inequality weights to safely balance girders." },
+            6: { name: "Slo-Mo Valley", icon: "⏳", desc: "Explore slow-time coordinate ratios and proportion rates to calibrate engines." },
+            7: { name: "Dumbo Beat", icon: "🐘", desc: "Analyze drum triangles, hexagons, and decomposing coordinates to find polygon areas." },
+            8: { name: "Djinn's Revenge", icon: "🧞", desc: "Unfold desert net boxes to compute exact volumes and 3D surface area equations." },
+            9: { name: "Safari Park", icon: "🦁", desc: "Compile dot plots, locate median river ranges, and find mean averages of safari census monitors." },
+            10: { name: "The Mothership", icon: "🛸", desc: "Dock coordinate vectors cleanly across all 4 quadrants of the Mothership docking lock." }
+        };
+
+        // 12 Constellation Stations Template
+        const stationsList = [
+            { id: 1, name: "Star 360 Check-In", type: "assessment", desc: "Diagnostic checklist to verify math progress." },
+            { id: 2, name: "Astronaut Orbit Leap", type: "brainbreak", desc: "Fun mental break: Leap over craters and space rocks!" },
+            { id: 3, name: "Supernova Extra Credit", type: "challenge", desc: "Solve highly rigorous math models for coin chest rewards." },
+            { id: 4, name: "Galaga Sector Rates", type: "practice", desc: "Practice math game: Blast equivalent equations with spaceship lasers!" },
+            { id: 5, name: "Kitchen Ratio Baker", type: "practice", desc: "Scale recipe portions to bake cookies." },
+            { id: 6, name: "Decimal Matrix Fueler", type: "practice", desc: "Align precise decimal measurement values." },
+            { id: 7, name: "GCF & LCM Blossom Sector", type: "practice", desc: "Coordinate common multiple factors." },
+            { id: 8, name: "Sub-Zero Plunge Opposites", type: "practice", desc: "Evaluate opposite elevations under water meters." },
+            { id: 9, name: "Volcanic Base Exponents", type: "practice", desc: "Resolve base exponential values." },
+            { id: 10, name: "Girder Balance Equations", type: "practice", desc: "Solve variable values on construction scaffold weights." },
+            { id: 11, name: "Polygon Area Beat", type: "practice", desc: "Calculate triangular panel dimensions." },
+            { id: 12, name: "Victory Coordinate Planes", type: "practice", desc: "Dock coordinates inside all 4 grid quadrants." }
+        ];
+
+        // Starry zigzag offsets along path
+        const pathCoords = [
+            { x: 10, y: 50 }, { x: 18, y: 30 }, { x: 26, y: 20 }, { x: 34, y: 30 },
+            { x: 42, y: 55 }, { x: 50, y: 75 }, { x: 58, y: 80 }, { x: 66, y: 65 },
+            { x: 74, y: 45 }, { x: 82, y: 25 }, { x: 90, y: 20 }, { x: 95, y: 40 }
+        ];
+
+        // Question Bank for Planet Hub lessons (Enriched with 10 questions per planet)
+        const mathQuestions = {
+            1: [
+                { query: "Evaluate the GCF (Greatest Common Factor) of <span class='math-term'>12</span> and <span class='math-term'>18</span>:", ans: 6, exp: "Factors of 12 are 1,2,3,4,6,12. Factors of 18 are 1,2,3,6,9,18. GCF is 6." },
+                { query: "Evaluate the LCM (Least Common Multiple) of <span class='math-term'>6</span> and <span class='math-term'>8</span>:", ans: 24, exp: "Multiples of 6 are 6,12,18,24... Multiples of 8 are 8,16,24... LCM is 24." },
+                { query: "What is the highest prime factor in the prime factorization of <span class='math-term'>30</span>?", ans: 5, exp: "Prime factorization of 30 is 2 × 3 × 5. The highest prime factor is 5." },
+                { query: "Solve for <span class='math-term'>y</span> inside the distributive property equation: <span class='math-term'>5 × (3 + 7) = 5 × 3 + 5 × y</span>", ans: 7, exp: "By the distributive property, a × (b + c) = a × b + a × c. Therefore, y = 7." },
+                { query: "If you divide <span class='math-term'>145</span> by <span class='math-term'>4</span> using the standard division algorithm, what is the whole number remainder?", ans: 1, exp: "145 = 36 × 4 + 1. The remainder is 1." },
+                { query: "Blue warning lights flash every <span class='math-term'>4</span> seconds, and red lights flash every <span class='math-term'>6</span> seconds. If they just flashed together, how many seconds until they flash together again?", ans: 12, exp: "Find the LCM of 4 and 6: multiples of 4 are 4, 8, 12... multiples of 6 are 6, 12... The LCM is 12." },
+                { query: "How many common factors do the numbers <span class='math-term'>12</span> and <span class='math-term'>16</span> share?", ans: 3, exp: "Factors of 12 are 1, 2, 3, 4, 6, 12. Factors of 16 are 1, 2, 4, 8, 16. Shared factors are 1, 2, and 4 (3 factors)." },
+                { query: "Write the sum <span class='math-term'>18 + 24</span> as <span class='math-term'>6 × (3 + y)</span>. Solve for the variable <span class='math-term'>y</span>:", ans: 4, exp: "Divide both terms by the common factor 6: 18/6 = 3, 24/6 = 4. Thus y = 4." },
+                { query: "Using the division algorithm, find the exact quotient of <span class='math-term'>756 ÷ 3</span>:", ans: 252, exp: "756 divided by 3 is exactly 252." },
+                { query: "What is the only even prime number in the number system?", ans: 2, exp: "2 is the only even prime number because all other even numbers have 2 as a factor." }
+            ],
+            2: [
+                { query: "Calculate the quotient of fraction division: <span class='math-term'>(3/4) ÷ (1/8)</span>", ans: 6, exp: "Multiply by the reciprocal: (3/4) × 8 = 24/4 = 6." },
+                { query: "Calculate the product of decimals: <span class='math-term'>2.5 × 1.2</span>", ans: 3, exp: "2.5 × 1.2 is exactly 3." },
+                { query: "Calculate the division: <span class='math-term'>4.8 ÷ 0.6</span>", ans: 8, exp: "Multiply both numbers by 10 to clear decimals: 48 ÷ 6 = 8." },
+                { query: "A wooden board is <span class='math-term'>3</span> meters long. If you cut it into pieces that are exactly <span class='math-term'>1/2</span> meter long, how many pieces do you get?", ans: 6, exp: "Divide: 3 ÷ (1/2) = 3 × 2 = 6 pieces." },
+                { query: "Calculate decimal addition: <span class='math-term'>14.25 + 3.8</span>", ans: 18.05, exp: "Align the decimal places: 14.25 + 3.80 = 18.05." },
+                { query: "Calculate decimal subtraction: <span class='math-term'>20 - 4.75</span>", ans: 15.25, exp: "Align the decimal places: 20.00 - 4.75 = 15.25." },
+                { query: "What is the value of <span class='math-term'>(2/3) ÷ (2/9)</span>?", ans: 3, exp: "Multiply by the reciprocal: (2/3) × (9/2) = 18/6 = 3." },
+                { query: "Calculate decimal multiplication: <span class='math-term'>0.15 × 0.2</span>", ans: 0.03, exp: "Multiply as integers (15 × 2 = 30) then shift 3 decimal places to the left: 0.030 = 0.03." },
+                { query: "How many <span class='math-term'>2/3</span> cup scoops are in <span class='math-term'>4</span> cups of sugar?", ans: 6, exp: "Divide: 4 ÷ (2/3) = 4 × (3/2) = 12/2 = 6 scoops." },
+                { query: "Calculate the value of decimal subtraction: <span class='math-term'>1.05 - 0.95</span>", ans: 0.1, exp: "Subtracting 0.95 from 1.05 leaves exactly 0.10 (or 0.1)." }
+            ],
+            3: [
+                { query: "What is the opposite of the negative integer <span class='math-term'>-15</span>?", ans: 15, exp: "The opposite of any negative number is its positive counterpart. Opposite of -15 is 15." },
+                { query: "Evaluate the absolute value of: <span class='math-term'>|-32|</span>", ans: 32, exp: "Absolute value represents distance from 0, which is always positive. |-32| = 32." },
+                { query: "Which integer is larger on a number line: <span class='math-term'>-8</span> or <span class='math-term'>-3</span>?", ans: -3, exp: "-3 is further to the right than -8 on a number line, so -3 is larger." },
+                { query: "An anchor drops <span class='math-term'>45</span> meters below sea level. What integer value represents this elevation?", ans: -45, exp: "Below sea level is represented by a negative integer, so -45." },
+                { query: "Find the total distance between the coordinates <span class='math-term'>-5</span> and <span class='math-term'>7</span> on a number line:", ans: 12, exp: "Distance is |-5 - 7| = |-12| = 12 units." },
+                { query: "If the coordinate point <span class='math-term'>(3, -4)</span> is reflected across the x-axis, what is the new y-coordinate?", ans: 4, exp: "Reflecting across the x-axis negates the sign of the y-coordinate. -(-4) = 4." },
+                { query: "Is the inequality statement <span class='math-term'>-10 > -12</span> true (enter 1) or false (enter 0)?", ans: 1, exp: "True. -10 is greater than -12 because it is closer to zero on the number line." },
+                { query: "In which quadrant of the coordinate plane do both the x and y coordinates have positive signs?", ans: 1, exp: "Quadrant 1 contains points with (+, +) coordinate values." },
+                { query: "What is the opposite of the opposite of the integer <span class='math-term'>-7</span>?", ans: -7, exp: "The opposite of -7 is 7, and the opposite of 7 is -7." },
+                { query: "Find the horizontal distance between point <span class='math-term'>(-2, 5)</span> and point <span class='math-term'>(4, 5)</span> on the grid:", ans: 6, exp: "Since y-coordinates are the same, subtract x-coordinates: |4 - (-2)| = |6| = 6." }
+            ],
+            4: [
+                { query: "Evaluate the exponent base: what is <span class='math-term'>2</span> to the power of <span class='math-term'>5</span> (<span class='math-term'>2⁵</span>)?", ans: 32, exp: "2 × 2 × 2 × 2 × 2 = 32." },
+                { query: "Apply the correct PEMDAS order of operations to solve: <span class='math-term'>8 + 3 × 4</span>", ans: 20, exp: "Multiply first, then add: 3 × 4 = 12, and 8 + 12 = 20." },
+                { query: "Evaluate the algebraic expression <span class='math-term'>3x + 5</span> when the variable <span class='math-term'>x = 4</span>:", ans: 17, exp: "Substitute 4 for x: 3 × 4 + 5 = 12 + 5 = 17." },
+                { query: "How many distinct terms are in the algebraic expression <span class='math-term'>4x + 2y - 7</span>?", ans: 3, exp: "Terms are separated by plus/minus signs. The terms are 4x, 2y, and -7 (3 terms)." },
+                { query: "Evaluate using order of operations: <span class='math-term'>(10 - 2) ÷ 4 + 3</span>", ans: 5, exp: "Solve parenthesis first: 8 ÷ 4 + 3. Then divide: 2 + 3 = 5." },
+                { query: "Simplify the algebraic expression <span class='math-term'>4x + 3x + 2x</span> and find its value when <span class='math-term'>x = 2</span>:", ans: 18, exp: "Combine like terms: 9x. Substitute x=2: 9 × 2 = 18." },
+                { query: "Evaluate the base 10 power exponent: <span class='math-term'>10³</span>", ans: 1000, exp: "10³ is 10 × 10 × 10 = 1000." },
+                { query: "Using equivalent expressions and properties, solve for <span class='math-term'>y</span>: <span class='math-term'>2 × (x + 5) = 2x + y</span>", ans: 10, exp: "Distribute the 2: 2 × x + 2 × 5 = 2x + 10. Therefore, y = 10." },
+                { query: "Evaluate the expression 'twice the sum of x and 3' when the variable <span class='math-term'>x = 5</span>:", ans: 16, exp: "The expression is 2 × (x + 3). Substitute x=5: 2 × (5 + 3) = 2 × 8 = 16." },
+                { query: "Evaluate the exponent value: <span class='math-term'>3⁴</span>", ans: 81, exp: "3 × 3 × 3 × 3 = 81." }
+            ],
+            5: [
+                { query: "Solve the one-step addition equation for <span class='math-term'>x</span>: <span class='math-term'>x + 12 = 30</span>", ans: 18, exp: "Subtract 12 from both sides: x = 30 - 12 = 18." },
+                { query: "Solve the one-step subtraction equation for <span class='math-term'>y</span>: <span class='math-term'>y - 5 = 14</span>", ans: 19, exp: "Add 5 to both sides: y = 14 + 5 = 19." },
+                { query: "Solve the multiplication equation for <span class='math-term'>x</span>: <span class='math-term'>4x = 48</span>", ans: 12, exp: "Divide both sides by 4: x = 48 / 4 = 12." },
+                { query: "Solve the division equation for <span class='math-term'>z</span>: <span class='math-term'>z ÷ 3 = 9</span>", ans: 27, exp: "Multiply both sides by 3: z = 9 × 3 = 27." },
+                { query: "If the dependent variable <span class='math-term'>y = 2x + 1</span>, what is the value of <span class='math-term'>y</span> when the independent variable <span class='math-term'>x = 5</span>?", ans: 11, exp: "y = 2 × 5 + 1 = 10 + 1 = 11." },
+                { query: "Is <span class='math-term'>x = 5</span> a solution to the inequality <span class='math-term'>x + 3 > 8</span>? (Enter 1 for true, 0 for false)", ans: 0, exp: "If x=5, then 5 + 3 = 8. Since 8 is not strictly greater than 8, it is false (0)." },
+                { query: "A pack of <span class='math-term'>6</span> space pencils costs exactly <span class='math-term'>18</span> coins. What is the cost of <span class='math-term'>1</span> pencil?", ans: 3, exp: "Solve 6x = 18. Divide by 6: x = 3." },
+                { query: "Find the value of <span class='math-term'>c</span> in the equation <span class='math-term'>a + b = c</span> when <span class='math-term'>a = 15</span> and <span class='math-term'>b = 28</span>:", ans: 33, exp: "c = 15 + 28 = 33." },
+                { query: "Solve the decimal addition equation for <span class='math-term'>x</span>: <span class='math-term'>3.5 + x = 10</span>", ans: 6.5, exp: "Subtract 3.5 from both sides: x = 10 - 3.5 = 6.5." },
+                { query: "What is the smallest integer value of <span class='math-term'>x</span> that makes the inequality statement <span class='math-term'>x > -3</span> true?", ans: -2, exp: "The integers greater than -3 are -2, -1, 0, etc. The smallest integer is -2." }
+            ],
+            6: [
+                { query: "If the ratio of cups to plates is <span class='math-term'>2:5</span>, how many plates do you need when you have <span class='math-term'>10</span> cups?", ans: 25, exp: "Since 10 cups is 5 times 2, multiply plates by 5: 5 × 5 = 25 plates." },
+                { query: "If a shuttle travels <span class='math-term'>150</span> miles in <span class='math-term'>3</span> minutes, what is its unit speed in miles per minute?", ans: 50, exp: "Divide distance by time: 150 miles / 3 minutes = 50 miles per minute." },
+                { query: "A box of <span class='math-term'>5</span> space donuts costs <span class='math-term'>15</span> coins. What is the unit cost of <span class='math-term'>1</span> donut?", ans: 3, exp: "Divide cost by count: 15 / 5 = 3 coins per donut." },
+                { query: "What is <span class='math-term'>20%</span> of the integer number <span class='math-term'>80</span>?", ans: 16, exp: "20% is 0.20. Multiply: 80 × 0.20 = 16." },
+                { query: "Express the fraction <span class='math-term'>3/5</span> as a percentage percentage value (do not include the percentage sign):", ans: 60, exp: "3/5 = 0.60, which is exactly 60%." },
+                { query: "Convert <span class='math-term'>4</span> yards into feet (remember, 1 yard = 3 feet):", ans: 12, exp: "Multiply yards by 3: 4 × 3 = 12 feet." },
+                { query: "If 1 liter = 1000 mL, how many milliliters are in <span class='math-term'>0.5</span> liters?", ans: 500, exp: "Multiply liters by 1000: 0.5 × 1000 = 500 mL." },
+                { query: "The ratio of gold to silver coins is <span class='math-term'>3:1</span>. If you have <span class='math-term'>15</span> gold coins, how many silver coins do you have?", ans: 5, exp: "Set up the proportion: 3/1 = 15/x. Solving for x yields 5 silver coins." },
+                { query: "If <span class='math-term'>40%</span> of a number is <span class='math-term'>24</span>, what is the whole number?", ans: 60, exp: "Set up equation: 0.40 × x = 24. Divide both sides by 0.40: x = 24 / 0.40 = 60." },
+                { query: "If a meal costs <span class='math-term'>40</span> dollars and you leave a <span class='math-term'>15%</span> tip, what is the tip amount in dollars?", ans: 6, exp: "15% of 40 is 0.15 × 40 = 6 dollars." }
+            ],
+            7: [
+                { query: "Find the area of a rectangle with length <span class='math-term'>8</span> and width <span class='math-term'>5</span>:", ans: 40, exp: "Area = length × width = 8 × 5 = 40 square units." },
+                { query: "Find the area of a triangle with base <span class='math-term'>6</span> and height <span class='math-term'>4</span>:", ans: 12, exp: "Area = 0.5 × base × height = 0.5 × 6 × 4 = 12 square units." },
+                { query: "What is the area of a parallelogram with base <span class='math-term'>10</span> and height <span class='math-term'>7</span>?", ans: 70, exp: "Area = base × height = 10 × 7 = 70 square units." },
+                { query: "A trapezoid has parallel bases of lengths <span class='math-term'>3</span> and <span class='math-term'>5</span>, and height of <span class='math-term'>4</span>. What is its area?", ans: 16, exp: "Area = 0.5 × (base1 + base2) × height = 0.5 × (3 + 5) × 4 = 16." },
+                { query: "A composite shape is made of a <span class='math-term'>4x4</span> square and a triangle with base <span class='math-term'>4</span> and height <span class='math-term'>3</span> sitting on top. What is the total area?", ans: 22, exp: "Area of square is 16. Area of triangle is 0.5 × 4 × 3 = 6. Total area = 16 + 6 = 22." },
+                { query: "A rectangle plotted on a coordinate grid has vertices at <span class='math-term'>(1,1)</span>, <span class='math-term'>(5,1)</span>, <span class='math-term'>(5,4)</span>, and <span class='math-term'>(1,4)</span>. What is its area?", ans: 12, exp: "The length is 5-1 = 4, and the width is 4-1 = 3. Area = 4 × 3 = 12." },
+                { query: "Find the area of a right triangle with perpendicular leg lengths of <span class='math-term'>5</span> and <span class='math-term'>12</span>:", ans: 30, exp: "Area = 0.5 × base × height = 0.5 × 5 × 12 = 30." },
+                { query: "A square foundation on a coordinate grid has side length <span class='math-term'>12</span>. What is its total area?", ans: 144, exp: "Area of a square = side × side = 12 × 12 = 144." },
+                { query: "A square has a side length of <span class='math-term'>2.5</span> meters. What is its area in square meters?", ans: 6.25, exp: "Area = 2.5 × 2.5 = 6.25 square meters." },
+                { query: "A triangle has a total area of <span class='math-term'>15</span> square units and a base of <span class='math-term'>6</span> units. What is its height?", ans: 5, exp: "Area = 0.5 × base × height. 15 = 0.5 × 6 × height. 15 = 3 × height. Height = 5." }
+            ],
+            8: [
+                { query: "Find the volume of a rectangular prism with length <span class='math-term'>4</span>, width <span class='math-term'>3</span>, and height <span class='math-term'>5</span>:", ans: 60, exp: "Volume = length × width × height = 4 × 3 × 5 = 60 cubic units." },
+                { query: "Find the volume of a cube with side length <span class='math-term'>2</span> units:", ans: 8, exp: "Volume = side³ = 2 × 2 × 2 = 8 cubic units." },
+                { query: "What is the total surface area of a cube with side length <span class='math-term'>3</span>?", ans: 54, exp: "A cube has 6 identical square faces. Area of 1 face = 3² = 9. Total surface area = 6 × 9 = 54." },
+                { query: "A rectangular prism net has faces of sizes <span class='math-term'>2x3</span> (two), <span class='math-term'>3x4</span> (two), and <span class='math-term'>2x4</span> (two). What is its total surface area?", ans: 52, exp: "Surface area = 2 × (2×3) + 2 × (3×4) + 2 × (2×4) = 12 + 24 + 16 = 52." },
+                { query: "A square pyramid has a base of side <span class='math-term'>4</span> and four triangular faces, each with base <span class='math-term'>4</span> and height <span class='math-term'>5</span>. What is its total surface area?", ans: 56, exp: "Area of base = 4² = 16. Area of 4 triangles = 4 × (0.5 × 4 × 5) = 40. Total Surface Area = 16 + 40 = 56." },
+                { query: "A rectangular container holds <span class='math-term'>60</span> cubic meters of liquid. If its length is <span class='math-term'>5</span> meters and width is <span class='math-term'>4</span> meters, what is its depth/height?", ans: 3, exp: "Volume = l × w × h. 60 = 5 × 4 × h. 60 = 20h. h = 3 meters." },
+                { query: "If you double each side length of a <span class='math-term'>1 × 2 × 3</span> rectangular shipping box, what is its new volume?", ans: 48, exp: "New side lengths are 2, 4, 6. Volume = 2 × 4 × 6 = 48." },
+                { query: "Find the surface area of a triangular prism net with base triangle area of <span class='math-term'>6</span> (two bases) and three rectangular sides of sizes <span class='math-term'>5x10</span>, <span class='math-term'>5x10</span>, and <span class='math-term'>6x10</span>:", ans: 172, exp: "Surface Area = 2 × (6) + (50) + (50) + (60) = 12 + 160 = 172." },
+                { query: "A prism has a base area of <span class='math-term'>25</span> square units and a height of <span class='math-term'>12</span> units. Find its volume:", ans: 300, exp: "Volume = Base Area × Height = 25 × 12 = 300." },
+                { query: "How many unit cubes of side length <span class='math-term'>1/2</span> can fit inside a larger <span class='math-term'>1 × 1 × 1</span> cube?", ans: 8, exp: "Volume of large cube is 1. Volume of small cube is (1/2)³ = 1/8. Number of cubes = 1 / (1/8) = 8." }
+            ],
+            9: [
+                { query: "Find the mean of the numbers: <span class='math-term'>2, 5, 8, 9</span>:", ans: 6, exp: "Add numbers: 2+5+8+9 = 24. Divide by count (4): 24 / 4 = 6." },
+                { query: "Find the median of the dataset: <span class='math-term'>3, 5, 7, 12, 15</span>:", ans: 7, exp: "Sort numbers (already sorted) and locate middle value: 7." },
+                { query: "What is the mode of the numbers: <span class='math-term'>4, 2, 4, 8, 5, 4, 9</span>?", ans: 4, exp: "The number 4 appears most frequently (3 times), so it is the mode." },
+                { query: "What is the statistical range of the dataset: <span class='math-term'>12, 5, 20, 3, 14</span>?", ans: 17, exp: "Range = Maximum - Minimum = 20 - 3 = 17." },
+                { query: "In a student performance dataset with Q1 = <span class='math-term'>8</span> and Q3 = <span class='math-term'>14</span>, what is the Interquartile Range (IQR)?", ans: 6, exp: "IQR = Q3 - Q1 = 14 - 8 = 6." },
+                { query: "Find the Mean Absolute Deviation (MAD) of the simple dataset: <span class='math-term'>2, 8</span>", ans: 3, exp: "Mean is 5. Deviation of 2 is 3, deviation of 8 is 3. Average deviation is (3+3)/2 = 3." },
+                { query: "Which is a statistical question: 'How many pets do students in my class have?' (enter 1) or 'How many legs does a cat have?' (enter 0)?", ans: 1, exp: "The first question yields variable answers from a population, making it a statistical question (1)." },
+                { query: "A histogram bin 10-14 has a height of <span class='math-term'>8</span>, and bin 15-19 has a height of <span class='math-term'>5</span>. How many total data points are in these two bins?", ans: 13, exp: "Total counts is sum of frequencies: 8 + 5 = 13." },
+                { query: "In a box plot, the median is represented by the line inside the box. If the box goes from 10 to 22 and the line is at <span class='math-term'>15</span>, what is the median?", ans: 15, exp: "The median line is located at 15." },
+                { query: "If <span class='math-term'>12</span> students report their sibling counts, how many total dots will be graphed on the dot plot?", ans: 12, exp: "Each data point (student) corresponds to exactly one dot. Total dots is 12." }
+            ],
+            10: [
+                { query: "What quadrant does the coordinate point <span class='math-term'>(-4, 5)</span> lie in?", ans: 2, exp: "Point has negative x and positive y, which lies in Quadrant 2." },
+                { query: "If point <span class='math-term'>(2, 3)</span> is reflected across the y-axis, what is the new x-coordinate?", ans: -2, exp: "Reflecting over the y-axis negates the x-coordinate: -(2) = -2." },
+                { query: "What quadrant of the coordinate plane has both x and y coordinates with negative signs?", ans: 3, exp: "Quadrant 3 is where both coordinates are negative (-x, -y)." },
+                { query: "What is the vertical distance between coordinate point <span class='math-term'>(3, 5)</span> and point <span class='math-term'>(3, -2)</span>?", ans: 7, exp: "Subtract the y-coordinates: |5 - (-2)| = |7| = 7 units." },
+                { query: "What is the horizontal distance between coordinate point <span class='math-term'>(-5, 4)</span> and point <span class='math-term'>(3, 4)</span>?", ans: 8, exp: "Subtract the x-coordinates: |3 - (-5)| = |8| = 8 units." },
+                { query: "If you start at origin <span class='math-term'>(0,0)</span>, move left <span class='math-term'>5</span> units, then down <span class='math-term'>3</span> units, what is your new y-coordinate?", ans: -3, exp: "Moving down 3 units from 0 results in a y-coordinate of -3." },
+                { query: "A rectangle plotted on a coordinate grid has vertices at <span class='math-term'>(1,1)</span>, <span class='math-term'>(1,4)</span>, <span class='math-term'>(5,4)</span>, and <span class='math-term'>(5,1)</span>. What is its perimeter?", ans: 14, exp: "Length is 5-1=4. Width is 4-1=3. Perimeter = 2 × (4 + 3) = 14." },
+                { query: "Reflect point <span class='math-term'>(-1, -8)</span> over the x-axis, then reflect the result over the y-axis. What is the final x-coordinate?", ans: 1, exp: "Reflecting over the x-axis gives (-1, 8). Then reflecting over the y-axis gives (1, 8). The x-coordinate is 1." },
+                { query: "Find the sum of the x and y coordinates of the origin point on a grid:", ans: 0, exp: "The origin is (0,0). Sum of x and y is 0 + 0 = 0." },
+                { query: "On a coordinate grid, what is the coordinate of the point halfway between <span class='math-term'>(2, 4)</span> and <span class='math-term'>(8, 4)</span>? Enter x-coordinate:", ans: 5, exp: "The y-coordinate is constant (4). Halfway between x=2 and x=8 is (2+8)/2 = 5." }
+            ],
+            fallback: [
+                { query: "Solve for x: <span class='math-term'>x + 14 = 20</span>", ans: 6, exp: "Subtract 14 from both sides: 20 - 14 = 6." }
+            ]
+        };
+
+        // State trackers
+        let completedStations = ['1', '2']; // Seed BOY Check-in and Dino break initially completed
+        let coins = 15;
+
+        function loadState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    coins = parsed.coins || 15;
+                } catch(e) {}
+            }
+            updateHUD();
+        }
+
+        function saveState() {
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify({ coins }));
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('coins-display-hub').textContent = coins;
+            // Update other coin tallies
+            const mainDisplay = document.getElementById('coins-display');
+            if (mainDisplay) mainDisplay.textContent = coins;
+        }
+
+        // Initialize Planet Details
+        function setupPlanetHub() {
+            loadState();
+
+            const profile = planetProfiles[planetId] || planetProfiles[1];
+            document.getElementById('planet-title-short').textContent = `Unit ${planetId} Hub`;
+            document.getElementById('planet-title-full').textContent = `Unit ${planetId}: ${profile.name}`;
+            document.getElementById('planet-emoji').textContent = profile.icon;
+            document.getElementById('planet-description').textContent = profile.desc;
+
+            // Generate connector line points
+            const line = document.getElementById('connector-line');
+            const dAttr = pathCoords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x}% ${c.y}%`).join(' ');
+            line.setAttribute('d', dAttr);
+
+            // Render clickable Station nodes
+            const nodesContainer = document.getElementById('nodes-container');
+            nodesContainer.innerHTML = '';
+
+            stationsList.forEach((station, index) => {
+                const coord = pathCoords[index];
+                const node = document.createElement('div');
+                node.className = 'station-node';
+                if (completedStations.includes(String(station.id))) {
+                    node.classList.add('completed');
+                }
+                node.style.left = `${coord.x}%`;
+                node.style.top = `${coord.y}%`;
+
+                node.innerHTML = `
+                    <div class="station-circle">${station.id}</div>
+                    <div class="station-label">Station ${station.id}</div>
+                `;
+
+                // Hover triggers Tooltip computer HUD readouts
+                node.addEventListener('mouseenter', () => {
+                    document.getElementById('detail-title').textContent = `🌟 Station ${station.id}: ${station.name}`;
+                    document.getElementById('detail-desc').textContent = `${station.desc} [Objective type: ${station.type}]`;
+                });
+
+                node.addEventListener('mouseleave', () => {
+                    document.getElementById('detail-title').textContent = `🌟 Mission Coordinate Computer`;
+                    document.getElementById('detail-desc').textContent = `Hover over any station on the constellation map to examine mathematical coordinates, objectives, and game goals.`;
+                });
+
+                // Click opens Accessible Modal and launches games
+                node.addEventListener('click', () => {
+                    launchStation(station);
+                });
+
+                nodesContainer.appendChild(node);
+            });
+
+            // If URL has launch query, auto-trigger assessment
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('launch') === 'star360') {
+                setTimeout(() => {
+                    launchStation(stationsList[0]);
+                }, 400);
+            }
+        }
+
+        // Launches games based on station parameters
+        function launchStation(station) {
+            const modal = document.getElementById('accessible-modal');
+            const mTitle = document.getElementById('modal-station-title');
+            const mType = document.getElementById('modal-station-type');
+            const mBody = document.getElementById('modal-body-content');
+
+            mTitle.textContent = station.name;
+            mType.textContent = station.type.toUpperCase();
+            mBody.innerHTML = ''; // Clear
+
+            modal.style.display = 'flex';
+
+            // Route dynamic loaders
+            if (station.type === 'assessment') {
+                loadAssessmentModule(mBody, station);
+            } else if (station.id === 2) {
+                // Astronaut Dino Runner Break
+                loadDinoBreak(mBody, station);
+            } else if (station.type === 'challenge') {
+                loadExtraCreditQuiz(mBody, station);
+            } else if (station.id === 4) {
+                // Galaga Arcade Math Shooter
+                loadGalagaArcade(mBody, station);
+            } else if (station.id === 5) {
+                // Space Cooking Proportions
+                loadCookingKitchen(mBody, station);
+            } else {
+                // Default Standard practice checkpoint
+                loadStandardPractice(mBody, station);
+            }
+        }
+
+        // 1. Diagnostic BOY Check-In Form
+        function loadAssessmentModule(container, station) {
+            container.innerHTML = `
+                <p>Complete your diagnostic exam checking today with your advisor to claim points:</p>
+                <div class="space-y-2 bg-[#12121e] p-4 rounded-xl border border-slate-800">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="checkPeriod" value="BOY" checked class="w-4 h-4">
+                        <span>Beginning of Year (BOY) assessment</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="checkPeriod" value="MOY" class="w-4 h-4">
+                        <span>Middle of Year (MOY) assessment</span>
+                    </label>
+                </div>
+                <label class="flex items-start gap-2.5 p-3.5 bg-slate-950 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="checkVerify" class="mt-1 w-4.5 h-4.5">
+                    <span class="text-[10px] text-slate-400">I completed my Star 360 mathematical diagnostic today.</span>
+                </label>
+                <button id="claim-points" class="btn-accessible w-full">Claim 5 Points 🪙</button>
+                <p id="claim-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            document.getElementById('claim-points').addEventListener('click', () => {
+                const checked = document.getElementById('checkVerify').checked;
+                const feedback = document.getElementById('claim-feedback');
+                if (!checked) {
+                    feedback.textContent = "Please verify your completion checkbox above.";
+                    feedback.style.color = "#ef4444";
+                    return;
+                }
+
+                coins += 5;
+                saveState();
+                markStationCompleted(station.id);
+                feedback.textContent = "Success! 5 coins added to your secure wallet.";
+                feedback.style.color = "#10b981";
+                setTimeout(closeModal, 1200);
+            });
+        }
+
+        // 2. T-Rex Dinosaur Runner Leap Break
+        function loadDinoBreak(container, station) {
+            container.innerHTML = `
+                <p class="text-slate-400">No math equations! Press <span class="math-term">Spacebar</span> or click the canvas to jump your running astronaut over space rocks!</p>
+                <canvas id="dino-canvas" width="400" height="200"></canvas>
+                <div class="flex justify-between items-center text-[10px] font-mono mt-2">
+                    <span id="dino-score">Meters: 0m</span>
+                    <span id="dino-status" class="text-yellow-400 font-bold">Goal: Survive 15s to claim +3 coins</span>
+                </div>
+                <button id="dino-play-btn" class="btn-accessible w-full">Launch Calibrator</button>
+            `;
+
+            const canvas = document.getElementById('dino-canvas');
+            const playBtn = document.getElementById('dino-play-btn');
+            const scoreLabel = document.getElementById('dino-score');
+
+            let runTimer = 0;
+            let dScore = 0;
+            let runnerY = 0;
+            let velocity = 0;
+            let obstacleX = 400;
+            let obstSize = 15;
+            let loopId = null;
+
+            playBtn.addEventListener('click', () => {
+                playBtn.style.display = 'none';
+                dScore = 0;
+                runTimer = 0;
+                runnerY = 0;
+                velocity = 0;
+                obstacleX = 400;
+
+                // Physics Loops
+                function step() {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#020617';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw floor
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 160);
+                    ctx.lineTo(canvas.width, 160);
+                    ctx.stroke();
+
+                    // Gravity
+                    velocity += 0.5;
+                    runnerY += velocity;
+                    if (runnerY >= 0) {
+                        runnerY = 0;
+                        velocity = 0;
+                    }
+
+                    // Obstacle move
+                    obstacleX -= 5;
+                    if (obstacleX < -20) {
+                        obstacleX = 400 + Math.random() * 100;
+                        obstSize = 12 + Math.random() * 10;
+                    }
+
+                    // Collision check bounding box
+                    const astronautBottom = 160 + runnerY;
+                    const astronautRight = 56;
+                    const rockLeft = obstacleX;
+                    const rockTop = 160 - obstSize;
+
+                    if (astronautRight > rockLeft && rockLeft > 30 && astronautBottom > rockTop) {
+                        // Explode
+                        ctx.fillStyle = '#ef4444';
+                        ctx.font = 'bold 16px sans-serif';
+                        ctx.fillText('CRASH DETECTED!', 130, 90);
+                        cancelAnimationFrame(loopId);
+                        playBtn.style.display = 'block';
+                        playBtn.textContent = 'Restart Calibrator';
+                        return;
+                    }
+
+                    // Draw Astronaut
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(36, 136 + runnerY, 16, 24);
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.fillRect(46, 140 + runnerY, 6, 6);
+
+                    // Draw Space rock
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillRect(obstacleX, 160 - obstSize, 14, obstSize);
+
+                    dScore++;
+                    scoreLabel.textContent = `Meters: ${dScore}m`;
+
+                    if (dScore >= 350) {
+                        ctx.fillStyle = '#10b981';
+                        ctx.font = 'bold 16px sans-serif';
+                        ctx.fillText('GOAL COMPLETED! +3 Coins!', 110, 90);
+                        coins += 3;
+                        saveState();
+                        markStationCompleted(station.id);
+                        cancelAnimationFrame(loopId);
+                        setTimeout(closeModal, 1500);
+                        return;
+                    }
+
+                    loopId = requestAnimationFrame(step);
+                }
+
+                canvas.addEventListener('click', () => {
+                    if (runnerY === 0) {
+                        velocity = -9.5;
+                    }
+                });
+
+                // Spacebar jump key
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === ' ' && runnerY === 0) {
+                        e.preventDefault();
+                        velocity = -9.5;
+                    }
+                });
+
+                step();
+            });
+        }
+
+        // 3. Extra Credit math challenge quiz
+        function loadExtraCreditQuiz(container, station) {
+            container.innerHTML = `
+                <p>Choose your difficulty level below to challenge rigorous questions:</p>
+                <div class="space-y-2">
+                    <button class="w-full text-left p-3.5 border border-slate-800 rounded-xl bg-slate-950/40 hover:border-indigo-500 cursor-pointer flex justify-between items-center" onclick="startEC('easy')">
+                        <span>🟢 Easy challenge</span>
+                        <span class="font-bold text-yellow-400 font-mono">+2 coins</span>
+                    </button>
+                    <button class="w-full text-left p-3.5 border border-slate-800 rounded-xl bg-slate-950/40 hover:border-indigo-500 cursor-pointer flex justify-between items-center" onclick="startEC('medium')">
+                        <span>🔵 Medium challenge</span>
+                        <span class="font-bold text-yellow-400 font-mono">+5 coins</span>
+                    </button>
+                    <button class="w-full text-left p-3.5 border border-slate-800 rounded-xl bg-slate-950/40 hover:border-indigo-500 cursor-pointer flex justify-between items-center" onclick="startEC('hard')">
+                        <span>🟡 Hard challenge</span>
+                        <span class="font-bold text-yellow-400 font-mono">+10 coins</span>
+                    </button>
+                </div>
+                <div id="ec-quiz-workspace" class="space-y-4 pt-4 hidden"></div>
+            `;
+        }
+
+        window.startEC = function(tier) {
+            const list = mathQuestions[planetId] || mathQuestions.fallback;
+            const q = list[Math.floor(Math.random() * list.length)];
+            const reward = tier === 'hard' ? 10 : tier === 'medium' ? 5 : 2;
+
+            const workspace = document.getElementById('ec-quiz-workspace');
+            workspace.classList.remove('hidden');
+            workspace.innerHTML = `
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono">
+                    ${q.query}
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="ec-input" placeholder="Type answer..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white">
+                    <button id="ec-verify-btn" class="btn-accessible px-4">Verify</button>
+                </div>
+                <p id="ec-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            document.getElementById('ec-verify-btn').addEventListener('click', () => {
+                const ansVal = parseFloat(document.getElementById('ec-input').value);
+                const feedback = document.getElementById('ec-feedback');
+
+                if (ansVal === q.ans) {
+                    coins += reward;
+                    saveState();
+                    markStationCompleted(3);
+                    feedback.textContent = `Correct! Earned +${reward} coins!`;
+                    feedback.style.color = "#10b981";
+                    setTimeout(closeModal, 1500);
+                } else {
+                    feedback.textContent = `Incorrect. Hint: ${q.exp}`;
+                    feedback.style.color = "#ef4444";
+                }
+            });
+        };
+
+        // 4. Galaga Math Shooter Game
+        function loadGalagaArcade(container, station) {
+            const list = mathQuestions[planetId] || mathQuestions.fallback;
+            const q = list[Math.floor(Math.random() * list.length)];
+
+            container.innerHTML = `
+                <p class="text-slate-400">Survival break! Type answers inside math popups to boost your spaceship's shields!</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono space-y-3">
+                    <p id="g-quest" class="text-sm font-bold">${q.query}</p>
+                    <input type="number" id="g-input" class="bg-slate-900 border border-slate-700 text-white rounded p-2 text-center w-full">
+                    <button id="g-submit" class="btn-accessible w-full mt-2">Activate Lasers 🛸</button>
+                </div>
+                <p id="g-feedback" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('g-submit').addEventListener('click', () => {
+                const ans = parseFloat(document.getElementById('g-input').value);
+                const feedback = document.getElementById('g-feedback');
+                
+                if (ans === q.ans) {
+                    coins += 10;
+                    saveState();
+                    markStationCompleted(station.id);
+                    feedback.textContent = "Direct hit! +10 coins awarded!";
+                    feedback.style.color = "#10b981";
+                    setTimeout(closeModal, 1400);
+                } else {
+                    feedback.textContent = `Calculation error. Hint: ${q.exp}`;
+                    feedback.style.color = "#ef4444";
+                }
+            });
+        }
+        }
+
+        // 5. Kitchen Ratio Baking proportions
+        function loadCookingKitchen(container, station) {
+            container.innerHTML = `
+                <p class="text-slate-400">Scale the Space Cookie recipe: 2 Sugar to 5 Flour.</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                    <p class="text-xs leading-normal font-mono text-center">
+                        If you scale the recipe to use exactly <span class="math-term">15</span> units of Moon-Flour, how much Comet-Sugar do you need?
+                    </p>
+                    <input type="number" id="bake-ans" placeholder="Sugar units..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-center text-white">
+                    <button id="bake-submit" class="btn-accessible w-full">Mix &amp; Bake!</button>
+                </div>
+                <p id="bake-feed" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('bake-submit').addEventListener('click', () => {
+                const ans = parseInt(document.getElementById('bake-ans').value);
+                const feedback = document.getElementById('bake-feed');
+
+                if (ans === 6) {
+                    coins += 10;
+                    saveState();
+                    markStationCompleted(station.id);
+                    feedback.textContent = "Deliciously baked! Proportion aligned! +10 coins.";
+                    feedback.style.color = "#10b981";
+                    setTimeout(closeModal, 1450);
+                } else {
+                    feedback.textContent = "Incorrect ratio. Remember, (2/5) = (x/15). Multiply both sides!";
+                    feedback.style.color = "#ef4444";
+                }
+            });
+        }
+
+        // Default: Standard Lessons Checkpoint
+        function loadStandardPractice(container, station) {
+            const list = mathQuestions[planetId] || mathQuestions.fallback;
+            const qIndex = (station.id - 1) % list.length;
+            const q = list[qIndex];
+
+            container.innerHTML = `
+                <p class="text-slate-400">Examine the mathematical equation below to calibrate your spaceship's tracking computer:</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono">
+                    ${q.query}
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="std-input" placeholder="Type answer..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white">
+                    <button id="std-verify-btn" class="btn-accessible px-4">Verify</button>
+                </div>
+                <p id="std-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            document.getElementById('std-verify-btn').addEventListener('click', () => {
+                const ansVal = parseFloat(document.getElementById('std-input').value);
+                const feedback = document.getElementById('std-feedback');
+
+                if (ansVal === q.ans) {
+                    coins += 10;
+                    saveState();
+                    markStationCompleted(station.id);
+                    feedback.textContent = "Calibrated! +10 coins awarded!";
+                    feedback.style.color = "#10b981";
+                    setTimeout(closeModal, 1500);
+                } else {
+                    feedback.textContent = `Trace mismatch! Hint: ${q.exp}`;
+                    feedback.style.color = "#ef4444";
+                }
+            });
+        }
+
+        function markStationCompleted(id) {
+            if (!completedStations.includes(String(id))) {
+                completedStations.push(String(id));
+            }
+            setupPlanetHub();
+        }
+
+        function closeModal() {
+            document.getElementById('accessible-modal').style.display = 'none';
+        }
+
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+
+        // Boot page layout
+        window.onload = setupPlanetHub;
+    </script>
+{% endblock %}

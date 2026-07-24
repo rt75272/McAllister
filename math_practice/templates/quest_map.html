@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}The 3D Quest Map - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        body {
+            background: #02040a;
+            color: #f8fafc;
+            font-family: 'Quicksand', 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 3D Canvas covers everything */
+        #three-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Floating Space HUD Overlay */
+        .space-hud {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to 3D canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+        }
+
+        .hud-element {
+            pointer-events: auto; /* Re-enable clicks for buttons/controls */
+        }
+
+        /* Wood-textured HUD components to match the website style */
+        .wood-hud-panel {
+            background: rgba(30, 41, 59, 0.85);
+            border: 4px solid #8b5a2b;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+        }
+
+        .home-btn {
+            background: linear-gradient(to right, #4c0519 0%, #881337 100%);
+            border: 2.5px solid #8b5a2b;
+            color: white;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .home-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Guidance Proximity Alerts */
+        .proximity-banner {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 2.5px solid #38bdf8;
+            padding: 14px 28px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.3);
+            pointer-events: auto;
+            z-index: 20;
+            display: none;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.6); }
+            100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        }
+
+        .descend-btn {
+            background: linear-gradient(to right, #10b981, #059669);
+            border: 2px solid #34d399;
+            color: white;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .descend-btn:hover {
+            transform: scale(1.06);
+            background: #059669;
+        }
+
+        /* Control board overlay */
+        .controls-panel {
+            max-width: 240px;
+        }
+
+        /* Grade 6 Math tracker */
+        .stats-hud {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<!-- Fullscreen 3D WebGL Canvas -->
+<div id="three-canvas-container"></div>
+
+<!-- Space HUD overlays -->
+<div class="space-hud">
+    <!-- Top HUD Bar -->
+    <div class="flex items-center justify-between w-full h-fit pointer-events-none">
+        <div class="hud-element">
+            <a href="{{ url_for('home') }}" class="home-btn flex items-center gap-1.5">
+                🏠 Back to Home
+            </a>
+        </div>
+        
+        <div class="hud-element text-center">
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-indigo-400 tracking-tight" style="font-family: 'Lexend', sans-serif;">
+                🪐 Cosmic Orbit Navigation
+            </h1>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-0.5">3D Space Flight Math Quest</p>
+        </div>
+
+        <div class="hud-element stats-hud">
+            <div class="wood-hud-panel flex items-center gap-4 text-sm font-bold text-slate-200">
+                <span id="coins-display-hud" class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+                <span class="text-slate-700">|</span>
+                <span class="text-cyan-400">🎓 Grade 6 Math</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Instructions and Flight Controls Map -->
+    <div class="flex items-end justify-between w-full h-fit pointer-events-none mt-auto">
+        <!-- Controls Guide -->
+        <div class="hud-element wood-hud-panel controls-panel text-xs text-slate-300 space-y-2">
+            <h4 class="font-extrabold text-indigo-400 tracking-wider flex items-center gap-1">🚀 FLIGHT CONSOLE</h4>
+            <div class="space-y-1.5 font-mono text-[10px] leading-relaxed">
+                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">W</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▲</span>: Accelerate Ship</p>
+                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">S</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▼</span>: Brake / Reverse</p>
+                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">A</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">◀</span>: Steer Left</p>
+                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">D</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▶</span>: Steer Right</p>
+            </div>
+            <div class="border-t border-slate-800/80 pt-1.5 text-[9px] text-slate-400">
+                Fly your ship close to any planet, or left-click on it to descend and land!
+            </div>
+        </div>
+
+        <!-- Pilot status display -->
+        <div class="hud-element wood-hud-panel text-xs text-slate-300 font-mono flex flex-col gap-1 min-w-[200px] text-right">
+            <div>SHIP STATUS: <span class="text-emerald-400 font-bold">ONLINE</span></div>
+            <div>GRAVITY ASSIST: <span class="text-indigo-400 font-bold">STANDBY</span></div>
+            <div>THRUSTER SPEED: <span id="speed-meter" class="text-cyan-400 font-bold">0.0 km/s</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Proximity Descend Overlay banner -->
+<div id="proximity-alert" class="proximity-banner text-slate-100">
+    <h3 id="proximity-title" class="font-black text-sm text-yellow-400 tracking-wide">APPROACHING PLANET</h3>
+    <p id="proximity-desc" class="text-xs text-slate-300 mt-1 mb-2">Entering gravitational pull. Choose your landing target:</p>
+    <div class="flex gap-3 justify-center">
+        <button id="descend-planet-btn" class="descend-btn text-xs font-black">Land on Planet 🪐</button>
+        <button id="descend-moon-btn" class="descend-btn text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400">Land on Moon 🌙</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <!-- Include Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Data configuration: 10 Curriculum Planets Orbiting in Space with Star 360 Moons
+        const planetsData = [
+            { id: 1, name: "Sky Garden Planet (Number Properties)", color: 0xec4899, size: 1.2, radius: 10, speed: 0.15, icon: "🌸", moon: "BOY Star 360" },
+            { id: 2, name: "Gorilla Nebula (Fractions & Decimals)", color: 0xa855f7, size: 1.4, radius: 14, speed: 0.12, icon: "🦍" },
+            { id: 3, name: "Bathhouse Battle (Rational Numbers)", color: 0x3b82f6, size: 1.1, radius: 18, speed: 0.10, icon: "♨️" },
+            { id: 4, name: "Tenting Trouble (Expressions)", color: 0x06b6d4, size: 1.3, radius: 22, speed: 0.08, icon: "⛺" },
+            { id: 5, name: "Construction Canyon (Equations)", color: 0x14b8a6, size: 1.2, radius: 26, speed: 0.07, icon: "🏗️", moon: "MOY Star 360" },
+            { id: 6, name: "Slo-Mo Valley (Ratios & Rates)", color: 0x10b981, size: 1.2, radius: 30, speed: 0.06, icon: "⏳" },
+            { id: 7, name: "Dumbo Beat (Area of Polygons)", color: 0x84cc16, size: 1.3, radius: 34, speed: 0.05, icon: "🐘" },
+            { id: 8, name: "Djinn's Revenge (Surface Area & Volume)", color: 0xeab308, size: 1.4, radius: 38, speed: 0.04, icon: "🧞" },
+            { id: 9, name: "Safari Park (Statistics & Graphs)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
+            { id: 10, name: "The Mothership (Coordinate Planes)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" }
+        ];
+
+        // Three.js and Flight Engine
+        let scene, camera, renderer, raycaster, mouse;
+        let ship;
+        let planets = [];
+        let stars = [];
+        let keys = {};
+        
+        let shipVelocity = new THREE.Vector3();
+        let shipRotationY = 0;
+        const maxSpeed = 0.25;
+        const acceleration = 0.005;
+        const drag = 0.98;
+        const rotationSpeed = 0.04;
+
+        let activeApproachedPlanetId = null;
+        let activeApproachedMoonId = null;
+        let landingTarget = null; // { type: 'planet' | 'moon', id: id, pos: THREE.Vector3 }
+
+        // Initialize points tally from localStorage
+        function loadCoins() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    document.getElementById('coins-count').textContent = state.coins || 15;
+                } catch(e) {}
+            }
+        }
+
+        function init() {
+            loadCoins();
+
+            const container = document.getElementById('three-canvas-container');
+            
+            // 1. Create Scene & Camera
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x02040a, 0.015);
+
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // 2. WebGL Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Optimized performance
+            container.appendChild(renderer.domElement);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // 3. Lighting (Baked high-performance style)
+            const ambientLight = new THREE.AmbientLight(0x222233, 1.5);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.PointLight(0xffffff, 2.0, 100);
+            sunLight.position.set(0, 0, 0); // Sun is at center
+            scene.add(sunLight);
+
+            const directionalLight = new THREE.DirectionalLight(0x818cf8, 0.8);
+            directionalLight.position.set(5, 15, 5);
+            scene.add(directionalLight);
+
+            // 4. Center Glowing Star (Sun)
+            const sunGeo = new THREE.SphereGeometry(3.5, 16, 16);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xffd700, wireframe: false });
+            const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+            scene.add(sunMesh);
+
+            // 5. Starfield background
+            const starsGeo = new THREE.BufferGeometry();
+            const starsCount = 1000;
+            const starPositions = new Float32Array(starsCount * 3);
+            for (let i = 0; i < starsCount * 3; i++) {
+                starPositions[i] = (Math.random() - 0.5) * 300;
+            }
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, sizeAttenuation: true });
+            const starField = new THREE.Points(starsGeo, starsMat);
+            scene.add(starField);
+
+            // 6. Draw Orbit Paths and spawn Low-poly Planets
+            planetsData.forEach((data) => {
+                // Orbit line helper
+                const orbitGeo = new THREE.RingGeometry(data.radius - 0.05, data.radius + 0.05, 64);
+                const orbitMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide });
+                const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
+                orbitMesh.rotation.x = Math.PI / 2;
+                scene.add(orbitMesh);
+
+                // Planet mesh (dodecahedron for low-poly look)
+                const planetGeo = new THREE.DodecahedronGeometry(data.size, 1);
+                const planetMat = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    flatShading: true,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+                
+                // Starting angles distributed
+                const startingAngle = (data.id * Math.PI * 2) / 10;
+                planetMesh.position.set(
+                    Math.cos(startingAngle) * data.radius,
+                    0,
+                    Math.sin(startingAngle) * data.radius
+                );
+
+                scene.add(planetMesh);
+
+                let moonMesh = null;
+                let moonOrbitRadius = data.size + 1.3;
+                if (data.moon) {
+                    const moonGeo = new THREE.IcosahedronGeometry(data.size * 0.25, 1);
+                    const moonMat = new THREE.MeshStandardMaterial({
+                        color: 0x94a3b8,
+                        flatShading: true,
+                        roughness: 0.8,
+                        metalness: 0.1
+                    });
+                    moonMesh = new THREE.Mesh(moonGeo, moonMat);
+                    scene.add(moonMesh);
+                }
+                
+                planets.push({
+                    mesh: planetMesh,
+                    angle: startingAngle,
+                    data: data,
+                    moonMesh: moonMesh,
+                    moonAngle: Math.random() * Math.PI * 2,
+                    moonOrbitRadius: moonOrbitRadius
+                });
+            });
+
+            // 7. Spaceship (Low-poly wedge model)
+            ship = new THREE.Group();
+            
+            // Fuselage (Cone)
+            const bodyGeo = new THREE.ConeGeometry(0.4, 1.5, 5);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, flatShading: true });
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.rotation.x = Math.PI / 2; // Point forward along Z
+            ship.add(bodyMesh);
+
+            // Wing left
+            const wingLGeo = new THREE.BoxGeometry(0.8, 0.05, 0.5);
+            const wingLMat = new THREE.MeshStandardMaterial({ color: 0xa855f7, flatShading: true });
+            const wingL = new THREE.Mesh(wingLGeo, wingLMat);
+            wingL.position.set(-0.5, -0.1, 0.2);
+            wingL.rotation.y = 0.2;
+            ship.add(wingL);
+
+            // Wing right
+            const wingR = wingL.clone();
+            wingR.position.x = 0.5;
+            wingR.rotation.y = -0.2;
+            ship.add(wingR);
+
+            // Engine Flame glow
+            const exhaustGeo = new THREE.CylinderGeometry(0.2, 0.05, 0.3, 4);
+            const exhaustMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+            const exhaust = new THREE.Mesh(exhaustGeo, exhaustMat);
+            exhaust.position.set(0, 0, 0.7);
+            exhaust.rotation.x = Math.PI / 2;
+            ship.add(exhaust);
+
+            ship.position.set(0, 0, 10); // Start near Planet 1
+            scene.add(ship);
+
+            // Setup camera starting point behind ship
+            camera.position.set(0, 4, 15);
+
+            // Event Listeners
+            window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('click', onDocumentClick);
+
+            document.getElementById('descend-planet-btn').addEventListener('click', () => {
+                const targetId = activeApproachedPlanetId || activeApproachedMoonId;
+                if (targetId !== null) {
+                    window.location.href = `/quest-map/planet/${targetId}`;
+                }
+            });
+
+            document.getElementById('descend-moon-btn').addEventListener('click', () => {
+                const targetId = activeApproachedMoonId || activeApproachedPlanetId;
+                if (targetId !== null) {
+                    window.location.href = `/quest-map/planet/${targetId}?launch=star360`;
+                }
+            });
+
+            animate();
+        }
+
+        // Steer clicks raycast to planets & moons
+        function onDocumentClick(event) {
+            // Only capture if clicking inside Three.js container
+            if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A') return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Check planet hits
+            const planetMeshes = planets.map(p => p.mesh);
+            const planetIntersects = raycaster.intersectObjects(planetMeshes);
+
+            if (planetIntersects.length > 0) {
+                const clickedMesh = planetIntersects[0].object;
+                const clickedPlanet = planets.find(p => p.mesh === clickedMesh);
+                if (clickedPlanet) {
+                    // Instantly steer ship towards planet and trigger descent
+                    ship.position.copy(clickedMesh.position);
+                    window.location.href = `/quest-map/planet/${clickedPlanet.data.id}`;
+                    return;
+                }
+            }
+
+            // Check moon hits
+            const moonMeshes = planets.filter(p => p.moonMesh).map(p => p.moonMesh);
+            const moonIntersects = raycaster.intersectObjects(moonMeshes);
+
+            if (moonIntersects.length > 0) {
+                const clickedMoonMesh = moonIntersects[0].object;
+                const clickedPlanet = planets.find(p => p.moonMesh === clickedMoonMesh);
+                if (clickedPlanet) {
+                    // Instantly steer ship towards moon and trigger check-in
+                    ship.position.copy(clickedMoonMesh.position);
+                    window.location.href = `/quest-map/planet/${clickedPlanet.data.id}?launch=star360`;
+                    return;
+                }
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Main WebGL Game Render Tick
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Rotate Planets and Moons in Orbit
+            planets.forEach((p) => {
+                p.angle += p.data.speed * 0.01;
+                const planetX = Math.cos(p.angle) * p.data.radius;
+                const planetZ = Math.sin(p.angle) * p.data.radius;
+                p.mesh.position.set(planetX, 0, planetZ);
+                p.mesh.rotation.y += 0.015; // Self-rotation
+
+                // Position and orbit the moon relative to its parent planet (slowed orbital speed!)
+                if (p.moonMesh) {
+                    p.moonAngle += 0.012; // Slowed down from 0.03 for easier tracking and clicking!
+                    const moonX = planetX + Math.cos(p.moonAngle) * p.moonOrbitRadius;
+                    const moonZ = planetZ + Math.sin(p.moonAngle) * p.moonOrbitRadius;
+                    p.moonMesh.position.set(moonX, 0.4, moonZ);
+                    p.moonMesh.rotation.y += 0.01;
+                }
+            });
+
+            // 2. Spaceship Movement Control
+            let steerLeft = keys['a'] || keys['arrowleft'];
+            let steerRight = keys['d'] || keys['arrowright'];
+            let goForward = keys['w'] || keys['arrowup'];
+            let goBackward = keys['s'] || keys['arrowdown'];
+
+            // Steering rotation
+            if (steerLeft) shipRotationY += rotationSpeed;
+            if (steerRight) shipRotationY -= rotationSpeed;
+            ship.rotation.y = shipRotationY;
+
+            // Calculating acceleration vector
+            if (goForward) {
+                const forwardVec = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
+                shipVelocity.addScaledVector(forwardVec, acceleration);
+            } else if (goBackward) {
+                const backwardVec = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
+                shipVelocity.addScaledVector(backwardVec, acceleration * 0.5);
+            }
+
+            // Apply friction drag deceleration
+            shipVelocity.multiplyScalar(drag);
+
+            // Velocity clamping
+            if (shipVelocity.length() > maxSpeed) {
+                shipVelocity.setLength(maxSpeed);
+            }
+
+            // Apply calculated vectors to player coordinates
+            ship.position.add(shipVelocity);
+
+            // Speed HUD read-out
+            const currentKms = (shipVelocity.length() * 100).toFixed(1);
+            document.getElementById('speed-meter').textContent = `${currentKms} km/s`;
+
+            // 3. Dynamic Camera Tracking (Behind & Above the Ship)
+            const cameraOffset = new THREE.Vector3(0, 3, 6).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
+            const targetCamPosition = ship.position.clone().add(cameraOffset);
+            camera.position.lerp(targetCamPosition, 0.06);
+            camera.lookAt(ship.position);
+
+            // 4. Proximity Checks (Are we landing on a planet or its assessment moon?)
+            let nearAnyPlanet = false;
+            let nearAnyMoon = false;
+            
+            planets.forEach((p) => {
+                const distPlanet = ship.position.distanceTo(p.mesh.position);
+                const thresholdPlanet = p.data.size + 2.5;
+
+                if (distPlanet < thresholdPlanet) {
+                    nearAnyPlanet = true;
+                    activeApproachedPlanetId = p.data.id;
+                    activeApproachedMoonId = null;
+                    
+                    document.getElementById('proximity-title').textContent = `APPROACHING PLANET: UNIT ${p.data.id}`;
+                    document.getElementById('proximity-desc').textContent = `${p.data.icon} You have entered the gravity field of ${p.data.name}!`;
+                    document.getElementById('proximity-alert').style.display = 'block';
+                }
+
+                if (p.moonMesh) {
+                    const distMoon = ship.position.distanceTo(p.moonMesh.position);
+                    const thresholdMoon = 2.4; // Slightly increased range from 1.8 to 2.4 for easier targeting on Chromebooks
+
+                    if (distMoon < thresholdMoon) {
+                        nearAnyMoon = true;
+                        activeApproachedMoonId = p.data.id;
+                        activeApproachedPlanetId = null;
+                        
+                        document.getElementById('proximity-title').textContent = `APPROACHING MOON: UNIT ${p.data.id}`;
+                        document.getElementById('proximity-desc').textContent = `🌙 You are near the orbiting ${p.data.moon} Assessment Moon!`;
+                        document.getElementById('proximity-alert').style.display = 'block';
+                    }
+                }
+            });
+
+            if (!nearAnyPlanet && !nearAnyMoon) {
+                document.getElementById('proximity-alert').style.display = 'none';
+                activeApproachedPlanetId = null;
+                activeApproachedMoonId = null;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Boot
+        window.onload = init;
+    </script>
+{% endblock %}
