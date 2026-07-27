@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Pet Land - Character Port - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        body {
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 58%, #000 100%);
+            color: #e2e8f0;
+            font-family: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
+            min-height: 100vh;
+        }
+
+        .pet-land-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .pet-panel {
+            background: rgba(15, 23, 42, 0.88);
+            border: 3px solid #38bdf8;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .back-btn {
+            background: linear-gradient(to right, #1e293b, #334155);
+            border: 2px solid #8b5a2b;
+            color: #e0e0ed;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pet-card {
+            background: rgba(2, 6, 23, 0.88);
+            border: 1px solid #334155;
+            border-radius: 18px;
+            padding: 14px;
+        }
+
+        .btn-accessible {
+            background: #312e81;
+            border: 2px solid #818cf8;
+            color: #e0e0ed;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-accessible:hover {
+            transform: scale(1.03);
+            background: #4338ca;
+            border-color: #a5b4fc;
+        }
+
+        .pet-float {
+            position: fixed;
+            right: 22px;
+            top: 18px;
+            width: 120px;
+            z-index: 20;
+            pointer-events: auto;
+            cursor: grab;
+        }
+
+        .pet-float:active {
+            cursor: grabbing;
+        }
+
+        .pet-float-bubble {
+            background: rgba(15, 23, 42, 0.94);
+            border: 2px solid #38bdf8;
+            border-radius: 16px;
+            padding: 8px 10px;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .pet-float-body {
+            width: 82px;
+            height: 82px;
+            margin-left: auto;
+            border-radius: 22px;
+            border: 2px solid rgba(165, 180, 252, 0.65);
+            background: radial-gradient(circle at 35% 30%, rgba(244, 114, 182, 0.45), rgba(49, 46, 129, 0.94));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="pet-land-shell space-y-6">
+    <div class="flex items-center justify-between gap-4">
+        <a href="{{ url_for('quest_map') }}" class="back-btn">🚀 Return to Space Flight</a>
+        <div class="pet-panel text-sm font-bold">
+            🪙 Coins: <span id="pet-land-coins">15</span>
+        </div>
+    </div>
+
+    <div class="pet-panel space-y-4">
+        <div class="flex items-center gap-4 border-b border-slate-700 pb-4">
+            <span class="text-5xl">🐾</span>
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Special Destination</span>
+                <h1 class="text-3xl font-black text-slate-100">Pet Land & Character Port</h1>
+                <p class="text-sm text-slate-400">Adopt a sidekick, switch your active pet, unlock characters, and spend coins on merch.</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="pet-card space-y-2">
+                <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Active Explorer</span>
+                <div id="equipped-character-summary" class="text-sm text-slate-300"></div>
+            </div>
+            <div class="pet-card space-y-2">
+                <span class="text-[10px] uppercase tracking-widest text-pink-400 font-black block">Active Sidekick</span>
+                <div id="equipped-pet-summary" class="text-sm text-slate-300"></div>
+            </div>
+            <div class="pet-card space-y-2">
+                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Pet Care Notes</span>
+                <p class="text-sm text-slate-400">Pets stay with the student profile across units, but they do not appear inside the arcade games unless you decide to add that later.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="pet-panel space-y-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Character Bay</span>
+                <h2 class="text-xl font-black text-slate-100">Choose Your Explorer</h2>
+            </div>
+            <div class="text-xs text-slate-400">Unlock new pre-generated characters or equip one you already own.</div>
+        </div>
+        <div id="character-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <p id="character-land-feedback" class="text-sm font-bold h-5"></p>
+    </div>
+
+    <div class="pet-panel space-y-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Merch Dock</span>
+                <h2 class="text-xl font-black text-slate-100">Collect Gear</h2>
+            </div>
+            <div class="text-xs text-slate-400">Buy cosmetic merch and explorer gear with coins.</div>
+        </div>
+        <div id="merch-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <p id="merch-land-feedback" class="text-sm font-bold h-5"></p>
+    </div>
+
+    <div class="pet-panel space-y-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Adoption Port</span>
+                <h2 class="text-xl font-black text-slate-100">Choose Your Pet</h2>
+            </div>
+            <div class="text-xs text-slate-400">Adopt new pets or equip one you already own.</div>
+        </div>
+        <div id="pet-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <p id="pet-land-feedback" class="text-sm font-bold h-5"></p>
+    </div>
+</div>
+
+<div id="pet-float" class="pet-float" aria-hidden="true">
+    <div id="pet-float-bubble" class="pet-float-bubble">Welcome to Pet Land.</div>
+    <div id="pet-float-body" class="pet-float-body">🐾</div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        const characterCatalog = [
+            { id: 'nova-cadet', name: 'Nova Cadet', emoji: '🧑‍🚀', style: 'Starter suit with comet boots.', cost: 0 },
+            { id: 'ion-pilot', name: 'Ion Pilot', emoji: '👩‍🚀', style: 'Teal visor pilot built for speed lanes.', cost: 120 },
+            { id: 'stellar-ninja', name: 'Stellar Ninja', emoji: '🥷', style: 'Shadow cloak for tricky asteroid paths.', cost: 175 },
+            { id: 'galaxy-engineer', name: 'Galaxy Engineer', emoji: '🛠️', style: 'Puzzle-solving crew chief with a utility belt.', cost: 160 }
+        ];
+
+        const merchCatalog = [
+            { id: 'comet-cape', name: 'Comet Cape', emoji: '🧣', category: 'Cape', cost: 45 },
+            { id: 'rocket-skates', name: 'Rocket Skates', emoji: '🛼', category: 'Boots', cost: 60 },
+            { id: 'crystal-visor', name: 'Crystal Visor', emoji: '🥽', category: 'Helmet', cost: 55 },
+            { id: 'neon-rover-wrap', name: 'Neon Rover Wrap', emoji: '🚙', category: 'Vehicle', cost: 70 },
+            { id: 'star-sticker-pack', name: 'Star Sticker Pack', emoji: '🌟', category: 'Sticker', cost: 30 }
+        ];
+
+        const petCatalog = [
+            { id: 'mochi-mooncat', name: 'Mochi Mooncat', emoji: '🐱', talent: 'Purrs near factor clues.', cost: 90 },
+            { id: 'orbit-otter', name: 'Orbit Otter', emoji: '🦦', talent: 'Carries extra merch clips.', cost: 110 },
+            { id: 'pixel-pup', name: 'Pixel Pup', emoji: '🐶', talent: 'Wags at correct answers.', cost: 100 },
+            { id: 'nebula-axolotl', name: 'Nebula Axolotl', emoji: '🦎', talent: 'Glows during checkpoint alerts.', cost: 135 }
+        ];
+
+        let coins = 15;
+        let studentProfile = {
+            ownedCharacters: ['nova-cadet'],
+            equippedCharacter: 'nova-cadet',
+            ownedMerch: [],
+            ownedPets: [],
+            equippedPet: null,
+        };
+        let floatTimer = null;
+        let petFloatState = null;
+
+        function loadState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (!saved) return;
+            try {
+                const parsed = JSON.parse(saved);
+                coins = parsed.coins || 15;
+                studentProfile = {
+                    ...studentProfile,
+                    ...(parsed.studentProfile || {})
+                };
+            } catch (e) {}
+        }
+
+        function saveState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let parsed = {};
+            if (saved) {
+                try {
+                    parsed = JSON.parse(saved);
+                } catch (e) {}
+            }
+            parsed.coins = coins;
+            parsed.studentProfile = {
+                ...(parsed.studentProfile || {}),
+                ...studentProfile,
+            };
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(parsed));
+        }
+
+        function getCharacterById(id) {
+            return characterCatalog.find((character) => character.id === id) || characterCatalog[0];
+        }
+
+        function getPetById(id) {
+            return petCatalog.find((pet) => pet.id === id) || null;
+        }
+
+        function updateHUD() {
+            document.getElementById('pet-land-coins').textContent = coins;
+            const activeCharacter = getCharacterById(studentProfile.equippedCharacter);
+            const activePet = getPetById(studentProfile.equippedPet);
+            document.getElementById('equipped-character-summary').innerHTML = `<span class="text-2xl mr-2">${activeCharacter.emoji}</span><span class="math-term">${activeCharacter.name}</span><div class="text-xs text-slate-400 mt-1">${activeCharacter.style}</div><div class="text-xs text-slate-500 mt-1">Merch owned: ${studentProfile.ownedMerch.length}</div>`;
+            document.getElementById('equipped-pet-summary').innerHTML = activePet
+                ? `<span class="text-2xl mr-2">${activePet.emoji}</span><span class="math-term">${activePet.name}</span><div class="text-xs text-slate-400 mt-1">${activePet.talent}</div>`
+                : 'No pet equipped yet. Adopt one below.';
+            const floatBody = document.getElementById('pet-float-body');
+            if (floatBody) floatBody.textContent = activePet ? activePet.emoji : activeCharacter.emoji;
+        }
+
+        function renderCharacterShop() {
+            const grid = document.getElementById('character-shop-grid');
+            const feedback = document.getElementById('character-land-feedback');
+            grid.innerHTML = characterCatalog.map((character) => {
+                const owned = studentProfile.ownedCharacters.includes(character.id);
+                const equipped = studentProfile.equippedCharacter === character.id;
+                return `
+                    <div class="pet-card space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-black text-slate-100">${character.emoji} ${character.name}</div>
+                                <div class="text-xs text-slate-400 mt-1">${character.style}</div>
+                            </div>
+                            <div class="text-yellow-400 font-black text-sm">${character.cost === 0 ? 'Starter' : owned ? 'Owned' : `${character.cost} coins`}</div>
+                        </div>
+                        <button data-character-id="${character.id}" class="btn-accessible w-full text-xs">${equipped ? 'Equipped Character' : owned ? 'Equip Character' : 'Unlock Character'}</button>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('[data-character-id]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-character-id');
+                    const character = getCharacterById(id);
+                    const owned = studentProfile.ownedCharacters.includes(id);
+                    if (!owned) {
+                        if (coins < character.cost) {
+                            feedback.textContent = 'Not enough coins for that character yet.';
+                            feedback.style.color = '#ef4444';
+                            return;
+                        }
+                        coins -= character.cost;
+                        studentProfile.ownedCharacters.push(id);
+                    }
+                    studentProfile.equippedCharacter = id;
+                    saveState();
+                    updateHUD();
+                    renderCharacterShop();
+                    feedback.textContent = `${character.name} is ready for launch.`;
+                    feedback.style.color = '#10b981';
+                    pulsePetBubble(`${character.emoji} ${character.name} just checked into Character Port.`);
+                });
+            });
+        }
+
+        function renderMerchShop() {
+            const grid = document.getElementById('merch-shop-grid');
+            const feedback = document.getElementById('merch-land-feedback');
+            grid.innerHTML = merchCatalog.map((item) => {
+                const owned = studentProfile.ownedMerch.includes(item.id);
+                return `
+                    <div class="pet-card space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-black text-slate-100">${item.emoji} ${item.name}</div>
+                                <div class="text-xs text-slate-400 mt-1">Category: ${item.category}</div>
+                            </div>
+                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Owned' : `${item.cost} coins`}</div>
+                        </div>
+                        <button data-merch-id="${item.id}" class="btn-accessible w-full text-xs">${owned ? 'Collected' : 'Buy Item'}</button>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('[data-merch-id]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-merch-id');
+                    const item = merchCatalog.find((merch) => merch.id === id);
+                    if (!item || studentProfile.ownedMerch.includes(id)) {
+                        feedback.textContent = 'That item is already in your locker.';
+                        feedback.style.color = '#67e8f9';
+                        return;
+                    }
+                    if (coins < item.cost) {
+                        feedback.textContent = 'Not enough coins for that merch item.';
+                        feedback.style.color = '#ef4444';
+                        return;
+                    }
+                    coins -= item.cost;
+                    studentProfile.ownedMerch.push(id);
+                    saveState();
+                    updateHUD();
+                    renderMerchShop();
+                    feedback.textContent = `${item.name} added to the merch locker.`;
+                    feedback.style.color = '#10b981';
+                    pulsePetBubble(`${item.emoji} ${item.name} has been shipped to your locker.`);
+                });
+            });
+        }
+
+        function renderPetShop() {
+            const grid = document.getElementById('pet-shop-grid');
+            const feedback = document.getElementById('pet-land-feedback');
+            grid.innerHTML = petCatalog.map((pet) => {
+                const owned = studentProfile.ownedPets.includes(pet.id);
+                const equipped = studentProfile.equippedPet === pet.id;
+                return `
+                    <div class="pet-card space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-black text-slate-100">${pet.emoji} ${pet.name}</div>
+                                <div class="text-xs text-slate-400 mt-1">${pet.talent}</div>
+                            </div>
+                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Adopted' : `${pet.cost} coins`}</div>
+                        </div>
+                        <button data-pet-id="${pet.id}" class="btn-accessible w-full text-xs">${equipped ? 'Equipped Pet' : owned ? 'Equip Pet' : 'Adopt Pet'}</button>
+                    </div>
+                `;
+            }).join('');
+
+            grid.querySelectorAll('[data-pet-id]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-pet-id');
+                    const pet = getPetById(id);
+                    const owned = studentProfile.ownedPets.includes(id);
+                    if (!owned) {
+                        if (coins < pet.cost) {
+                            feedback.textContent = 'Not enough coins to adopt that pet yet.';
+                            feedback.style.color = '#ef4444';
+                            return;
+                        }
+                        coins -= pet.cost;
+                        studentProfile.ownedPets.push(id);
+                    }
+                    studentProfile.equippedPet = id;
+                    saveState();
+                    updateHUD();
+                    renderPetShop();
+                    feedback.textContent = `${pet.name} is now your active sidekick.`;
+                    feedback.style.color = '#10b981';
+                    pulsePetBubble(`${pet.emoji} ${pet.name} is trotting beside your mission map now.`);
+                });
+            });
+        }
+
+        function pulsePetBubble(text) {
+            const bubble = document.getElementById('pet-float-bubble');
+            if (!bubble) return;
+            bubble.textContent = text;
+        }
+
+        function setupPetFloatDrag() {
+            const root = document.getElementById('pet-float');
+            if (!root) return;
+            let isDragging = false;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            function applyPosition(x, y) {
+                const pad = 10;
+                const width = root.offsetWidth;
+                const height = root.offsetHeight;
+                const clampedX = Math.max(pad, Math.min(x, window.innerWidth - width - pad));
+                const clampedY = Math.max(pad, Math.min(y, window.innerHeight - height - pad));
+                root.style.right = 'auto';
+                root.style.bottom = 'auto';
+                root.style.left = `${clampedX}px`;
+                root.style.top = `${clampedY}px`;
+            }
+
+            function savePosition() {
+            }
+
+            root.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const rect = root.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                applyPosition(e.clientX - offsetX, e.clientY - offsetY);
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                savePosition();
+            });
+
+            root.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                isDragging = true;
+                const rect = root.getBoundingClientRect();
+                offsetX = e.touches[0].clientX - rect.left;
+                offsetY = e.touches[0].clientY - rect.top;
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging || e.touches.length !== 1) return;
+                applyPosition(e.touches[0].clientX - offsetX, e.touches[0].clientY - offsetY);
+                e.preventDefault();
+            }, { passive: false });
+
+            document.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                savePosition();
+            });
+
+        }
+
+        function initPetFloat() {
+            const bubble = document.getElementById('pet-float-bubble');
+            const lines = [
+                'Pet treats restocked.',
+                'A sidekick is sniffing around for math clues.',
+                'Pet Land is open for adoptions.',
+                'Your companion loves unit travel.'
+            ];
+            floatTimer = window.setInterval(() => {
+                bubble.textContent = lines[Math.floor(Math.random() * lines.length)];
+            }, 4200);
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (floatTimer) window.clearInterval(floatTimer);
+        });
+
+        function init() {
+            loadState();
+            updateHUD();
+            renderCharacterShop();
+            renderMerchShop();
+            renderPetShop();
+            initPetFloat();
+            setupPetFloatDrag();
+        }
+
+        window.onload = init;
+    </script>
+{% endblock %}

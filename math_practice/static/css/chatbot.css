@@ -6,6 +6,11 @@
     font-family: Arial, sans-serif;
 }
 
+#chatbot-container.positioned {
+    bottom: auto;
+    right: auto;
+}
+
 #chatbot-toggle {
     width: 70px;
     height: 70px;
@@ -20,6 +25,11 @@
     align-items: center;
     justify-content: center;
     transition: background-color 0.3s;
+    cursor: grab;
+}
+
+#chatbot-toggle:active {
+    cursor: grabbing;
 }
 
 #chatbot-toggle:hover {
@@ -49,6 +59,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: grab;
+}
+
+#chatbot-header:active {
+    cursor: grabbing;
 }
 
 #chatbot-close {

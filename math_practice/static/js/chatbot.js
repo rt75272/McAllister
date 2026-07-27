@@ -79,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    setupChatbotDrag(container, toggleButton, header);
+
     function appendMessage(sender, text) {
         const msgElement = document.createElement('div');
         msgElement.classList.add('chatbot-message');
@@ -134,5 +136,74 @@ document.addEventListener('DOMContentLoaded', function() {
         sendButton.disabled = sending;
         inputField.disabled = sending;
         sendButton.innerText = sending ? '...' : 'Send';
+    }
+
+    function setupChatbotDrag(wrapper, toggle, dragHeader) {
+        let isDragging = false;
+        let dragMoved = false;
+        let suppressToggleClick = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function applyPosition(x, y) {
+            const pad = 10;
+            const width = wrapper.offsetWidth || 70;
+            const height = isChatOpen ? Math.max(toggle.offsetHeight, chatWindow.offsetHeight) : toggle.offsetHeight;
+            const clampedX = Math.max(pad, Math.min(x, window.innerWidth - width - pad));
+            const clampedY = Math.max(pad, Math.min(y, window.innerHeight - height - pad));
+            wrapper.classList.add('positioned');
+            wrapper.style.left = `${clampedX}px`;
+            wrapper.style.top = `${clampedY}px`;
+            return { x: clampedX, y: clampedY };
+        }
+
+        function startDrag(clientX, clientY, target) {
+            if (target.closest('#chatbot-close') || target.closest('#chatbot-input-area')) return;
+            isDragging = true;
+            dragMoved = false;
+            const rect = wrapper.getBoundingClientRect();
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+        }
+
+        function moveDrag(clientX, clientY) {
+            if (!isDragging) return;
+            dragMoved = true;
+            applyPosition(clientX - offsetX, clientY - offsetY);
+        }
+
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            if (dragMoved) {
+                suppressToggleClick = true;
+                setTimeout(() => { suppressToggleClick = false; }, 50);
+            }
+        }
+
+        toggle.addEventListener('click', (e) => {
+            if (suppressToggleClick) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        }, true);
+
+        [toggle, dragHeader].forEach((handle) => {
+            handle.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY, e.target));
+            handle.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                startDrag(e.touches[0].clientX, e.touches[0].clientY, e.target);
+                e.preventDefault();
+            }, { passive: false });
+        });
+
+        document.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging || e.touches.length !== 1) return;
+            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        }, { passive: false });
+        document.addEventListener('touchend', endDrag);
     }
 });

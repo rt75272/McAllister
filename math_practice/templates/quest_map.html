@@ -110,6 +110,33 @@
             background: #059669;
         }
 
+        .junk-quiz-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25;
+            width: min(92vw, 420px);
+            background: rgba(15, 23, 42, 0.96);
+            border: 3px solid #f59e0b;
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+            display: none;
+        }
+
+        .junk-quiz-input {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.96);
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 12px;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
         /* Control board overlay */
         .controls-panel {
             max-width: 240px;
@@ -188,6 +215,22 @@
         <button id="descend-moon-btn" class="descend-btn text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400">Land on Moon 🌙</button>
     </div>
 </div>
+
+<div id="junk-quiz-modal" class="junk-quiz-modal text-slate-100">
+    <div class="flex items-start justify-between gap-3">
+        <div>
+            <h3 class="font-black text-sm text-amber-400 tracking-wide">SPACE JUNK SIGNAL</h3>
+            <p id="junk-quiz-desc" class="text-xs text-slate-300 mt-1">You found a drifting salvage pod.</p>
+        </div>
+        <button id="junk-quiz-close" class="descend-btn text-xs font-black bg-slate-700 border-slate-500 mt-0">Close</button>
+    </div>
+    <div class="mt-3 rounded-xl border border-slate-700 bg-slate-950/80 p-4 text-center font-mono text-sm" id="junk-quiz-question"></div>
+    <input id="junk-quiz-input" class="junk-quiz-input" type="number" step="any" placeholder="Type your answer">
+    <div class="flex gap-3 mt-3 justify-center">
+        <button id="junk-quiz-submit" class="descend-btn text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 border-amber-300">Collect Salvage</button>
+    </div>
+    <p id="junk-quiz-feedback" class="text-xs font-bold text-center h-4 mt-3"></p>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -205,13 +248,65 @@
             { id: 7, name: "Dumbo Beat (Area of Polygons)", color: 0x84cc16, size: 1.3, radius: 34, speed: 0.05, icon: "🐘" },
             { id: 8, name: "Djinn's Revenge (Surface Area & Volume)", color: 0xeab308, size: 1.4, radius: 38, speed: 0.04, icon: "🧞" },
             { id: 9, name: "Safari Park (Statistics & Graphs)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
-            { id: 10, name: "The Mothership (Coordinate Planes)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" }
+            { id: 10, name: "The Mothership (Coordinate Planes)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" },
+            { id: 11, name: "Pet Land & Character Port", color: 0x22c55e, size: 1.9, radius: 53, speed: 0.024, icon: "🐾", specialRoute: "/pet-land", asteroidRing: true }
         ];
+
+        const spaceJunkData = [
+            { id: 'junk-a', label: 'Satellite Scrap', color: 0x94a3b8, radius: 63, speed: 0.022, size: 0.55 },
+            { id: 'junk-b', label: 'Crate Cluster', color: 0xf59e0b, radius: 69, speed: 0.019, size: 0.62 },
+            { id: 'junk-c', label: 'Probe Wreck', color: 0x22d3ee, radius: 75, speed: 0.017, size: 0.5 },
+            { id: 'junk-d', label: 'Signal Debris', color: 0xf472b6, radius: 82, speed: 0.015, size: 0.58 },
+            { id: 'junk-e', label: 'Cargo Canister', color: 0x84cc16, radius: 88, speed: 0.014, size: 0.64 },
+            { id: 'junk-f', label: 'Astro Toolbox', color: 0xa78bfa, radius: 95, speed: 0.012, size: 0.56 }
+        ];
+
+        const junkQuizBank = {
+            easy: [
+                { id: 'easy-mul-1', category: 'multiplication', prompt: 'A salvage drone finds 3 groups of 8 bolts. How many bolts total?', answer: '24', hint: 'Multiply 3 by 8.' },
+                { id: 'easy-div-1', category: 'division', prompt: 'A repair cable is 36 meters long and is split into 6 equal parts. How long is each part?', answer: '6', hint: 'Divide 36 by 6.' },
+                { id: 'easy-mul-2', category: 'multiplication', prompt: 'A scanner pings every 5 seconds. How many pings in 7-second groups? Solve 5 x 7.', answer: '35', hint: 'Multiply 5 by 7.' },
+                { id: 'easy-sub-1', category: 'subtraction', prompt: 'A cargo code is 48 minus 19. What is the code?', answer: '29', hint: 'Subtract carefully.' },
+                { id: 'easy-mul-3', category: 'multiplication', prompt: 'A rover uses 4 batteries per pack. How many batteries in 9 packs?', answer: '36', hint: 'Multiply 4 by 9.' },
+                { id: 'easy-add-1', category: 'addition', prompt: 'A rescue pod collected 18 parts and found 7 more. How many parts now?', answer: '25', hint: 'Add 18 and 7.' },
+                { id: 'easy-add-2', category: 'addition', prompt: 'Two toolbox crates hold 14 tools and 9 tools. How many tools altogether?', answer: '23', hint: 'Add 14 and 9.' },
+                { id: 'easy-div-2', category: 'division', prompt: 'A beacon sends 42 signals over 7 equal cycles. How many per cycle?', answer: '6', hint: 'Divide 42 by 7.' },
+                { id: 'easy-sub-2', category: 'subtraction', prompt: 'A mechanic had 30 bolts and used 12. How many are left?', answer: '18', hint: 'Subtract 12 from 30.' }
+            ],
+            medium: [
+                { id: 'med-lcm-1', category: 'least_common_multiple', prompt: 'Two cargo bots loop every 6 minutes and 8 minutes. What is their first shared loop time?', answer: '24', hint: 'Find the least common multiple of 6 and 8.' },
+                { id: 'med-mul-1', category: 'multiplication', prompt: 'A fuel rod pack is arranged in 7 rows of 12. How many rods are there?', answer: '84', hint: 'Multiply 7 by 12.' },
+                { id: 'med-dist-1', category: 'distributive_property', prompt: 'A salvage lock uses the expression 5(6 + 3). What is its value?', answer: '45', hint: 'Add inside the parentheses first.' },
+                { id: 'med-frac-1', category: 'fractions', prompt: 'A repair panel is 3/4 full. If a drone adds another 1/4, what fraction full is it now?', answer: '1', hint: 'Add the numerators.' },
+                { id: 'med-div-1', category: 'division', prompt: 'A crate route is 120 meters and each section is 15 meters. How many sections?', answer: '8', hint: 'Divide 120 by 15.' },
+                { id: 'med-exp-1', category: 'exponents', prompt: 'A salvage beacon powers up at 2^4. What number is that?', answer: '16', hint: 'Multiply 2 by itself four times.' },
+                { id: 'med-gcf-1', category: 'greatest_common_factor', prompt: 'Two repair teams need equal packs for 18 wires and 24 wires. What is the greatest common factor?', answer: '6', hint: 'List factors of 18 and 24.' },
+                { id: 'med-ooo-1', category: 'order_of_operations', prompt: 'A nav code reads 9 + 3 x 4. What is the value?', answer: '21', hint: 'Multiply before adding.' },
+                { id: 'med-ratio-1', category: 'ratios', prompt: 'A fuel mix uses 2 parts ion gel for every 5 parts coolant. If there are 15 coolant parts, how many ion gel parts are needed?', answer: '6', hint: 'Set up an equivalent ratio.' }
+            ],
+            hard: [
+                { id: 'hard-area-1', category: 'area', prompt: 'A reactor plate covers 3 rectangular zones, each 7 by 6 meters. What total area is covered?', answer: '126', hint: 'Find the area of one zone, then multiply by 3.' },
+                { id: 'hard-volume-1', category: 'volume', prompt: 'A supply prism has a base area of 18 square meters and a height of 5 meters. What is its volume?', answer: '90', hint: 'Volume = base area × height.' },
+                { id: 'hard-percent-1', category: 'percent', prompt: 'A salvage signal shows 40% of a battery bank is 28 cells. How many cells are in the whole bank?', answer: '70', hint: 'Divide 28 by 0.4.' },
+                { id: 'hard-coordinate-1', category: 'coordinates', prompt: 'A graphing drone moves from (-3, 4) to (5, 4). What is the horizontal distance?', answer: '8', hint: 'Subtract the x-coordinates.' },
+                { id: 'hard-fraction-1', category: 'fractions', prompt: 'A cargo tank is filled to 3/5 of capacity. If full capacity is 45 liters, how many liters are inside?', answer: '27', hint: 'Multiply 45 by 3/5.' },
+                { id: 'hard-stats-1', category: 'statistics', prompt: 'A statistics pod recorded 12, 18, and 24. What is the mean?', answer: '18', hint: 'Add and divide by 3.' },
+                { id: 'hard-surface-1', category: 'surface_area', prompt: 'A cube storage pod has side length 4 meters. What is its total surface area?', answer: '96', hint: 'A cube has 6 equal faces.' },
+                { id: 'hard-ratio-1', category: 'ratios', prompt: 'A power fluid mix uses 4 liters of charge gel for every 9 liters of coolant. If there are 27 liters of coolant, how much charge gel is needed?', answer: '12', hint: 'Set up an equivalent ratio.' },
+                { id: 'hard-integer-1', category: 'integers', prompt: 'A repair elevator moves from -6 to 8 on the shaft grid. What total distance did it travel?', answer: '14', hint: 'Find the distance between the integers.' }
+            ]
+        };
+
+        function getPlanetRoute(planetId) {
+            const planet = planetsData.find((item) => item.id === planetId);
+            return planet && planet.specialRoute ? planet.specialRoute : `/quest-map/planet/${planetId}`;
+        }
 
         // Three.js and Flight Engine
         let scene, camera, renderer, raycaster, mouse;
         let ship;
         let planets = [];
+        let spaceJunk = [];
         let stars = [];
         let keys = {};
         
@@ -225,6 +320,11 @@
         let activeApproachedPlanetId = null;
         let activeApproachedMoonId = null;
         let landingTarget = null; // { type: 'planet' | 'moon', id: id, pos: THREE.Vector3 }
+        let currentCoins = 15;
+        let activeJunkQuiz = null;
+        let highestUnitVisited = 1;
+        let recentJunkQuizIds = [];
+        let lastJunkQuizCategory = null;
 
         // Initialize points tally from localStorage
         function loadCoins() {
@@ -232,9 +332,75 @@
             if (saved) {
                 try {
                     const state = JSON.parse(saved);
-                    document.getElementById('coins-count').textContent = state.coins || 15;
+                    currentCoins = state.coins || 15;
+                    highestUnitVisited = Math.max(1, state.highestUnitVisited || 1);
+                    recentJunkQuizIds = Array.isArray(state.recentJunkQuizIds) ? state.recentJunkQuizIds : [];
+                    lastJunkQuizCategory = state.lastJunkQuizCategory || null;
+                    document.getElementById('coins-count').textContent = currentCoins;
                 } catch(e) {}
             }
+        }
+
+        function getJunkDifficultyTier() {
+            if (highestUnitVisited >= 8) return 'hard';
+            if (highestUnitVisited >= 4) return 'medium';
+            return 'easy';
+        }
+
+        function addCoins(amount) {
+            currentCoins += amount;
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let state = {};
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch (e) {}
+            }
+            state.coins = currentCoins;
+            state.recentJunkQuizIds = recentJunkQuizIds;
+            state.lastJunkQuizCategory = lastJunkQuizCategory;
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+            document.getElementById('coins-count').textContent = currentCoins;
+        }
+
+        function saveJunkRotationState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let state = {};
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch (e) {}
+            }
+            state.recentJunkQuizIds = recentJunkQuizIds;
+            state.lastJunkQuizCategory = lastJunkQuizCategory;
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+        }
+
+        function chooseJunkQuiz(tier) {
+            const bank = junkQuizBank[tier] || junkQuizBank.easy;
+            const historySize = Math.min(5, Math.max(1, bank.length - 1));
+
+            let candidates = bank.filter((quiz) => !recentJunkQuizIds.includes(quiz.id));
+            if (candidates.length === 0) {
+                candidates = bank.filter((quiz) => quiz.category !== lastJunkQuizCategory);
+            }
+            if (candidates.length === 0) {
+                candidates = bank;
+            }
+
+            let categoryCandidates = candidates.filter((quiz) => quiz.category !== lastJunkQuizCategory);
+            if (categoryCandidates.length === 0) {
+                categoryCandidates = candidates;
+            }
+
+            const quiz = categoryCandidates[Math.floor(Math.random() * categoryCandidates.length)];
+            recentJunkQuizIds.push(quiz.id);
+            if (recentJunkQuizIds.length > historySize) {
+                recentJunkQuizIds = recentJunkQuizIds.slice(-historySize);
+            }
+            lastJunkQuizCategory = quiz.category;
+            saveJunkRotationState();
+            return quiz;
         }
 
         function init() {
@@ -318,6 +484,7 @@
 
                 let moonMesh = null;
                 let moonOrbitRadius = data.size + 1.3;
+                const asteroidMeshes = [];
                 if (data.moon) {
                     const moonGeo = new THREE.IcosahedronGeometry(data.size * 0.25, 1);
                     const moonMat = new THREE.MeshStandardMaterial({
@@ -329,6 +496,29 @@
                     moonMesh = new THREE.Mesh(moonGeo, moonMat);
                     scene.add(moonMesh);
                 }
+
+                if (data.asteroidRing) {
+                    const asteroidCount = 9;
+                    for (let index = 0; index < asteroidCount; index += 1) {
+                        const asteroidGeo = new THREE.DodecahedronGeometry(0.16 + Math.random() * 0.14, 0);
+                        const asteroidMat = new THREE.MeshStandardMaterial({
+                            color: index % 2 === 0 ? 0xa3a3a3 : 0x78716c,
+                            flatShading: true,
+                            roughness: 1,
+                            metalness: 0.05
+                        });
+                        const asteroidMesh = new THREE.Mesh(asteroidGeo, asteroidMat);
+                        scene.add(asteroidMesh);
+                        asteroidMeshes.push({
+                            mesh: asteroidMesh,
+                            angle: (index * Math.PI * 2) / asteroidCount,
+                            orbitRadius: data.size + 1.4 + Math.random() * 0.55,
+                            yOffset: (Math.random() - 0.5) * 0.5,
+                            spinX: 0.01 + Math.random() * 0.01,
+                            spinY: 0.008 + Math.random() * 0.01,
+                        });
+                    }
+                }
                 
                 planets.push({
                     mesh: planetMesh,
@@ -336,7 +526,33 @@
                     data: data,
                     moonMesh: moonMesh,
                     moonAngle: Math.random() * Math.PI * 2,
-                    moonOrbitRadius: moonOrbitRadius
+                    moonOrbitRadius: moonOrbitRadius,
+                    asteroidMeshes: asteroidMeshes
+                });
+            });
+
+            // 6b. Drifting space junk far beyond the planets for exploration bonuses
+            spaceJunkData.forEach((data, index) => {
+                const junkGeo = new THREE.TetrahedronGeometry(data.size, 0);
+                const junkMat = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    flatShading: true,
+                    roughness: 0.9,
+                    metalness: 0.2
+                });
+                const junkMesh = new THREE.Mesh(junkGeo, junkMat);
+                const startAngle = (index * Math.PI * 2) / spaceJunkData.length + 0.8;
+                junkMesh.position.set(
+                    Math.cos(startAngle) * data.radius,
+                    (index % 2 === 0 ? 1.5 : -1.5),
+                    Math.sin(startAngle) * data.radius
+                );
+                scene.add(junkMesh);
+                spaceJunk.push({
+                    mesh: junkMesh,
+                    angle: startAngle,
+                    bobOffset: Math.random() * Math.PI * 2,
+                    data
                 });
             });
 
@@ -387,7 +603,7 @@
             document.getElementById('descend-planet-btn').addEventListener('click', () => {
                 const targetId = activeApproachedPlanetId || activeApproachedMoonId;
                 if (targetId !== null) {
-                    window.location.href = `/quest-map/planet/${targetId}`;
+                    window.location.href = getPlanetRoute(targetId);
                 }
             });
 
@@ -398,18 +614,73 @@
                 }
             });
 
+            document.getElementById('junk-quiz-close').addEventListener('click', closeJunkQuiz);
+            document.getElementById('junk-quiz-submit').addEventListener('click', submitJunkQuiz);
+            document.getElementById('junk-quiz-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitJunkQuiz();
+                }
+            });
+
             animate();
+        }
+
+        function openJunkQuiz(junk) {
+            const tier = getJunkDifficultyTier();
+            const quiz = chooseJunkQuiz(tier);
+            const rewardBase = tier === 'hard' ? 7 : tier === 'medium' ? 5 : 3;
+            activeJunkQuiz = { junkId: junk.data.id, quiz, reward: rewardBase + Math.floor(Math.random() * 3), tier };
+            document.getElementById('junk-quiz-desc').textContent = `${junk.data.label} drifted in from the outer ring. Salvage difficulty: ${tier.toUpperCase()}. Solve it to earn bonus coins.`;
+            document.getElementById('junk-quiz-question').textContent = quiz.prompt;
+            document.getElementById('junk-quiz-input').value = '';
+            document.getElementById('junk-quiz-feedback').textContent = '';
+            document.getElementById('junk-quiz-modal').style.display = 'block';
+            document.getElementById('junk-quiz-input').focus();
+        }
+
+        function closeJunkQuiz() {
+            activeJunkQuiz = null;
+            document.getElementById('junk-quiz-modal').style.display = 'none';
+        }
+
+        function submitJunkQuiz() {
+            if (!activeJunkQuiz) return;
+            const answer = document.getElementById('junk-quiz-input').value.trim();
+            const feedback = document.getElementById('junk-quiz-feedback');
+            if (answer === activeJunkQuiz.quiz.answer) {
+                addCoins(activeJunkQuiz.reward);
+                feedback.textContent = `Salvage secured! +${activeJunkQuiz.reward} coins.`;
+                feedback.style.color = '#10b981';
+                setTimeout(closeJunkQuiz, 900);
+            } else {
+                feedback.textContent = `Not quite. Hint: ${activeJunkQuiz.quiz.hint}`;
+                feedback.style.color = '#ef4444';
+            }
         }
 
         // Steer clicks raycast to planets & moons
         function onDocumentClick(event) {
             // Only capture if clicking inside Three.js container
-            if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A') return;
+            if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.tagName === 'INPUT') return;
 
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
+
+            // Check space junk hits first for exploration mini quizzes
+            const junkMeshes = spaceJunk.map((junk) => junk.mesh);
+            const junkIntersects = raycaster.intersectObjects(junkMeshes);
+
+            if (junkIntersects.length > 0) {
+                const clickedMesh = junkIntersects[0].object;
+                const clickedJunk = spaceJunk.find((junk) => junk.mesh === clickedMesh);
+                if (clickedJunk) {
+                    openJunkQuiz(clickedJunk);
+                    return;
+                }
+            }
 
             // Check planet hits
             const planetMeshes = planets.map(p => p.mesh);
@@ -421,7 +692,7 @@
                 if (clickedPlanet) {
                     // Instantly steer ship towards planet and trigger descent
                     ship.position.copy(clickedMesh.position);
-                    window.location.href = `/quest-map/planet/${clickedPlanet.data.id}`;
+                    window.location.href = getPlanetRoute(clickedPlanet.data.id);
                     return;
                 }
             }
@@ -468,6 +739,31 @@
                     p.moonMesh.position.set(moonX, 0.4, moonZ);
                     p.moonMesh.rotation.y += 0.01;
                 }
+
+                if (p.asteroidMeshes && p.asteroidMeshes.length > 0) {
+                    p.asteroidMeshes.forEach((asteroid, index) => {
+                        asteroid.angle += 0.02 + (index * 0.0007);
+                        asteroid.mesh.position.set(
+                            planetX + Math.cos(asteroid.angle) * asteroid.orbitRadius,
+                            asteroid.yOffset,
+                            planetZ + Math.sin(asteroid.angle) * asteroid.orbitRadius
+                        );
+                        asteroid.mesh.rotation.x += asteroid.spinX;
+                        asteroid.mesh.rotation.y += asteroid.spinY;
+                    });
+                }
+            });
+
+            // 1b. Drift the outer-ring space junk
+            spaceJunk.forEach((junk) => {
+                junk.angle += junk.data.speed * 0.01;
+                junk.mesh.position.set(
+                    Math.cos(junk.angle) * junk.data.radius,
+                    Math.sin(junk.angle * 1.8 + junk.bobOffset) * 1.8,
+                    Math.sin(junk.angle) * junk.data.radius
+                );
+                junk.mesh.rotation.x += 0.01;
+                junk.mesh.rotation.y += 0.014;
             });
 
             // 2. Spaceship Movement Control

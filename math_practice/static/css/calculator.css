@@ -20,6 +20,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: grab;
+}
+
+.calculator-toggle:active {
+    cursor: grabbing;
+}
+
+.calculator-toggle.positioned {
+    bottom: auto;
 }
 
 .calculator-toggle:hover {

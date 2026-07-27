@@ -2,11 +2,13 @@ import json
 import os
 import random
 import re
+from contextlib import closing
 from collections import deque
 from datetime import datetime
 from urllib import error, request as urllib_request
 
 from flask import Flask, render_template, request, jsonify, session
+import psycopg2
 # ########################################################################################################
 # Math Practice Web App.
 #
@@ -600,6 +602,11 @@ def planet_hub(planet_id):
     """A dedicated page for the active planet's curriculum stations."""
     return render_template('planet_hub.html', planet_id=planet_id)
 
+@app.route('/pet-land')
+def pet_land():
+    """Dedicated pet adoption and pet equipment world."""
+    return render_template('pet_land.html')
+
 @app.route('/percentage_quest')
 def percentage_quest():
     return render_template('percentage_quest.html')
@@ -608,6 +615,136 @@ def percentage_quest():
 def area_explorer():
     """Area Explorer game page."""
     return render_template('area_explorer.html')
+
+
+def get_db_connection():
+    """Open a PostgreSQL connection using the DATABASE_URL environment variable."""
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise RuntimeError('DATABASE_URL is not configured.')
+    return psycopg2.connect(database_url)
+
+
+def ensure_student_creations_table():
+    """Create student creations table if it does not exist."""
+    with closing(get_db_connection()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS student_creations (
+                    id SERIAL PRIMARY KEY,
+                    unit_id TEXT NOT NULL,
+                    planet_id INTEGER NOT NULL,
+                    activity_id TEXT NOT NULL,
+                    question TEXT NOT NULL,
+                    answer TEXT NOT NULL,
+                    hint TEXT NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+                """
+            )
+            conn.commit()
+
+
+@app.route('/api/student-creations', methods=['POST'])
+def save_student_creation():
+    """Save student-authored question/answer/hint for teacher review."""
+    payload = request.get_json(silent=True) or {}
+
+    question_text = str(payload.get('question', '')).strip()
+    answer_text = str(payload.get('answer', '')).strip()
+    hint_text = str(payload.get('hint', '')).strip()
+    unit_id = str(payload.get('unit_id', '')).strip()
+    activity_id = str(payload.get('activity_id', '')).strip()
+    planet_id_raw = payload.get('planet_id', 0)
+
+    if not question_text or not answer_text or not hint_text:
+        return jsonify({'error': 'Question, answer, and hint are required.'}), 400
+    if not unit_id or not activity_id:
+        return jsonify({'error': 'Unit and activity metadata are required.'}), 400
+
+    try:
+        planet_id = int(planet_id_raw)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'planet_id must be a valid integer.'}), 400
+
+    if len(question_text) > 1200 or len(answer_text) > 600 or len(hint_text) > 1200:
+        return jsonify({'error': 'Submission is too long.'}), 400
+
+    try:
+        ensure_student_creations_table()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO student_creations (unit_id, planet_id, activity_id, question, answer, hint)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, created_at
+                    """,
+                    (unit_id, planet_id, activity_id, question_text, answer_text, hint_text),
+                )
+                row = cur.fetchone()
+                conn.commit()
+    except Exception as exc:
+        app.logger.error(f'Failed saving student creation: {exc}')
+        return jsonify({'error': 'Could not save student creation right now.'}), 500
+
+    return jsonify(
+        {
+            'ok': True,
+            'id': row[0],
+            'created_at': row[1].isoformat() if row and row[1] else None,
+        }
+    )
+
+
+@app.route('/api/teacher/student-creations', methods=['GET'])
+def list_student_creations_for_teacher():
+    """Read student-created items for teacher dashboard use."""
+    teacher_token = os.environ.get('TEACHER_DASHBOARD_TOKEN', '').strip()
+    incoming_token = request.headers.get('X-Teacher-Token', '').strip()
+    if teacher_token and incoming_token != teacher_token:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    limit_raw = request.args.get('limit', '100')
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 100
+    limit = max(1, min(limit, 500))
+
+    try:
+        ensure_student_creations_table()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, unit_id, planet_id, activity_id, question, answer, hint, created_at
+                    FROM student_creations
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (limit,),
+                )
+                rows = cur.fetchall()
+    except Exception as exc:
+        app.logger.error(f'Failed loading student creations: {exc}')
+        return jsonify({'error': 'Could not load student creations right now.'}), 500
+
+    records = [
+        {
+            'id': row[0],
+            'unit_id': row[1],
+            'planet_id': row[2],
+            'activity_id': row[3],
+            'question': row[4],
+            'answer': row[5],
+            'hint': row[6],
+            'created_at': row[7].isoformat() if row[7] else None,
+        }
+        for row in rows
+    ]
+    return jsonify({'items': records})
 
 # The big red activation button.
 if __name__ == '__main__':

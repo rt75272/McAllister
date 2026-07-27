@@ -216,6 +216,7 @@ function setupCalculatorEvents() {
     
     // Setup drag functionality
     setupCalculatorDrag();
+    setupCalculatorToggleDrag();
 }
 
 /* ── Smooth drag-to-move for the calculator panel ── */
@@ -271,11 +272,6 @@ function setupCalculatorDrag() {
         isDragging = false;
         container.classList.remove('dragging');
 
-        // Persist position
-        localStorage.setItem('calculatorPosition', JSON.stringify({
-            x: parseInt(container.style.left, 10),
-            y: parseInt(container.style.top, 10)
-        }));
     }
 
     /* Mouse events */
@@ -305,34 +301,75 @@ function setupCalculatorDrag() {
     }, { passive: false });
 
     document.addEventListener('touchend', onPointerUp);
-
-    // Restore saved position
-    restoreCalculatorPosition(container);
 }
 
-function restoreCalculatorPosition(container) {
-    if (!container) container = document.querySelector('.global-calculator-container');
-    if (!container) return;
+function setupCalculatorToggleDrag() {
+    const toggle = document.getElementById('calc-toggle-btn');
+    if (!toggle) return;
 
-    const saved = localStorage.getItem('calculatorPosition');
-    if (!saved) return;
+    let isDragging = false;
+    let moved = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    let suppressClick = false;
 
-    try {
-        const pos = JSON.parse(saved);
+    function applyPosition(x, y) {
         const pad = 10;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const cw = container.offsetWidth;
-        const ch = container.offsetHeight;
-        const cx = Math.max(pad, Math.min(pos.x, vw - cw - pad));
-        const cy = Math.max(pad, Math.min(pos.y, vh - ch - pad));
-
-        container.classList.add('positioned');
-        container.style.left = cx + 'px';
-        container.style.top = cy + 'px';
-    } catch (_) {
-        // ignore bad data
+        const width = toggle.offsetWidth;
+        const height = toggle.offsetHeight;
+        const clampedX = Math.max(pad, Math.min(x, window.innerWidth - width - pad));
+        const clampedY = Math.max(pad, Math.min(y, window.innerHeight - height - pad));
+        toggle.classList.add('positioned');
+        toggle.style.left = `${clampedX}px`;
+        toggle.style.top = `${clampedY}px`;
+        return { x: clampedX, y: clampedY };
     }
+
+    function startDrag(clientX, clientY) {
+        isDragging = true;
+        moved = false;
+        const rect = toggle.getBoundingClientRect();
+        offsetX = clientX - rect.left;
+        offsetY = clientY - rect.top;
+    }
+
+    function moveDrag(clientX, clientY) {
+        if (!isDragging) return;
+        moved = true;
+        applyPosition(clientX - offsetX, clientY - offsetY);
+    }
+
+    function endDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (moved) {
+            suppressClick = true;
+            setTimeout(() => { suppressClick = false; }, 50);
+        }
+    }
+
+    toggle.addEventListener('click', (e) => {
+        if (suppressClick) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }
+    }, true);
+
+    toggle.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+    document.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+    document.addEventListener('mouseup', endDrag);
+
+    toggle.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', endDrag);
 }
 
 // Initialize calculator when DOM is loaded
@@ -354,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Debug function to reset calculator position  
 window.resetCalculatorPosition = function() {
-    localStorage.removeItem('calculatorPosition');
     const calculatorContainer = document.querySelector('.global-calculator-container');
     if (calculatorContainer) {
         calculatorContainer.classList.remove('positioned');
@@ -363,6 +399,13 @@ window.resetCalculatorPosition = function() {
         calculatorContainer.style.right = '';
         calculatorContainer.style.bottom = '';
         console.log('Calculator position reset');
+    }
+    const toggle = document.getElementById('calc-toggle-btn');
+    if (toggle) {
+        toggle.classList.remove('positioned');
+        toggle.style.left = '';
+        toggle.style.top = '';
+        toggle.style.bottom = '';
     }
 };
 

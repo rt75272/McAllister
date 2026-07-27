@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: math-practice
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.11
+Requires-Dist: flask==2.3.3
+Requires-Dist: gunicorn>=25.1.0
+Requires-Dist: psycopg2-binary>=2.9.9

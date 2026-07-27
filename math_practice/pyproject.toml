@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "math-practice"
 version = "0.1.0"
@@ -6,4 +10,11 @@ requires-python = ">=3.11"
 dependencies = [
     "flask==2.3.3",
     "gunicorn>=25.1.0",
+    "psycopg2-binary>=2.9.9",
 ]
+
+[tool.setuptools]
+# This project is an app workspace (templates/static/frontend folders), not a
+# distributable Python package tree. Disable auto package discovery so
+# editable installs only provision dependencies.
+packages = []
