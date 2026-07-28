@@ -1,0 +1,989 @@
+{% extends "base.html" %}
+
+{% block title %}Coordinate Plane Navigator - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #09090e;
+        color: #e0e0ed;
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .game-title {
+        font-size: 2rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(to right, #fbbf24, #f59e0b, #ef4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .coins-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 2.5px solid #8b5a2b;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #f3f4f6;
+    }
+
+    .game-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+        margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+        .game-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glass Panels */
+    .glass-station-panel {
+        background: rgba(26, 26, 46, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .sidebar-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .wood-hud-panel {
+        background: rgba(30, 41, 59, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+    }
+
+    /* Canvas styling */
+    #gameCanvas {
+        background: #02040a;
+        border: 4px solid #334155;
+        border-radius: 16px;
+        display: block;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 10px 25px rgba(0,0,0,0.5);
+        cursor: crosshair;
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Mode selector */
+    .mode-selector {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .mode-btn {
+        flex: 1;
+        background: rgba(15, 23, 42, 0.6);
+        border: 2px solid #475569;
+        color: #94a3b8;
+        font-weight: 800;
+        padding: 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-size: 0.85rem;
+    }
+
+    .mode-btn.active {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        border-color: #60a5fa;
+        color: white;
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Lockout overlay & panel styling */
+    .lockout-header {
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: #f59e0b;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .lockout-active {
+        border-color: #d97706;
+        animation: pulse-border 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 5px rgba(217, 119, 6, 0.2); }
+        100% { box-shadow: 0 0 20px rgba(217, 119, 6, 0.6); }
+    }
+
+    .challenge-box {
+        background: #02040a;
+        border: 2px solid #334155;
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .challenge-prompt {
+        font-size: 0.95rem;
+        font-weight: 800;
+        line-height: 1.4;
+        color: #f8fafc;
+    }
+
+    .challenge-input-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .coord-input {
+        width: 64px;
+        background: #02040a;
+        border: 2px solid #475569;
+        color: white;
+        border-radius: 10px;
+        padding: 8px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .coord-input:focus {
+        border-color: #3b82f6;
+        outline: none;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: 2px solid #34d399;
+        color: white;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .submit-btn:hover {
+        transform: scale(1.05);
+        background: #059669;
+    }
+
+    .feedback-text {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-align: center;
+        min-height: 16px;
+        margin-top: 8px;
+    }
+
+    /* HUD readout styling */
+    .hud-readout {
+        font-family: monospace;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .hud-line {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding-bottom: 4px;
+    }
+
+    .hud-val {
+        font-weight: bold;
+    }
+
+    /* Floating Space Console Help */
+    .help-box {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    .help-heading {
+        font-weight: 800;
+        color: #c084fc;
+        margin-bottom: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('math_games') }}" class="home-btn">
+            🚀 Back to Games
+        </a>
+        <h1 class="game-title">🛸 Coordinate Navigator</h1>
+        <div class="coins-box">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="game-grid-layout">
+        <!-- Canvas/Game Area -->
+        <div class="glass-station-panel">
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 10px;" class="text-center font-mono">
+                Click on the grid to answer challenges directly, or use inputs on the right!
+            </div>
+        </div>
+
+        <!-- Sidebar Controls & Lockout -->
+        <div class="sidebar-panel">
+            <!-- Mode Selector -->
+            <div class="wood-hud-panel">
+                <h4 class="font-extrabold text-sm text-slate-300 uppercase tracking-wider mb-2">🔭 Grid Mode</h4>
+                <div class="mode-selector">
+                    <button id="mode-quad1" class="mode-btn active">Quadrant I<br>(0 to 10)</button>
+                    <button id="mode-four" class="mode-btn">4 Quadrants<br>(-5 to 5)</button>
+                </div>
+            </div>
+
+            <!-- Thruster Lockout Panel -->
+            <div id="lockout-panel" class="wood-hud-panel lockout-active">
+                <div class="lockout-header">
+                    <span id="lock-icon">🔒</span>
+                    <span>Thruster Lockout Active!</span>
+                </div>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; margin-bottom: 0;">
+                    Steering propulsion is offline. Solve the challenge below to unlock flight keys!
+                </p>
+
+                <div class="challenge-box">
+                    <p id="challenge-prompt" class="challenge-prompt">Loading Challenge...</p>
+                    
+                    <div class="challenge-input-row">
+                        <div>
+                            <span class="text-xs font-mono text-slate-400 block">X Coor</span>
+                            <input id="input-x" class="coord-input" type="number" step="1" placeholder="x">
+                        </div>
+                        <div class="text-xl font-black text-slate-400 mt-4">,</div>
+                        <div>
+                            <span class="text-xs font-mono text-slate-400 block">Y Coor</span>
+                            <input id="input-y" class="coord-input" type="number" step="1" placeholder="y">
+                        </div>
+                    </div>
+                    <button id="lockout-submit" class="submit-btn w-full mt-3">Unlock Thrusters</button>
+                </div>
+                <p id="lockout-feedback" class="feedback-text text-amber-400">Plot the coordinate to start flight!</p>
+            </div>
+
+            <!-- Flight HUD Readout -->
+            <div class="wood-hud-panel">
+                <h4 class="font-extrabold text-sm text-cyan-400 tracking-wide uppercase mb-2">📡 NAVIGATION TELEMETRY</h4>
+                <div class="hud-readout">
+                    <div class="hud-line">
+                        <span>Airship Status</span>
+                        <span id="hud-status" class="hud-val text-red-500">THRUSTERS LOCKED</span>
+                    </div>
+                    <div class="hud-line">
+                        <span>Explorer Position</span>
+                        <span id="hud-pos" class="hud-val text-indigo-400">(0.0, 0.0)</span>
+                    </div>
+                    <div class="hud-line">
+                        <span>Target Checkpoint</span>
+                        <span id="hud-target" class="hud-val text-emerald-400">(?, ?)</span>
+                    </div>
+                    <div class="hud-line">
+                        <span>Targets Secured</span>
+                        <span id="hud-score" class="hud-val text-yellow-400">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilot Help Card -->
+            <div class="wood-hud-panel help-box">
+                <div class="help-heading">🧭 PILOT CONSOLE GUIDE</div>
+                <p>1. **Unlock Thrusters:** Look at the challenge and enter the requested coordinates (or click directly on the correct grid intersection).</p>
+                <p style="margin-top: 4px;">2. **Navigate Airship:** Once unlocked, use **Arrow Keys** or **WASD** to steer your blue explorer to the red target chest.</p>
+                <p style="margin-top: 4px;">3. Secure checkpoints to gain coins and level up your rating!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Audio synthesizer helper matching website style
+    function playSound(type) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+
+            if (type === 'success') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            } else if (type === 'coin') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now);
+                osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.25);
+            } else if (type === 'fail') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220.00, now);
+                osc.frequency.linearRampToValueAtTime(110.00, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game configuration
+        let quadrantMode = 'quad1'; // 'quad1' or 'four'
+        let thustersLocked = true;
+        let score = 0;
+        let coins = 15;
+
+        // Cartesian player and target coordinates
+        let player = { cx: 1, cy: 1, px: 1, py: 1, size: 10, speed: 0.12 }; // px/py are real-time, cx/cy are target cells
+        let target = { cx: 8, cy: 8 };
+
+        // Challenges definition
+        let currentChallenge = null;
+
+        // Keys state
+        let keys = {};
+        window.addEventListener('keydown', e => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.code] = true;
+        });
+        window.addEventListener('keyup', e => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.code] = false;
+        });
+
+        // Initialize state from local storage
+        function loadState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    coins = parsed.coins || 15;
+                    document.getElementById('coins-count').textContent = coins;
+                } catch(e) {}
+            }
+        }
+
+        function saveCoins() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let state = {};
+            if (saved) {
+                try { state = JSON.parse(saved); } catch (e) {}
+            }
+            state.coins = coins;
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+            document.getElementById('coins-count').textContent = coins;
+        }
+
+        function addCoins(amount) {
+            coins += amount;
+            saveCoins();
+        }
+
+        // Mapping from Cartesian space to HTML5 canvas coordinates
+        function cartesianToCanvas(cx, cy) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const margin = 50;
+            const size = width - margin * 2;
+
+            if (quadrantMode === 'quad1') {
+                // Quadrant I: 0 to 10
+                const px = margin + (cx / 10) * size;
+                const py = height - margin - (cy / 10) * size;
+                return { x: px, y: py };
+            } else {
+                // Four Quadrants: -5 to 5
+                const px = width / 2 + (cx / 5) * (size / 2);
+                const py = height / 2 - (cy / 5) * (size / 2);
+                return { x: px, y: py };
+            }
+        }
+
+        // Mapping from HTML5 canvas coordinates to Cartesian grid (rounded)
+        function canvasToCartesian(canvX, canvY) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const margin = 50;
+            const size = width - margin * 2;
+
+            if (quadrantMode === 'quad1') {
+                const cx = ((canvX - margin) / size) * 10;
+                const cy = ((height - margin - canvY) / size) * 10;
+                return { x: Math.round(cx), y: Math.round(cy) };
+            } else {
+                const cx = ((canvX - width / 2) / (size / 2)) * 5;
+                const cy = (((height / 2) - canvY) / (size / 2)) * 5;
+                return { x: Math.round(cx), y: Math.round(cy) };
+            }
+        }
+
+        function clampCoordinates(coord) {
+            if (quadrantMode === 'quad1') {
+                return {
+                    x: Math.max(0, Math.min(10, coord.x)),
+                    y: Math.max(0, Math.min(10, coord.y))
+                };
+            } else {
+                return {
+                    x: Math.max(-5, Math.min(5, coord.x)),
+                    y: Math.max(-5, Math.min(5, coord.y))
+                };
+            }
+        }
+
+        // Challenge generator
+        function generateChallenge() {
+            let cx, cy;
+            if (quadrantMode === 'quad1') {
+                cx = Math.floor(Math.random() * 11);
+                cy = Math.floor(Math.random() * 11);
+            } else {
+                cx = Math.floor(Math.random() * 11) - 5;
+                cy = Math.floor(Math.random() * 11) - 5;
+            }
+
+            // Exclude positions near player or target to keep it fun
+            while (Math.abs(cx - player.cx) < 2 && Math.abs(cy - player.cy) < 2) {
+                if (quadrantMode === 'quad1') {
+                    cx = Math.floor(Math.random() * 11);
+                    cy = Math.floor(Math.random() * 11);
+                } else {
+                    cx = Math.floor(Math.random() * 11) - 5;
+                    cy = Math.floor(Math.random() * 11) - 5;
+                }
+            }
+
+            // Two types of coordinate challenges:
+            // 1. "Enter coordinates of point displayed on map"
+            // 2. "Plot the point (X, Y) directly on the map grid"
+            const challengeType = Math.random() > 0.5 ? 'plot' : 'identify';
+
+            currentChallenge = {
+                type: challengeType,
+                targetX: cx,
+                targetY: cy,
+                prompt: challengeType === 'plot' 
+                    ? `To engage navigation thrusters, plot the point <span class="math-term font-bold text-amber-300">(${cx}, ${cy})</span> by typing its coordinates or clicking its location on the grid!`
+                    : `Your navigation sensor has spotted a beacon. Identify the coordinates of the blinking beacon on the coordinate plane!`
+            };
+
+            document.getElementById('challenge-prompt').innerHTML = currentChallenge.prompt;
+            document.getElementById('input-x').value = '';
+            document.getElementById('input-y').value = '';
+            
+            if (challengeType === 'plot') {
+                document.getElementById('lockout-feedback').innerHTML = "Awaiting coordinates plotting...";
+                document.getElementById('lockout-feedback').className = "feedback-text text-amber-400";
+            } else {
+                document.getElementById('lockout-feedback').innerHTML = "Identify the blinking yellow target's coordinates!";
+                document.getElementById('lockout-feedback').className = "feedback-text text-cyan-400";
+            }
+
+            thustersLocked = true;
+            document.getElementById('hud-status').textContent = "THRUSTERS LOCKED";
+            document.getElementById('hud-status').className = "hud-val text-red-500 animate-pulse";
+            document.getElementById('lockout-panel').classList.add('lockout-active');
+            document.getElementById('lock-icon').textContent = "🔒";
+        }
+
+        function unlockThrustersSuccess() {
+            thustersLocked = false;
+            playSound('success');
+            document.getElementById('hud-status').textContent = "THRUSTERS ONLINE";
+            document.getElementById('hud-status').className = "hud-val text-emerald-400 font-bold";
+            document.getElementById('lockout-panel').classList.remove('lockout-active');
+            document.getElementById('lock-icon').textContent = "🔓";
+            document.getElementById('lockout-feedback').innerHTML = "Propulsion engine fully online! Pilot airship to the target!";
+            document.getElementById('lockout-feedback').className = "feedback-text text-emerald-400";
+        }
+
+        function generateNewTarget() {
+            let cx, cy;
+            if (quadrantMode === 'quad1') {
+                cx = Math.floor(Math.random() * 9) + 1;
+                cy = Math.floor(Math.random() * 9) + 1;
+            } else {
+                cx = Math.floor(Math.random() * 9) - 4;
+                cy = Math.floor(Math.random() * 9) - 4;
+            }
+
+            // Exclude current player location
+            while (Math.abs(cx - player.cx) < 2 && Math.abs(cy - player.cy) < 2) {
+                if (quadrantMode === 'quad1') {
+                    cx = Math.floor(Math.random() * 9) + 1;
+                    cy = Math.floor(Math.random() * 9) + 1;
+                } else {
+                    cx = Math.floor(Math.random() * 9) - 4;
+                    cy = Math.floor(Math.random() * 9) - 4;
+                }
+            }
+
+            target.cx = cx;
+            target.cy = cy;
+            document.getElementById('hud-target').textContent = `(${cx}, ${cy})`;
+        }
+
+        // Submit logic
+        function submitCoordinateUnlock() {
+            const xVal = parseInt(document.getElementById('input-x').value);
+            const yVal = parseInt(document.getElementById('input-y').value);
+
+            if (isNaN(xVal) || isNaN(yVal)) {
+                document.getElementById('lockout-feedback').textContent = "Please enter valid integers.";
+                document.getElementById('lockout-feedback').className = "feedback-text text-red-400";
+                playSound('fail');
+                return;
+            }
+
+            if (xVal === currentChallenge.targetX && yVal === currentChallenge.targetY) {
+                unlockThrustersSuccess();
+            } else {
+                document.getElementById('lockout-feedback').textContent = "Calibration error! Coordinates are incorrect.";
+                document.getElementById('lockout-feedback').className = "feedback-text text-red-400 animate-bounce";
+                playSound('fail');
+            }
+        }
+
+        document.getElementById('lockout-submit').addEventListener('click', submitCoordinateUnlock);
+
+        // Grid clicks mapping to coordinates to let students plot interactively!
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const cart = canvasToCartesian(clickX, clickY);
+            const clamped = clampCoordinates(cart);
+
+            // Populate the input inputs with the clicked point coordinates
+            document.getElementById('input-x').value = clamped.x;
+            document.getElementById('input-y').value = clamped.y;
+
+            // Submit automatically if plotting challenge
+            if (currentChallenge && currentChallenge.type === 'plot') {
+                if (clamped.x === currentChallenge.targetX && clamped.y === currentChallenge.targetY) {
+                    unlockThrustersSuccess();
+                } else {
+                    document.getElementById('lockout-feedback').innerHTML = `You clicked <span class="math-term">(${clamped.x}, ${clamped.y})</span>. Target was (${currentChallenge.targetX}, ${currentChallenge.targetY}). Try again!`;
+                    document.getElementById('lockout-feedback').className = "feedback-text text-red-400";
+                    playSound('fail');
+                }
+            } else if (currentChallenge && currentChallenge.type === 'identify') {
+                submitCoordinateUnlock();
+            }
+        });
+
+        // Switch modes
+        document.getElementById('mode-quad1').addEventListener('click', () => {
+            if (quadrantMode === 'quad1') return;
+            quadrantMode = 'quad1';
+            document.getElementById('mode-quad1').classList.add('active');
+            document.getElementById('mode-four').classList.remove('active');
+            resetGame();
+        });
+
+        document.getElementById('mode-four').addEventListener('click', () => {
+            if (quadrantMode === 'four') return;
+            quadrantMode = 'four';
+            document.getElementById('mode-four').classList.add('active');
+            document.getElementById('mode-quad1').classList.remove('active');
+            resetGame();
+        });
+
+        function resetGame() {
+            score = 0;
+            document.getElementById('hud-score').textContent = "0";
+            if (quadrantMode === 'quad1') {
+                player.cx = 1; player.cy = 1;
+                player.px = 1; player.py = 1;
+            } else {
+                player.cx = -4; player.cy = -4;
+                player.px = -4; player.py = -4;
+            }
+            generateNewTarget();
+            generateChallenge();
+        }
+
+        // Physics Engine loops
+        function updatePhysics() {
+            if (!thustersLocked) {
+                // Key steering velocity additions
+                let dx = 0;
+                let dy = 0;
+
+                if (keys['ArrowUp'] || keys['KeyW']) dy += player.speed;
+                if (keys['ArrowDown'] || keys['KeyS']) dy -= player.speed;
+                if (keys['ArrowLeft'] || keys['KeyA']) dx -= player.speed;
+                if (keys['ArrowRight'] || keys['KeyD']) dx += player.speed;
+
+                player.px += dx;
+                player.py += dy;
+
+                // Position limits clamping
+                if (quadrantMode === 'quad1') {
+                    player.px = Math.max(0, Math.min(10, player.px));
+                    player.py = Math.max(0, Math.min(10, player.py));
+                } else {
+                    player.px = Math.max(-5, Math.min(-5, player.px) ? -5 : player.px);
+                    player.px = Math.max(-5, Math.min(5, player.px));
+                    player.py = Math.max(-5, Math.min(5, player.py));
+                }
+
+                player.cx = Math.round(player.px);
+                player.cy = Math.round(player.py);
+
+                document.getElementById('hud-pos').textContent = `(${player.px.toFixed(1)}, ${player.py.toFixed(1)})`;
+
+                // Reached Target Checkpoint check
+                const distToTarget = Math.hypot(player.px - target.cx, player.py - target.cy);
+                if (distToTarget < 0.25) {
+                    score += 1;
+                    addCoins(10); // Reward 10 coins per coordinate secured!
+                    playSound('coin');
+                    document.getElementById('hud-score').textContent = score;
+
+                    generateNewTarget();
+                    generateChallenge();
+                }
+            }
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const margin = 50;
+            const size = width - margin * 2;
+
+            // Draw nebula background glow
+            ctx.fillStyle = '#02040a';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw grid spacing lines
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+
+            if (quadrantMode === 'quad1') {
+                // Draw 0 to 10
+                for (let i = 0; i <= 10; i++) {
+                    const lineX = margin + (i / 10) * size;
+                    const lineY = height - margin - (i / 10) * size;
+
+                    // Vertical lines
+                    ctx.beginPath();
+                    ctx.moveTo(lineX, margin);
+                    ctx.lineTo(lineX, height - margin);
+                    ctx.stroke();
+
+                    // Horizontal lines
+                    ctx.beginPath();
+                    ctx.moveTo(margin, lineY);
+                    ctx.lineTo(width - margin, lineY);
+                    ctx.stroke();
+                }
+
+                // Bold Axes
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 3;
+                
+                // Y Axis
+                ctx.beginPath();
+                ctx.moveTo(margin, margin - 10);
+                ctx.lineTo(margin, height - margin);
+                ctx.stroke();
+
+                // X Axis
+                ctx.beginPath();
+                ctx.moveTo(margin, height - margin);
+                ctx.lineTo(width - margin + 10, height - margin);
+                ctx.stroke();
+
+                // Labels
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
+                for (let i = 0; i <= 10; i++) {
+                    const lineX = margin + (i / 10) * size;
+                    ctx.fillText(i, lineX, height - margin + 8);
+                }
+
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                for (let i = 0; i <= 10; i++) {
+                    const lineY = height - margin - (i / 10) * size;
+                    ctx.fillText(i, margin - 10, lineY);
+                }
+            } else {
+                // Four Quadrants: -5 to 5
+                for (let i = 0; i <= 10; i++) {
+                    const lineX = margin + (i / 10) * size;
+                    const lineY = height - margin - (i / 10) * size;
+
+                    ctx.beginPath();
+                    ctx.moveTo(lineX, margin);
+                    ctx.lineTo(lineX, height - margin);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(margin, lineY);
+                    ctx.lineTo(width - margin, lineY);
+                    ctx.stroke();
+                }
+
+                // Bold Main Axis crosshairs in middle
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 3.5;
+
+                // Y-Axis
+                ctx.beginPath();
+                ctx.moveTo(width / 2, margin - 10);
+                ctx.lineTo(width / 2, height - margin + 10);
+                ctx.stroke();
+
+                // X-Axis
+                ctx.beginPath();
+                ctx.moveTo(margin - 10, height / 2);
+                ctx.lineTo(width - margin + 10, height / 2);
+                ctx.stroke();
+
+                // Axis Arrows
+                ctx.fillStyle = '#475569';
+                // Top
+                ctx.beginPath();
+                ctx.moveTo(width / 2, margin - 15);
+                ctx.lineTo(width / 2 - 6, margin - 8);
+                ctx.lineTo(width / 2 + 6, margin - 8);
+                ctx.fill();
+                // Right
+                ctx.beginPath();
+                ctx.moveTo(width - margin + 15, height / 2);
+                ctx.lineTo(width - margin + 8, height / 2 - 6);
+                ctx.lineTo(width - margin + 8, height / 2 + 6);
+                ctx.fill();
+
+                // Coordinate numerals
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
+                for (let i = -5; i <= 5; i++) {
+                    if (i === 0) continue;
+                    const lineX = width / 2 + (i / 5) * (size / 2);
+                    ctx.fillText(i, lineX, height / 2 + 8);
+                }
+
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                for (let i = -5; i <= 5; i++) {
+                    if (i === 0) continue;
+                    const lineY = height / 2 - (i / 5) * (size / 2);
+                    ctx.fillText(i, width / 2 - 8, lineY);
+                }
+
+                // Origin Label
+                ctx.fillText('0', width / 2 - 6, height / 2 + 10);
+            }
+
+            // Draw Blinking Beacon / Plot targets
+            if (currentChallenge) {
+                const bPos = cartesianToCanvas(currentChallenge.targetX, currentChallenge.targetY);
+                
+                if (currentChallenge.type === 'identify') {
+                    // Draw glowing beacon
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#eab308';
+                    ctx.fillStyle = `rgba(234, 179, 8, ${0.4 + Math.abs(Math.sin(Date.now() / 200)) * 0.6})`;
+                    ctx.beginPath();
+                    ctx.arc(bPos.x, bPos.y, 14, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#eab308';
+                    ctx.beginPath();
+                    ctx.arc(bPos.x, bPos.y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0; // Reset shadow
+                } else if (currentChallenge.type === 'plot' && !thustersLocked) {
+                    // Draw plotted node safely
+                    ctx.fillStyle = '#10b981';
+                    ctx.beginPath();
+                    ctx.arc(bPos.x, bPos.y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Draw Checkpoint Target Chest
+            const targetPos = cartesianToCanvas(target.cx, target.cy);
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#ef4444';
+            
+            // Pulse ring
+            const pulseRadius = 14 + Math.sin(Date.now() / 150) * 4;
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(targetPos.x, targetPos.y, pulseRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Inner red sphere core
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(targetPos.x, targetPos.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Star symbol on top of target
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⭐', targetPos.x, targetPos.y);
+            ctx.shadowBlur = 0;
+
+            // Draw Player Airship
+            const pPos = cartesianToCanvas(player.px, player.py);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#3b82f6';
+            
+            // Thrust flame trail if moving and thusters are unlocked
+            if (!thustersLocked && (keys['ArrowUp'] || keys['KeyW'] || keys['ArrowDown'] || keys['KeyS'] || keys['ArrowLeft'] || keys['KeyA'] || keys['ArrowRight'] || keys['KeyD'])) {
+                ctx.fillStyle = `rgba(249, 115, 22, ${0.6 + Math.random() * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(pPos.x, pPos.y + 12, 6 + Math.random() * 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Explorer wedge model
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(pPos.x, pPos.y - 12);
+            ctx.lineTo(pPos.x - 10, pPos.y + 8);
+            ctx.lineTo(pPos.x + 10, pPos.y + 8);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#60a5fa';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Cockpit glass
+            ctx.fillStyle = '#e0f2fe';
+            ctx.beginPath();
+            ctx.arc(pPos.x, pPos.y - 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function gameLoop() {
+            updatePhysics();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Boot
+        loadState();
+        generateNewTarget();
+        generateChallenge();
+        gameLoop();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,731 @@
+{% extends "base.html" %}
+
+{% block title %}Ratio River Crossing - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #09090e;
+        color: #e0e0ed;
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .game-title {
+        font-size: 2rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(to right, #60a5fa, #34d399, #4ade80);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .coins-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 2.5px solid #8b5a2b;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #f3f4f6;
+    }
+
+    .game-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+        margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+        .game-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glass Panels */
+    .glass-station-panel {
+        background: rgba(26, 26, 46, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .sidebar-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .wood-hud-panel {
+        background: rgba(30, 41, 59, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+    }
+
+    /* Canvas styling */
+    #gameCanvas {
+        background: #111e38;
+        border: 4px solid #334155;
+        border-radius: 16px;
+        display: block;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 10px 25px rgba(0,0,0,0.5);
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Ratio instructions */
+    .ratio-header {
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: #60a5fa;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ratio-active {
+        border-color: #38bdf8;
+        animation: pulse-border 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 5px rgba(56, 189, 248, 0.2); }
+        100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.6); }
+    }
+
+    .challenge-box {
+        background: #02040a;
+        border: 2px solid #334155;
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .challenge-prompt {
+        font-size: 0.95rem;
+        font-weight: 800;
+        line-height: 1.4;
+        color: #f8fafc;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ratio-input {
+        width: 80px;
+        background: #02040a;
+        border: 2px solid #475569;
+        color: white;
+        border-radius: 10px;
+        padding: 8px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .ratio-input:focus {
+        border-color: #38bdf8;
+        outline: none;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: 2px solid #34d399;
+        color: white;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .submit-btn:hover {
+        transform: scale(1.05);
+        background: #059669;
+    }
+
+    .feedback-text {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-align: center;
+        min-height: 16px;
+        margin-top: 8px;
+    }
+
+    /* HUD readout styling */
+    .hud-readout {
+        font-family: monospace;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .hud-line {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding-bottom: 4px;
+    }
+
+    .hud-val {
+        font-weight: bold;
+    }
+
+    /* Floating Space Console Help */
+    .help-box {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    .help-heading {
+        font-weight: 800;
+        color: #c084fc;
+        margin-bottom: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('math_games') }}" class="home-btn">
+            🚀 Back to Games
+        </a>
+        <h1 class="game-title">🌊 Ratio River Crossing</h1>
+        <div class="coins-box">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="game-grid-layout">
+        <!-- Canvas/Game Area -->
+        <div class="glass-station-panel">
+            <canvas id="gameCanvas" width="550" height="400"></canvas>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 10px;" class="text-center font-mono">
+                Steer left/right to catch items, solve penalty locks if you make a mistake!
+            </div>
+        </div>
+
+        <!-- Sidebar Controls & Lockout -->
+        <div class="sidebar-panel">
+            <!-- Target Ratio Display -->
+            <div class="wood-hud-panel ratio-active">
+                <div class="ratio-header">
+                    <span>🌾</span>
+                    <span>Active Target Ratio</span>
+                </div>
+                <div class="challenge-box" style="background:#090d16;">
+                    <p style="font-size:0.75rem; color:#94a3b8; margin:0 0 6px 0;">CATCH RATIO TO SECURE CROSSING:</p>
+                    <div id="target-ratio-display" class="text-2xl font-black text-amber-300 tracking-wide font-mono">2 Apples : 3 Oranges</div>
+                </div>
+            </div>
+
+            <!-- Math Penalty Lock Panel -->
+            <div id="penalty-panel" class="wood-hud-panel" style="border-color:#475569;">
+                <div class="ratio-header">
+                    <span id="lock-icon">✅</span>
+                    <span id="lock-header">River Flow Stable</span>
+                </div>
+                <p id="lock-desc" style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; margin-bottom: 0;">
+                    Air cushions and currents are running optimally. No penalties.
+                </p>
+
+                <div id="penalty-box" class="challenge-box hidden">
+                    <p id="penalty-prompt" class="challenge-prompt">What is 2 x 3?</p>
+                    
+                    <div class="input-row">
+                        <input id="input-ans" class="ratio-input" type="number" step="any" placeholder="Ans">
+                        <button id="penalty-submit" class="submit-btn">Calibrate</button>
+                    </div>
+                </div>
+                <p id="penalty-feedback" class="feedback-text text-emerald-400"></p>
+            </div>
+
+            <!-- River Crossing HUD Readout -->
+            <div class="wood-hud-panel">
+                <h4 class="font-extrabold text-sm text-cyan-400 tracking-wide uppercase mb-2">🛶 TELEMETRY READOUT</h4>
+                <div class="hud-readout">
+                    <div id="river-crossings" class="hud-line">
+                        <span>River Crossings</span>
+                        <span id="hud-score" class="hud-val text-yellow-400">0</span>
+                    </div>
+                    <div class="hud-line text-emerald-400 font-bold">
+                        <span>Apples Caught (Green)</span>
+                        <span id="hud-green" class="hud-val">0</span>
+                    </div>
+                    <div class="hud-line text-orange-400 font-bold">
+                        <span>Oranges Caught (Orange)</span>
+                        <span id="hud-orange" class="hud-val">0</span>
+                    </div>
+                    <div class="hud-line font-mono text-[11px]" style="border:none;">
+                        <span>Current Basket Ratio</span>
+                        <span id="hud-ratio" class="hud-val text-indigo-400">0 : 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilot Help Card -->
+            <div class="wood-hud-panel help-box">
+                <div class="help-heading">🧭 CROSSING RULE BOOK</div>
+                <p>1. **Catch Supplies:** Catch falling supplies in your cargo basket using **Left/Right Arrow keys** or **A/D** keys.</p>
+                <p style="margin-top: 4px;">2. **Match the Ratio:** Match the exact target proportion of Apples to Oranges. Press **Enter** or **Space** to cross the river when your basket matches!</p>
+                <p style="margin-top: 4px;">3. **Avoid Penalties:** Catching wrong or surplus supplies triggers a river-eddy penalty. Solve the equivalent ratio problem to stabilize the ship!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Audio synthesizer helper matching website style
+    function playSound(type) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+
+            if (type === 'success') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            } else if (type === 'coin') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now);
+                osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.25);
+            } else if (type === 'fail') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220.00, now);
+                osc.frequency.linearRampToValueAtTime(110.00, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Game Configuration
+        let score = 0;
+        let coins = 15;
+        let inPenalty = false;
+
+        // Supply parameters
+        let basket = { x: 250, y: 350, w: 80, h: 20, speed: 10 };
+        let items = [];
+        const maxItems = 3;
+
+        // Current supply counts
+        let counts = { green: 0, orange: 0 };
+
+        // Ratio requirements
+        let targetRatio = { green: 2, orange: 3 };
+        let currentPenalty = null;
+
+        let keys = {};
+        window.addEventListener('keydown', e => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.code] = true;
+
+            // Space or Enter to cross/submit river crossing
+            if ((e.key === ' ' || e.key === 'Enter') && !inPenalty) {
+                e.preventDefault();
+                attemptRiverCrossing();
+            }
+        });
+        window.addEventListener('keyup', e => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.code] = false;
+        });
+
+        function loadState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    coins = parsed.coins || 15;
+                    document.getElementById('coins-count').textContent = coins;
+                } catch(e) {}
+            }
+        }
+
+        function saveCoins() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let state = {};
+            if (saved) {
+                try { state = JSON.parse(saved); } catch (e) {}
+            }
+            state.coins = coins;
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+            document.getElementById('coins-count').textContent = coins;
+        }
+
+        function addCoins(amount) {
+            coins += amount;
+            saveCoins();
+        }
+
+        function generateRatio() {
+            const ratioOptions = [
+                { green: 2, orange: 3, label: "2 Green Apples : 3 Oranges" },
+                { green: 1, orange: 2, label: "1 Green Apple : 2 Oranges" },
+                { green: 3, orange: 4, label: "3 Green Apples : 4 Oranges" },
+                { green: 3, orange: 2, label: "3 Green Apples : 2 Oranges" },
+                { green: 1, orange: 3, label: "1 Green Apple : 3 Oranges" },
+                { green: 4, orange: 5, label: "4 Green Apples : 5 Oranges" }
+            ];
+
+            const choice = ratioOptions[Math.floor(Math.random() * ratioOptions.length)];
+            targetRatio.green = choice.green;
+            targetRatio.orange = choice.orange;
+
+            document.getElementById('target-ratio-display').textContent = choice.label;
+            
+            // Reset caught supplies
+            counts.green = 0;
+            counts.orange = 0;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-green').textContent = counts.green;
+            document.getElementById('hud-orange').textContent = counts.orange;
+            document.getElementById('hud-ratio').textContent = `${counts.green} : ${counts.orange}`;
+        }
+
+        function spawnItem() {
+            items.push({
+                x: Math.random() * (canvas.width - 30) + 15,
+                y: -10,
+                size: 14,
+                speed: 2 + Math.random() * 2,
+                type: Math.random() > 0.45 ? 'green' : 'orange'
+            });
+        }
+
+        function triggerPenaltyQuestion() {
+            inPenalty = true;
+            keys = {}; // Clear keys to freeze basket movement
+            playSound('fail');
+
+            // Construct equivalent ratio puzzle
+            const multiplier = Math.floor(Math.random() * 4) + 2; // Multiplier between 2 and 5
+            const termToBlank = Math.random() > 0.5 ? 'green' : 'orange';
+
+            let questionText = "";
+            let correctAnswer = 0;
+
+            if (termToBlank === 'green') {
+                const puzzleVal = targetRatio.orange * multiplier;
+                questionText = `To cross a river where the ratio is ${targetRatio.green} : ${targetRatio.orange}, if you have ${puzzleVal} Oranges, how many Green Apples do you need?`;
+                correctAnswer = targetRatio.green * multiplier;
+            } else {
+                const puzzleVal = targetRatio.green * multiplier;
+                questionText = `To cross a river where the ratio is ${targetRatio.green} : ${targetRatio.orange}, if you have ${puzzleVal} Green Apples, how many Oranges do you need?`;
+                correctAnswer = targetRatio.orange * multiplier;
+            }
+
+            currentPenalty = {
+                text: questionText,
+                ans: correctAnswer
+            };
+
+            // Display penalty panel
+            document.getElementById('lock-header').textContent = '⚠️ EDDY PENALTY ENGAGED';
+            document.getElementById('lock-icon').textContent = '🔒';
+            document.getElementById('lock-desc').textContent = 'Solve the ratio check to escape the current vortex!';
+            document.getElementById('penalty-prompt').textContent = questionText;
+            document.getElementById('penalty-box').classList.remove('hidden');
+            document.getElementById('penalty-panel').style.borderColor = '#ef4444';
+            document.getElementById('penalty-feedback').textContent = 'Answer the ratio equation above!';
+            document.getElementById('penalty-feedback').className = 'feedback-text text-amber-400';
+            document.getElementById('input-ans').value = '';
+            document.getElementById('input-ans').focus();
+        }
+
+        function resolvePenalty() {
+            const val = parseFloat(document.getElementById('input-ans').value);
+            if (isNaN(val)) return;
+
+            if (val === currentPenalty.ans) {
+                // Stabilized
+                inPenalty = false;
+                playSound('success');
+                document.getElementById('lock-header').textContent = 'River Flow Stable';
+                document.getElementById('lock-icon').textContent = '✅';
+                document.getElementById('lock-desc').textContent = 'Air cushions and currents are running optimally. No penalties.';
+                document.getElementById('penalty-box').classList.add('hidden');
+                document.getElementById('penalty-panel').style.borderColor = '#8b5a2b';
+                document.getElementById('penalty-feedback').textContent = 'Penalty resolved! Flow restored.';
+                document.getElementById('penalty-feedback').className = 'feedback-text text-emerald-400';
+
+                // Reset supplies to avoid immediate penalty trigger
+                counts.green = 0;
+                counts.orange = 0;
+                updateHUD();
+                items = [];
+            } else {
+                document.getElementById('penalty-feedback').textContent = 'Incorrect calibration. Try again!';
+                document.getElementById('penalty-feedback').className = 'feedback-text text-red-400 animate-bounce';
+                playSound('fail');
+            }
+        }
+
+        document.getElementById('penalty-submit').addEventListener('click', resolvePenalty);
+        document.getElementById('input-ans').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') resolvePenalty();
+        });
+
+        function attemptRiverCrossing() {
+            // Check if current caught green and orange counts are equivalent to targetRatio
+            if (counts.green === 0 && counts.orange === 0) {
+                return;
+            }
+
+            // Verify equivalence by cross-multiplication or base simplifications
+            const targetVal = targetRatio.green / targetRatio.orange;
+            const currentVal = counts.green / counts.orange;
+
+            if (Math.abs(targetVal - currentVal) < 0.001) {
+                // Success! Reached crossing
+                score += 1;
+                addCoins(15); // Award 15 coins per crossing secured!
+                playSound('success');
+                document.getElementById('hud-score').textContent = score;
+
+                // Clear items and choose next ratio target
+                items = [];
+                generateRatio();
+            } else {
+                // Penalty
+                triggerPenaltyQuestion();
+            }
+        }
+
+        function update() {
+            if (inPenalty) return;
+
+            // Steer basket
+            if ((keys['ArrowLeft'] || keys['KeyA']) && basket.x > 15) {
+                basket.x -= basket.speed;
+            }
+            if ((keys['ArrowRight'] || keys['KeyD']) && basket.x < canvas.width - basket.w - 15) {
+                basket.x += basket.speed;
+            }
+
+            // Spawn supplies
+            if (items.length < maxItems && Math.random() < 0.02) {
+                spawnItem();
+            }
+
+            // Supply falls
+            items.forEach((item, index) => {
+                item.y += item.speed;
+
+                // Caught?
+                if (item.y + item.size >= basket.y && item.y - item.size <= basket.y + basket.h) {
+                    if (item.x + item.size >= basket.x && item.x - item.size <= basket.x + basket.w) {
+                        // Cargo caught! Increment counts
+                        if (item.type === 'green') {
+                            counts.green += 1;
+                        } else {
+                            counts.orange += 1;
+                        }
+                        updateHUD();
+
+                        // Splice item out
+                        items.splice(index, 1);
+                        playSound('coin');
+                        return;
+                    }
+                }
+
+                // Missed falls into river
+                if (item.y > canvas.height + 10) {
+                    items.splice(index, 1);
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw flowing river backgrounds
+            ctx.fillStyle = '#111e38';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // River current lines
+            ctx.strokeStyle = '#1d3557';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 5; i++) {
+                const offset = (Date.now() / 20) % 150;
+                ctx.beginPath();
+                ctx.moveTo(offset + i * 150 - 100, 100);
+                ctx.lineTo(offset + i * 150, 100);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(canvas.width - offset - i * 150 + 100, 220);
+                ctx.lineTo(canvas.width - offset - i * 150, 220);
+                ctx.stroke();
+            }
+
+            // Draw wood banks
+            ctx.fillStyle = '#2c1e13';
+            ctx.fillRect(0, 0, 15, canvas.height);
+            ctx.fillRect(canvas.width - 15, 0, 15, canvas.height);
+
+            // Draw Cargo Basket
+            ctx.fillStyle = '#d97706'; // Wood amber cargo box
+            ctx.strokeStyle = '#8b5a2b';
+            ctx.lineWidth = 3;
+            ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
+            ctx.strokeRect(basket.x, basket.y, basket.w, basket.h);
+
+            // Draw rope pattern on basket
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(basket.x + 20, basket.y);
+            ctx.lineTo(basket.x + 20, basket.y + basket.h);
+            ctx.moveTo(basket.x + 40, basket.y);
+            ctx.lineTo(basket.x + 40, basket.y + basket.h);
+            ctx.moveTo(basket.x + 60, basket.y);
+            ctx.lineTo(basket.x + 60, basket.y + basket.h);
+            ctx.stroke();
+
+            // Draw falling crates
+            items.forEach((item) => {
+                ctx.beginPath();
+                if (item.type === 'green') {
+                    // Apple look
+                    ctx.fillStyle = '#34d399';
+                    ctx.arc(item.x, item.y, item.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Little leaf
+                    ctx.fillStyle = '#059669';
+                    ctx.fillRect(item.x - 1, item.y - item.size - 2, 3, 4);
+                } else {
+                    // Orange look
+                    ctx.fillStyle = '#f97316';
+                    ctx.arc(item.x, item.y, item.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Stem
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(item.x - 1, item.y - item.size - 1, 2, 3);
+                }
+            });
+
+            // HUD crossing instruction overlay in river center
+            if (!inPenalty) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.font = 'bold 12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('Press SPACEBAR / ENTER to cross the river!', canvas.width / 2, canvas.height - 20);
+            } else {
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
+                ctx.font = 'bold 15px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚠️ RIVER EDDY VORTEX PENALTY ⚠️', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        loadState();
+        generateRatio();
+        gameLoop();
+    });
+</script>
+{% endblock %}

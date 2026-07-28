@@ -1,0 +1,1194 @@
+{% extends "base.html" %}
+
+{% block title %}Math Obstacle Course - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #05030d;
+        color: #e0e0ed;
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .nav-header {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding: 0;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: none;
+        backdrop-filter: none;
+        box-shadow: none;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .game-title {
+        font-size: 2rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(to right, #22d3ee, #a855f7, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .game-subtitle {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 2px;
+    }
+
+    .coins-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 2.5px solid #8b5a2b;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #f3f4f6;
+    }
+
+    .wood-hud-panel {
+        background: rgba(30, 41, 59, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        padding: 18px;
+    }
+
+    .mode-selector {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .mode-btns {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .mode-btn {
+        background: rgba(15, 23, 42, 0.6);
+        border: 2px solid #475569;
+        color: #94a3b8;
+        font-weight: 800;
+        padding: 10px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-size: 0.85rem;
+    }
+
+    .mode-btn.active {
+        background: linear-gradient(135deg, #a855f7, #6d28d9);
+        border-color: #c084fc;
+        color: white;
+        box-shadow: 0 0 12px rgba(168, 85, 247, 0.45);
+    }
+
+    .start-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: 2px solid #34d399;
+        color: white;
+        font-weight: 800;
+        padding: 10px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .start-btn:hover {
+        transform: scale(1.05);
+        background: #059669;
+    }
+
+    .game-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .game-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glass panel that hosts the 3D tunnel */
+    .glass-station-panel {
+        background: rgba(20, 20, 38, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        position: relative;
+    }
+
+    #tunnel-canvas-container {
+        width: 100%;
+        height: 420px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #02040a;
+        border: 3px solid #1e293b;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        position: relative;
+    }
+
+    #tunnel-canvas-container canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .obstacle-progress {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 14px 0 6px;
+    }
+
+    .progress-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: rgba(148, 163, 184, 0.25);
+        border: 2px solid #475569;
+        transition: all 0.25s ease;
+    }
+
+    .progress-dot.cleared {
+        background: #34d399;
+        border-color: #6ee7b7;
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+    }
+
+    .progress-dot.current {
+        background: #f59e0b;
+        border-color: #fbbf24;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+        transform: scale(1.2);
+    }
+
+    /* Lane / gate answer buttons */
+    .lane-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .lane-btn {
+        background: rgba(15, 23, 42, 0.7);
+        border: 3px solid #475569;
+        border-radius: 14px;
+        color: #f8fafc;
+        padding: 14px 8px;
+        cursor: pointer;
+        font-weight: 800;
+        transition: all 0.15s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .lane-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .lane-btn.left { border-color: #22d3ee; }
+    .lane-btn.center { border-color: #a855f7; }
+    .lane-btn.right { border-color: #f59e0b; }
+
+    .lane-btn.left:hover:not(:disabled) { background: rgba(34, 211, 238, 0.18); transform: translateY(-3px); }
+    .lane-btn.center:hover:not(:disabled) { background: rgba(168, 85, 247, 0.18); transform: translateY(-3px); }
+    .lane-btn.right:hover:not(:disabled) { background: rgba(245, 158, 11, 0.18); transform: translateY(-3px); }
+
+    .lane-btn.correct-flash { background: rgba(52, 211, 153, 0.35) !important; border-color: #34d399 !important; }
+    .lane-btn.wrong-flash { background: rgba(239, 68, 68, 0.35) !important; border-color: #ef4444 !important; }
+
+    .lane-name {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+    }
+
+    .lane-value {
+        font-size: 1.3rem;
+        font-family: monospace;
+    }
+
+    .feedback-text {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-align: center;
+        min-height: 18px;
+        margin-top: 10px;
+    }
+
+    /* Sidebar */
+    .sidebar-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .question-count {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+    }
+
+    .question-prompt {
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1.4;
+        color: #f8fafc;
+        min-height: 48px;
+    }
+
+    .secret-heading {
+        font-weight: 800;
+        color: #c084fc;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .secret-ticker {
+        font-family: monospace;
+        font-size: 0.85rem;
+        line-height: 1.7;
+        color: #6ee7b7;
+        min-height: 40px;
+    }
+
+    .secret-line {
+        display: block;
+        padding: 2px 4px;
+    }
+
+    .secret-line.hidden-line {
+        color: #475569;
+        letter-spacing: 0.2em;
+    }
+
+    .secret-line.revealed-line {
+        color: #6ee7b7;
+        text-shadow: 0 0 8px rgba(110, 231, 183, 0.6);
+        animation: word-pop 0.4s ease;
+    }
+
+    @keyframes word-pop {
+        0% { transform: scale(0.4); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        font-family: monospace;
+        text-align: center;
+    }
+
+    .stat-box {
+        background: rgba(2, 6, 23, 0.6);
+        border-radius: 10px;
+        padding: 8px 4px;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #38bdf8;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+    }
+
+    .help-box {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    .help-heading {
+        font-weight: 800;
+        color: #c084fc;
+        margin-bottom: 4px;
+    }
+
+    /* Completion modal */
+    .completion-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 6, 23, 0.82);
+        backdrop-filter: blur(4px);
+    }
+
+    .completion-card {
+        width: min(92vw, 520px);
+        background: rgba(20, 20, 38, 0.97);
+        border: 3px solid #f59e0b;
+        border-radius: 22px;
+        padding: 28px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .completion-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        background: linear-gradient(to right, #fbbf24, #f472b6, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+    }
+
+    .completion-message {
+        font-family: monospace;
+        font-size: 0.92rem;
+        color: #6ee7b7;
+        letter-spacing: 0.02em;
+        line-height: 1.6;
+        margin: 16px 0;
+        padding: 14px;
+        border: 2px dashed #34d399;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.6);
+        text-align: left;
+        white-space: pre-line;
+    }
+
+    .completion-stats {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-bottom: 18px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #e2e8f0;
+    }
+
+    .completion-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    #confetti-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        top: -10px;
+        width: 8px;
+        height: 14px;
+        opacity: 0.9;
+        animation-name: confetti-fall;
+        animation-timing-function: ease-in;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes confetti-fall {
+        0% { top: -10px; opacity: 1; }
+        100% { top: 110%; opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="nav-header">
+        <a href="{{ url_for('math_games') }}" class="home-btn">🚀 Back to Games</a>
+        <div>
+            <h1 class="game-title">🛰️ Math Obstacle Course</h1>
+            <p class="game-subtitle">Clear every gate to decode the secret transmission</p>
+        </div>
+        <div class="coins-box">🪙 Coins: <span id="coins-count">15</span></div>
+    </div>
+
+    <div class="wood-hud-panel mode-selector">
+        <div class="mode-btns">
+            <button id="tier-easy" class="mode-btn active" data-tier="easy">🟢 Easy</button>
+            <button id="tier-medium" class="mode-btn" data-tier="medium">🟡 Medium</button>
+            <button id="tier-hard" class="mode-btn" data-tier="hard">🔴 Hard</button>
+        </div>
+        <button id="start-btn" class="start-btn">🔁 New Course</button>
+    </div>
+
+    <div class="game-grid-layout">
+        <!-- 3D tunnel + lane controls -->
+        <div class="glass-station-panel">
+            <div class="obstacle-progress" id="obstacle-progress"></div>
+            <div id="tunnel-canvas-container"></div>
+
+            <div class="lane-row">
+                <button class="lane-btn left" id="lane-btn-0" disabled>
+                    <span class="lane-name">◀ Left Gate</span>
+                    <span class="lane-value" id="lane-value-0">--</span>
+                </button>
+                <button class="lane-btn center" id="lane-btn-1" disabled>
+                    <span class="lane-name">Center Gate</span>
+                    <span class="lane-value" id="lane-value-1">--</span>
+                </button>
+                <button class="lane-btn right" id="lane-btn-2" disabled>
+                    <span class="lane-name">Right Gate ▶</span>
+                    <span class="lane-value" id="lane-value-2">--</span>
+                </button>
+            </div>
+            <p class="feedback-text" id="feedback-text">Choose a difficulty and press "New Course" to begin!</p>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar-panel">
+            <div class="wood-hud-panel">
+                <div class="question-count" id="obstacle-counter">Obstacle 0 of 0</div>
+                <div class="question-prompt" id="question-prompt">Press "New Course" to generate your obstacle run.</div>
+            </div>
+
+            <div class="wood-hud-panel">
+                <div class="secret-heading">📡 Secret Transmission</div>
+                <div class="secret-ticker" id="secret-ticker">Clear obstacles to decode each line...</div>
+            </div>
+
+            <div class="wood-hud-panel">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-cleared">0</div>
+                        <div class="stat-label">Cleared</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-attempts">0</div>
+                        <div class="stat-label">Attempts</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-score">0</div>
+                        <div class="stat-label">Coins Earned</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wood-hud-panel help-box">
+                <div class="help-heading">🧭 PILOT GUIDE</div>
+                <p>1. Solve the math problem shown for each obstacle.</p>
+                <p style="margin-top:4px;">2. Click the gate (Left / Center / Right) that shows the correct answer, or press <strong>1</strong>, <strong>2</strong>, or <strong>3</strong> on your keyboard.</p>
+                <p style="margin-top:4px;">3. Correct gates fly you forward and reveal a line of the secret transmission. Wrong gates just bounce you back &mdash; try again!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Completion Modal -->
+<div class="completion-modal" id="completion-modal">
+    <div class="completion-card">
+        <div id="confetti-layer"></div>
+        <div class="completion-title">🎉 Course Complete!</div>
+        <p style="color:#94a3b8; font-size:0.85rem;">You decoded the full secret transmission:</p>
+        <div class="completion-message" id="completion-message"></div>
+        <div class="completion-stats">
+            <span>✅ Cleared: <span id="final-cleared">0</span></span>
+            <span>🔁 Attempts: <span id="final-attempts">0</span></span>
+            <span>🪙 Earned: <span id="final-score">0</span></span>
+        </div>
+        <div class="completion-buttons">
+            <button class="start-btn" id="play-again-btn">🔁 Play Again</button>
+            <a href="{{ url_for('math_games') }}" class="home-btn" style="text-decoration:none;">🚀 Back to Games</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Include Three.js from CDN (same version used elsewhere on the site) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    /* ---------------------------------------------------------------
+     * Sound effects (matches style used across the site's other games)
+     * --------------------------------------------------------------- */
+    function playSound(type) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(); osc.stop(now + 0.3);
+            } else if (type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(); osc.stop(now + 0.3);
+            } else if (type === 'victory') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(392, now);
+                osc.frequency.setValueAtTime(523.25, now + 0.12);
+                osc.frequency.setValueAtTime(659.25, now + 0.24);
+                osc.frequency.setValueAtTime(784, now + 0.36);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+                osc.start(); osc.stop(now + 0.7);
+            }
+        } catch (e) { /* ignore audio errors (autoplay restrictions, etc.) */ }
+    }
+
+    /* ---------------------------------------------------------------
+     * Coin persistence (shared localStorage key used across the site)
+     * --------------------------------------------------------------- */
+    let coins = 15;
+
+    function loadCoins() {
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                coins = state.coins || 15;
+            } catch (e) { /* ignore malformed state */ }
+        }
+        document.getElementById('coins-count').textContent = coins;
+    }
+
+    function addCoins(amount) {
+        coins += amount;
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        let state = {};
+        if (saved) {
+            try { state = JSON.parse(saved); } catch (e) { /* ignore */ }
+        }
+        state.coins = coins;
+        localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+        document.getElementById('coins-count').textContent = coins;
+    }
+
+    loadCoins();
+
+    /* ---------------------------------------------------------------
+     * Question generators, grouped by difficulty tier
+     * --------------------------------------------------------------- */
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function finalize(prompt, correctLabel, distractorLabels) {
+        const used = new Set([correctLabel]);
+        const cleanDistractors = [];
+        distractorLabels.forEach((label) => {
+            let candidate = label;
+            let guard = 0;
+            while (used.has(candidate) && guard < 6) {
+                const num = Number(candidate);
+                candidate = !isNaN(num) ? String(num + guard + 1) : candidate + '*';
+                guard++;
+            }
+            used.add(candidate);
+            cleanDistractors.push(candidate);
+        });
+
+        const items = shuffle([
+            { label: correctLabel, correct: true },
+            { label: cleanDistractors[0], correct: false },
+            { label: cleanDistractors[1], correct: false }
+        ]);
+
+        return {
+            prompt,
+            choices: items.map((i) => i.label),
+            correctIndex: items.findIndex((i) => i.correct)
+        };
+    }
+
+    // Easy tier: whole-number arithmetic
+    function genAddition() {
+        const a = randInt(12, 68), b = randInt(11, 59);
+        const correct = a + b;
+        return finalize(`${a} + ${b} = ?`, String(correct), [String(correct + randInt(1, 5)), String(Math.max(0, correct - randInt(1, 5)))]);
+    }
+    function genSubtraction() {
+        const a = randInt(35, 95), b = randInt(6, a - 5);
+        const correct = a - b;
+        return finalize(`${a} - ${b} = ?`, String(correct), [String(correct + randInt(1, 5)), String(Math.max(0, correct - randInt(1, 5)))]);
+    }
+    function genMultiplication() {
+        const a = randInt(2, 12), b = randInt(2, 12);
+        const correct = a * b;
+        return finalize(`${a} × ${b} = ?`, String(correct), [String(correct + a), String(Math.max(1, correct - b))]);
+    }
+    function genDivision() {
+        const b = randInt(2, 12), q = randInt(2, 12);
+        const a = b * q;
+        return finalize(`${a} ÷ ${b} = ?`, String(q), [String(q + 1), String(Math.max(1, q - 1))]);
+    }
+    function genRounding() {
+        const num = randInt(105, 985);
+        const correct = Math.round(num / 10) * 10;
+        return finalize(`Round ${num} to the nearest ten.`, String(correct), [String(correct + 10), String(correct - 10)]);
+    }
+
+    // Medium tier: order of operations, fractions, decimals, percentages, exponents
+    function genOrderOps() {
+        const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9);
+        const correct = a + b * c;
+        return finalize(`${a} + ${b} × ${c} = ?`, String(correct), [String((a + b) * c), String(a * b + c)]);
+    }
+    function genFraction() {
+        const denom = randInt(5, 10);
+        const n1 = randInt(1, denom - 2);
+        const n2 = randInt(1, denom - n1 - 1);
+        const sumNum = n1 + n2;
+        return finalize(`${n1}/${denom} + ${n2}/${denom} = ?`, `${sumNum}/${denom}`, [`${sumNum + 1}/${denom}`, `${sumNum}/${denom + 1}`]);
+    }
+    function genDecimalMul() {
+        const a = randInt(1, 9) / 10;
+        const b = randInt(2, 9);
+        const correct = Math.round(a * b * 10) / 10;
+        return finalize(`${a.toFixed(1)} × ${b} = ?`, correct.toFixed(1), [(correct + 0.1).toFixed(1), Math.max(0, correct - 0.1).toFixed(1)]);
+    }
+    function genPercent() {
+        const pct = [10, 20, 25, 50, 75][randInt(0, 4)];
+        const num = randInt(4, 40) * 4;
+        const correct = (pct / 100) * num;
+        const step = Math.max(2, Math.round(num * 0.05));
+        return finalize(`What is ${pct}% of ${num}?`, String(correct), [String(correct + step), String(Math.max(0, correct - step))]);
+    }
+    function genExponent() {
+        const base = randInt(2, 5), exp = randInt(2, 3);
+        const correct = Math.pow(base, exp);
+        return finalize(`${base}^${exp} = ?`, String(correct), [String(correct + base), String(Math.max(1, correct - exp))]);
+    }
+
+    // Hard tier: multi-step operations, word problems, geometry, ratios, integers
+    function genMultiStep() {
+        const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 6), d = randInt(1, 9);
+        const correct = (a + b) * c - d;
+        return finalize(`(${a} + ${b}) × ${c} - ${d} = ?`, String(correct), [String(correct + c), String(correct - d)]);
+    }
+    function genPercentWord() {
+        const price = randInt(20, 120);
+        const discount = [10, 20, 25, 50][randInt(0, 3)];
+        const correct = Math.round(price * (1 - discount / 100));
+        return finalize(`A game costs $${price}. It goes on sale for ${discount}% off. What is the sale price?`, `$${correct}`, [`$${correct + 5}`, `$${Math.max(0, correct - 5)}`]);
+    }
+    function genArea() {
+        const w = randInt(4, 15), h = randInt(3, 12);
+        const correct = w * h;
+        return finalize(`A rectangle is ${w} cm by ${h} cm. What is its area in square centimeters?`, String(correct), [String(correct + w), String(Math.max(1, correct - h))]);
+    }
+    function genRatio() {
+        const a = randInt(2, 6), b = randInt(2, 9);
+        const mult = randInt(2, 6);
+        const correct = b * mult;
+        return finalize(`If ${a} : ${b} is equivalent to ${a * mult} : ?, what is the missing number?`, String(correct), [String(correct + mult), String(Math.max(1, correct - mult))]);
+    }
+    function genIntegers() {
+        const a = randInt(-15, 15), b = randInt(-15, 15);
+        const correct = a - b;
+        return finalize(`${a} - (${b}) = ?`, String(correct), [String(correct + 2), String(correct - 2)]);
+    }
+
+    const TIER_GENERATORS = {
+        easy: [genAddition, genSubtraction, genMultiplication, genDivision, genRounding],
+        medium: [genOrderOps, genFraction, genDecimalMul, genPercent, genExponent],
+        hard: [genMultiStep, genPercentWord, genArea, genRatio, genIntegers]
+    };
+
+    function buildQuestionSet(tier, count) {
+        const pool = TIER_GENERATORS[tier] || TIER_GENERATORS.easy;
+        let genList = [];
+        while (genList.length < count) {
+            genList = genList.concat(shuffle(pool));
+        }
+        return genList.slice(0, count).map((fn) => fn());
+    }
+
+    /* ---------------------------------------------------------------
+     * Secret message - a fixed poem, revealed one line per gate cleared
+     * --------------------------------------------------------------- */
+    const SECRET_MESSAGE_LINES = [
+        'You conquered the test, your skills are elite,',
+        'Now get back outside and use your own feet.',
+        'Leave all the screens and the keyboards behind,',
+        'Look for the needles of a different kind.',
+        'Where fish swim in circles and water flows round,',
+        'Check the evergreen giant rooted in the ground.',
+        'Find present number three hiding in plain sight!'
+    ];
+
+    /* ---------------------------------------------------------------
+     * Game state
+     * --------------------------------------------------------------- */
+    let tier = 'easy';
+    let words = [];
+    let revealed = [];
+    let questions = [];
+    let currentIndex = 0;
+    let cleared = 0;
+    let attempts = 0;
+    let runCoins = 0;
+    let isAnimating = false;
+    let courseActive = false;
+
+    document.querySelectorAll('.mode-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (courseActive) return; // don't allow tier swap mid-run
+            document.querySelectorAll('.mode-btn').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+            tier = btn.dataset.tier;
+        });
+    });
+
+    function setFeedback(text, colorClass) {
+        const el = document.getElementById('feedback-text');
+        el.textContent = text;
+        el.style.color = colorClass || '#94a3b8';
+    }
+
+    function buildProgressDots() {
+        const container = document.getElementById('obstacle-progress');
+        container.innerHTML = '';
+        for (let i = 0; i < words.length; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'progress-dot';
+            dot.id = `dot-${i}`;
+            container.appendChild(dot);
+        }
+    }
+
+    function updateProgressDots() {
+        words.forEach((_, i) => {
+            const dot = document.getElementById(`dot-${i}`);
+            if (!dot) return;
+            dot.classList.remove('current', 'cleared');
+            if (i < currentIndex) dot.classList.add('cleared');
+            else if (i === currentIndex) dot.classList.add('current');
+        });
+    }
+
+    function renderSecretTicker() {
+        const el = document.getElementById('secret-ticker');
+        el.innerHTML = words.map((line, i) => {
+            if (revealed[i]) return `<div class="secret-line revealed-line">${line}</div>`;
+            return `<div class="secret-line hidden-line">▮▮▮▮▮▮▮▮▮▮</div>`;
+        }).join('');
+    }
+
+    function renderStats() {
+        document.getElementById('stat-cleared').textContent = cleared;
+        document.getElementById('stat-attempts').textContent = attempts;
+        document.getElementById('stat-score').textContent = runCoins;
+    }
+
+    function loadQuestion() {
+        const q = questions[currentIndex];
+        document.getElementById('obstacle-counter').textContent = `Obstacle ${currentIndex + 1} of ${questions.length}`;
+        document.getElementById('question-prompt').textContent = q.prompt;
+        q.choices.forEach((choice, i) => {
+            document.getElementById(`lane-value-${i}`).textContent = choice;
+            const btn = document.getElementById(`lane-btn-${i}`);
+            btn.disabled = false;
+            btn.classList.remove('correct-flash', 'wrong-flash');
+        });
+        updateProgressDots();
+        setFeedback('Solve the problem, then choose the matching gate!', '#94a3b8');
+        refreshGateVisual();
+    }
+
+    function startCourse() {
+        words = SECRET_MESSAGE_LINES.slice();
+        revealed = words.map(() => false);
+        questions = buildQuestionSet(tier, words.length);
+        currentIndex = 0;
+        cleared = 0;
+        attempts = 0;
+        runCoins = 0;
+        courseActive = true;
+
+        buildProgressDots();
+        renderSecretTicker();
+        renderStats();
+        loadQuestion();
+        resetCameraPosition();
+        document.getElementById('completion-modal').style.display = 'none';
+    }
+
+    function handleLaneChoice(laneIndex) {
+        if (!courseActive || isAnimating) return;
+        const q = questions[currentIndex];
+        const btn = document.getElementById(`lane-btn-${laneIndex}`);
+        attempts++;
+        renderStats();
+
+        if (laneIndex === q.correctIndex) {
+            btn.classList.add('correct-flash');
+            playSound('success');
+            revealed[currentIndex] = true;
+            cleared++;
+            runCoins += 5;
+            addCoins(5);
+            renderSecretTicker();
+            renderStats();
+            setFeedback('Correct! Flying through the gate...', '#34d399');
+            document.querySelectorAll('.lane-btn').forEach((b) => (b.disabled = true));
+
+            flyThroughGate(laneIndex, () => {
+                currentIndex++;
+                if (currentIndex >= questions.length) {
+                    finishCourse();
+                } else {
+                    loadQuestion();
+                }
+            });
+        } else {
+            btn.classList.add('wrong-flash');
+            playSound('fail');
+            setFeedback('Not quite - check your work and try another gate!', '#ef4444');
+            shakeCamera();
+            setTimeout(() => btn.classList.remove('wrong-flash'), 500);
+        }
+    }
+
+    [0, 1, 2].forEach((i) => {
+        document.getElementById(`lane-btn-${i}`).addEventListener('click', () => handleLaneChoice(i));
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (!courseActive || isAnimating) return;
+        if (e.key === '1' || e.key === 'ArrowLeft') handleLaneChoice(0);
+        else if (e.key === '2' || e.key === 'ArrowUp' || e.key === 'ArrowDown') handleLaneChoice(1);
+        else if (e.key === '3' || e.key === 'ArrowRight') handleLaneChoice(2);
+    });
+
+    document.getElementById('start-btn').addEventListener('click', startCourse);
+    document.getElementById('play-again-btn').addEventListener('click', () => {
+        document.getElementById('completion-modal').style.display = 'none';
+        startCourse();
+    });
+
+    function launchConfetti() {
+        const container = document.getElementById('confetti-layer');
+        const colors = ['#f59e0b', '#22d3ee', '#a855f7', '#34d399', '#f472b6'];
+        for (let i = 0; i < 60; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = `${Math.random() * 100}%`;
+            piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDuration = `${2 + Math.random() * 2}s`;
+            piece.style.animationDelay = `${Math.random() * 0.4}s`;
+            piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+            container.appendChild(piece);
+            setTimeout(() => piece.remove(), 4600);
+        }
+    }
+
+    function finishCourse() {
+        courseActive = false;
+        playSound('victory');
+        document.getElementById('completion-message').textContent = words.join('\n');
+        document.getElementById('final-cleared').textContent = cleared;
+        document.getElementById('final-attempts').textContent = attempts;
+        document.getElementById('final-score').textContent = runCoins;
+        document.getElementById('completion-modal').style.display = 'flex';
+        launchConfetti();
+        setFeedback('Course complete! Secret transmission fully decoded.', '#fbbf24');
+    }
+
+    /* ---------------------------------------------------------------
+     * Three.js 3D obstacle tunnel
+     * --------------------------------------------------------------- */
+    const container = document.getElementById('tunnel-canvas-container');
+    const LANE_X = [-2.2, 0, 2.2];
+    const GATE_Z = -14;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x05030d, 0.05);
+
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 200);
+    camera.position.set(0, 1.2, 6);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0x404060, 1.2));
+    const pointLight = new THREE.PointLight(0xa855f7, 1.4, 40);
+    pointLight.position.set(0, 3, 4);
+    scene.add(pointLight);
+
+    // Floor grid fading into the distance
+    const grid = new THREE.GridHelper(60, 30, 0x8b5a2b, 0x1e293b);
+    grid.position.y = -2;
+    grid.position.z = -20;
+    scene.add(grid);
+
+    // Decorative ambient rings drifting toward the camera for a "moving through space" feel
+    const decorRings = [];
+    const ringColors = [0x22d3ee, 0xa855f7, 0xf59e0b];
+    for (let i = 0; i < 14; i++) {
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(3 + Math.random() * 0.6, 0.05, 8, 24),
+            new THREE.MeshBasicMaterial({ color: ringColors[i % ringColors.length], transparent: true, opacity: 0.35 })
+        );
+        ring.position.z = -i * 4 - 6;
+        ring.position.y = 1;
+        scene.add(ring);
+        decorRings.push(ring);
+    }
+
+    // Starfield particles
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 250;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+        starPositions[i * 3] = (Math.random() - 0.5) * 60;
+        starPositions[i * 3 + 1] = (Math.random() - 0.5) * 30 + 5;
+        starPositions[i * 3 + 2] = -Math.random() * 80;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starField = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.7 }));
+    scene.add(starField);
+
+    // Player marker (a small glowing runner icon just in front of the camera)
+    const player = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.35, 0),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0ea5e9, emissiveIntensity: 0.6, roughness: 0.3 })
+    );
+    player.position.set(0, 0.3, 4);
+    scene.add(player);
+
+    // Gate group: 3 lane arches at a fixed depth
+    const gateGroup = new THREE.Group();
+    gateGroup.position.z = GATE_Z;
+    const laneMeshes = [];
+    LANE_X.forEach((x, i) => {
+        const arch = new THREE.Mesh(
+            new THREE.TorusGeometry(1.1, 0.12, 10, 24),
+            new THREE.MeshStandardMaterial({ color: ringColors[i], emissive: ringColors[i], emissiveIntensity: 0.5, roughness: 0.4 })
+        );
+        arch.position.set(x, 0.4, 0);
+        gateGroup.add(arch);
+        laneMeshes.push(arch);
+    });
+    scene.add(gateGroup);
+
+    // Short-lived particle bursts spawned on correct answers
+    const activeBursts = [];
+    function spawnBurst(x, color) {
+        const count = 40;
+        const positions = new Float32Array(count * 3);
+        const velocities = [];
+        for (let i = 0; i < count; i++) {
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = 0.4;
+            positions[i * 3 + 2] = GATE_Z;
+            velocities.push(new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 3, (Math.random() - 0.5) * 3));
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const material = new THREE.PointsMaterial({ color, size: 0.12, transparent: true, opacity: 1 });
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+        activeBursts.push({ points, velocities, geometry, material, birth: performance.now() });
+    }
+
+    function refreshGateVisual() {
+        laneMeshes.forEach((mesh) => {
+            mesh.rotation.z = Math.random() * Math.PI;
+        });
+    }
+
+    function resetCameraPosition() {
+        camera.position.set(0, 1.2, 6);
+    }
+
+    function flyThroughGate(laneIndex, onComplete) {
+        isAnimating = true;
+        const startZ = camera.position.z;
+        const targetX = LANE_X[laneIndex];
+        const duration = 850;
+        const startTime = performance.now();
+        spawnBurst(targetX, ringColors[laneIndex]);
+
+        function step(now) {
+            const t = Math.min(1, (now - startTime) / duration);
+            const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            camera.position.z = startZ - eased * (startZ - (GATE_Z - 3));
+            camera.position.x = Math.sin(eased * Math.PI) * targetX * 0.5;
+            player.position.z = camera.position.z - 2;
+            player.position.x = camera.position.x;
+            if (t < 1) {
+                requestAnimationFrame(step);
+            } else {
+                camera.position.set(0, 1.2, 6);
+                player.position.set(0, 0.3, 4);
+                isAnimating = false;
+                onComplete();
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    function shakeCamera() {
+        const duration = 260;
+        const startTime = performance.now();
+        function step(now) {
+            const t = (now - startTime) / duration;
+            if (t < 1) {
+                camera.position.x = (Math.random() - 0.5) * 0.25 * (1 - t);
+                requestAnimationFrame(step);
+            } else {
+                camera.position.x = 0;
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    function onResize() {
+        const w = container.clientWidth;
+        const h = container.clientHeight || 420;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    }
+    window.addEventListener('resize', onResize);
+
+    const clock = new THREE.Clock();
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        const t = clock.getElapsedTime();
+
+        // Ambient tunnel drift
+        decorRings.forEach((ring, i) => {
+            ring.rotation.z += 0.15 * delta * (1 + (i % 3) * 0.2);
+            ring.position.z += delta * 3;
+            if (ring.position.z > camera.position.z + 4) {
+                ring.position.z -= 14 * 4;
+            }
+        });
+
+        starField.rotation.y += delta * 0.01;
+        player.position.y = 0.3 + Math.sin(t * 2) * 0.08;
+        gateGroup.children.forEach((arch, i) => {
+            arch.rotation.x += delta * 0.2 * (i + 1);
+        });
+
+        // Particle bursts fade + expand
+        for (let i = activeBursts.length - 1; i >= 0; i--) {
+            const burst = activeBursts[i];
+            const age = (performance.now() - burst.birth) / 1000;
+            if (age > 0.8) {
+                scene.remove(burst.points);
+                burst.geometry.dispose();
+                burst.material.dispose();
+                activeBursts.splice(i, 1);
+                continue;
+            }
+            const positions = burst.geometry.attributes.position.array;
+            burst.velocities.forEach((v, idx) => {
+                positions[idx * 3] += v.x * delta;
+                positions[idx * 3 + 1] += v.y * delta;
+                positions[idx * 3 + 2] += v.z * delta;
+            });
+            burst.geometry.attributes.position.needsUpdate = true;
+            burst.material.opacity = Math.max(0, 1 - age / 0.8);
+        }
+
+        renderer.render(scene, camera);
+    }
+    animate();
+    onResize();
+});
+</script>
+{% endblock %}

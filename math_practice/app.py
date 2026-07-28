@@ -616,6 +616,26 @@ def area_explorer():
     """Area Explorer game page."""
     return render_template('area_explorer.html')
 
+@app.route('/coordinate-navigator')
+def coordinate_navigator():
+    """Coordinate Plane Navigator game page."""
+    return render_template('coordinate_navigator.html')
+
+@app.route('/ratio-river')
+def ratio_river():
+    """Ratio River Crossing game page."""
+    return render_template('ratio_river.html')
+
+@app.route('/vault-solver')
+def vault_solver():
+    """Vault Password Solver game page."""
+    return render_template('vault_solver.html')
+
+@app.route('/obstacle-course')
+def obstacle_course():
+    """3D Math Obstacle Course game page with a secret message reveal."""
+    return render_template('obstacle_course.html')
+
 
 def get_db_connection():
     """Open a PostgreSQL connection using the DATABASE_URL environment variable."""
@@ -745,6 +765,116 @@ def list_student_creations_for_teacher():
         for row in rows
     ]
     return jsonify({'items': records})
+
+
+def ensure_star360_checkins_table():
+    """Create star360_submissions table if it does not exist."""
+    with closing(get_db_connection()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS star360_submissions (
+                    id SERIAL PRIMARY KEY,
+                    student_name TEXT NOT NULL,
+                    boy_status TEXT NOT NULL,
+                    moy_status TEXT NOT NULL,
+                    eoy_status TEXT NOT NULL,
+                    earned_points INTEGER NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+                """
+            )
+            conn.commit()
+
+
+@app.route('/star360-checkin')
+def star360_checkin():
+    """Diagnostic check-in log page for Star360 tests."""
+    return render_template('star360_checkin.html')
+
+
+@app.route('/api/star360-checkin', methods=['POST'])
+def save_star360_checkin():
+    """Save student-reported BOY, MOY, EOY check-ins to DB."""
+    payload = request.get_json(silent=True) or {}
+    
+    student_name = str(payload.get('student_name', '')).strip()
+    boy_status = str(payload.get('boy_status', '')).strip()
+    moy_status = str(payload.get('moy_status', '')).strip()
+    eoy_status = str(payload.get('eoy_status', '')).strip()
+    earned_points_raw = payload.get('earned_points', 0)
+
+    if not student_name:
+        return jsonify({'error': 'Student name is required.'}), 400
+
+    try:
+        earned_points = int(earned_points_raw)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'earned_points must be a valid integer.'}), 400
+
+    try:
+        ensure_star360_checkins_table()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO star360_submissions (student_name, boy_status, moy_status, eoy_status, earned_points)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id, created_at
+                    """,
+                    (student_name, boy_status, moy_status, eoy_status, earned_points)
+                )
+                row = cur.fetchone()
+                conn.commit()
+    except Exception as exc:
+        app.logger.error(f'Failed saving Star360 submission: {exc}')
+        return jsonify({'error': 'Could not save checkin right now.'}), 500
+
+    return jsonify({
+        'ok': True,
+        'id': row[0],
+        'created_at': row[1].isoformat() if row and row[1] else None
+    })
+
+
+@app.route('/api/teacher/star360-checkins', methods=['GET'])
+def list_star360_checkins_for_teacher():
+    """Read star360 submissions for teacher monitoring."""
+    teacher_token = os.environ.get('TEACHER_DASHBOARD_TOKEN', '').strip()
+    incoming_token = request.headers.get('X-Teacher-Token', '').strip()
+    if teacher_token and incoming_token != teacher_token:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    try:
+        ensure_star360_checkins_table()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, student_name, boy_status, moy_status, eoy_status, earned_points, created_at
+                    FROM star360_submissions
+                    ORDER BY created_at DESC
+                    """
+                )
+                rows = cur.fetchall()
+    except Exception as exc:
+        app.logger.error(f'Failed loading star360 submissions: {exc}')
+        return jsonify({'error': 'Could not load star360 checkins right now.'}), 500
+
+    records = [
+        {
+            'id': row[0],
+            'student_name': row[1],
+            'boy_status': row[2],
+            'moy_status': row[3],
+            'eoy_status': row[4],
+            'earned_points': row[5],
+            'created_at': row[6].isoformat() if row[6] else None
+        }
+        for row in rows
+    ]
+    return jsonify({'items': records})
+
 
 # The big red activation button.
 if __name__ == '__main__':

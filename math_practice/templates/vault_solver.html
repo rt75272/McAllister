@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}The Vault Password Solver - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #09090e;
+        color: #e0e0ed;
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .game-title {
+        font-size: 2rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(to right, #fbbf24, #f59e0b, #eab308);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .coins-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 2.5px solid #8b5a2b;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #f3f4f6;
+    }
+
+    .game-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+        margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+        .game-grid-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Glass Panels */
+    .glass-station-panel {
+        background: rgba(26, 26, 46, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .sidebar-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .wood-hud-panel {
+        background: rgba(30, 41, 59, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+    }
+
+    /* Interactive vault graphics */
+    .vault-container {
+        width: 100%;
+        max-width: 460px;
+        background: radial-gradient(circle at 50% 50%, #2c2d30, #141517);
+        border: 8px solid #8b5a2b;
+        border-radius: 30px;
+        padding: 24px;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 15px 30px rgba(0,0,0,0.6);
+        text-align: center;
+        position: relative;
+    }
+
+    .vault-screen {
+        background: #02040a;
+        border: 3px solid #475569;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 20px;
+        font-family: monospace;
+    }
+
+    .vault-equation {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #fbbf24;
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        margin: 0;
+    }
+
+    /* Dial combination wheel */
+    .vault-dial-wheel {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 40%, #4b5563, #1f2937);
+        border: 8px solid #6b7280;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 4px 6px rgba(255,255,255,0.1);
+        margin: 20px auto;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .dial-center {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #111827;
+        border: 4px solid #4b5563;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #f3f4f6;
+    }
+
+    .dial-mark {
+        position: absolute;
+        width: 4px;
+        height: 14px;
+        background: #9ca3af;
+        top: 6px;
+        left: calc(50% - 2px);
+        transform-origin: 2px 84px;
+    }
+
+    /* Lockout/Combo fields */
+    .combo-input-box {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+    }
+
+    .dial-input {
+        width: 72px;
+        background: #02040a;
+        border: 2px solid #475569;
+        color: #fbbf24;
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.3rem;
+        font-family: monospace;
+    }
+
+    .dial-input:focus {
+        border-color: #f59e0b;
+        outline: none;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border: 2px solid #fbbf24;
+        color: white;
+        font-weight: 800;
+        padding: 12px 24px;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        font-size: 0.95rem;
+    }
+
+    .submit-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .feedback-text {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-align: center;
+        min-height: 20px;
+        margin-top: 12px;
+    }
+
+    /* HUD readout styling */
+    .hud-readout {
+        font-family: monospace;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .hud-line {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding-bottom: 4px;
+    }
+
+    .hud-val {
+        font-weight: bold;
+    }
+
+    /* Floating Space Console Help */
+    .help-box {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    .help-heading {
+        font-weight: 800;
+        color: #c084fc;
+        margin-bottom: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('math_games') }}" class="home-btn">
+            🚀 Back to Games
+        </a>
+        <h1 class="game-title">🔐 The Vault Password Solver</h1>
+        <div class="coins-box">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="game-grid-layout">
+        <!-- Interactive Vault Area -->
+        <div class="glass-station-panel">
+            <div class="vault-container">
+                <div class="vault-screen">
+                    <span class="text-xs font-mono text-slate-400 uppercase tracking-widest block mb-1">LOCK CODES TELEMETRY</span>
+                    <p id="equation-display" class="vault-equation">Solve: 4x = 24</p>
+                </div>
+
+                <!-- Dial Graphic that spins when you change code or click it! -->
+                <div id="vault-dial" class="vault-dial-wheel">
+                    <div class="dial-center" id="dial-center-val">0</div>
+                    <!-- 10 marks for decimals -->
+                    <div class="dial-mark" style="transform: rotate(0deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(36deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(72deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(108deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(144deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(180deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(216deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(252deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(288deg)"></div>
+                    <div class="dial-mark" style="transform: rotate(324deg)"></div>
+                </div>
+
+                <div class="combo-input-box">
+                    <span class="text-lg font-mono font-bold text-slate-300">x = </span>
+                    <input id="user-answer" class="dial-input" type="number" step="any" placeholder="Code">
+                </div>
+
+                <button id="vault-submit" class="submit-btn w-full mt-4">Unlock Ancient Vault 🗝️</button>
+                <p id="feedback-message" class="feedback-text text-amber-400">Calibrate the dials to the correct equation balance!</p>
+            </div>
+        </div>
+
+        <!-- Sidebar controls -->
+        <div class="sidebar-panel">
+            <!-- Vault Status Panel -->
+            <div class="wood-hud-panel">
+                <h4 class="font-extrabold text-sm text-cyan-400 tracking-wide uppercase mb-2">🪐 VAULT DIAGNOSTICS</h4>
+                <div class="hud-readout">
+                    <div class="hud-line">
+                        <span>Vault Lock State</span>
+                        <span id="hud-status" class="hud-val text-red-500 animate-pulse">LOCKED</span>
+                    </div>
+                    <div class="hud-line">
+                        <span>Current Vault Level</span>
+                        <span id="hud-level" class="hud-val text-indigo-400">Level 1 (Addition)</span>
+                    </div>
+                    <div class="hud-line">
+                        <span>Equations Cleared</span>
+                        <span id="hud-score" class="hud-val text-emerald-400">0 / 5</span>
+                    </div>
+                    <div class="hud-line" style="border:none;">
+                        <span>Calibration Rating</span>
+                        <span id="hud-rating" class="hud-val text-yellow-400">Cadet Cryptologist</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilot Help Card -->
+            <div class="wood-hud-panel help-box">
+                <div class="help-heading">🧭 CRYPTO KEY GUIDE</div>
+                <p>1. **Examine the equation:** Look at the algebraic formula displayed on the green cockpit terminal (e.g., $3x = 12$).</p>
+                <p style="margin-top: 4px;">2. **Solve for variable:** Determine the exact numeric value of the unknown variable $x$ (e.g., $x = 4$).</p>
+                <p style="margin-top: 4px;">3. **Dial the combo:** Type the number into the cockpit dial box (or click on the dial to spin it). Press **Enter** to breach the locking mechanism!</p>
+                <p style="margin-top: 4px;">4. Clear **5 vault equations** to fully secure the chamber and collect your stellar bounty of coins!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Audio synthesizer helper matching website style
+    function playSound(type) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+
+            if (type === 'success') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            } else if (type === 'coin') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now);
+                osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.25);
+            } else if (type === 'fail') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220.00, now);
+                osc.frequency.linearRampToValueAtTime(110.00, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let score = 0;
+        let coins = 15;
+        let level = 1;
+        let currentProblem = null;
+        let rotDegree = 0;
+
+        const equationEl = document.getElementById('equation-display');
+        const dialWheel = document.getElementById('vault-dial');
+        const centerVal = document.getElementById('dial-center-val');
+        const inputVal = document.getElementById('user-answer');
+        const submitBtn = document.getElementById('vault-submit');
+        const feedbackEl = document.getElementById('feedback-message');
+
+        function loadState() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    coins = parsed.coins || 15;
+                    document.getElementById('coins-count').textContent = coins;
+                } catch(e) {}
+            }
+        }
+
+        function saveCoins() {
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let state = {};
+            if (saved) {
+                try { state = JSON.parse(saved); } catch (e) {}
+            }
+            state.coins = coins;
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+            document.getElementById('coins-count').textContent = coins;
+        }
+
+        function addCoins(amount) {
+            coins += amount;
+            saveCoins();
+        }
+
+        function generateProblem() {
+            // Progressive levels:
+            // Level 1: One-step addition (e.g. x + 5 = 12)
+            // Level 2: One-step subtraction (e.g. x - 7 = 3)
+            // Level 3: One-step multiplication (e.g. 4x = 24)
+            // Level 4: One-step division (e.g. x/3 = 5)
+            // Level 5: Expressions evaluation (e.g. Solve 2x + 3 for x=4)
+
+            let text = "";
+            let answer = 0;
+
+            if (level === 1) {
+                const addend = Math.floor(Math.random() * 15) + 1;
+                answer = Math.floor(Math.random() * 15) + 1;
+                const sum = addend + answer;
+                text = `Solve: x + ${addend} = ${sum}`;
+            } else if (level === 2) {
+                const subtrahend = Math.floor(Math.random() * 15) + 1;
+                answer = Math.floor(Math.random() * 15) + 1;
+                const diff = answer - subtrahend;
+                text = `Solve: x - ${subtrahend} = ${diff}`;
+            } else if (level === 3) {
+                const coeff = Math.floor(Math.random() * 8) + 2;
+                answer = Math.floor(Math.random() * 10) + 1;
+                const product = coeff * answer;
+                text = `Solve: ${coeff}x = ${product}`;
+            } else if (level === 4) {
+                const divisor = Math.floor(Math.random() * 5) + 2;
+                answer = Math.floor(Math.random() * 8) + 1;
+                const quotient = answer * divisor;
+                text = `Solve: x / ${divisor} = ${answer}`;
+                answer = quotient; // x = quotient
+            } else {
+                const coeff = Math.floor(Math.random() * 5) + 2;
+                const xVal = Math.floor(Math.random() * 8) + 1;
+                const constant = Math.floor(Math.random() * 10) + 1;
+                const result = coeff * xVal + constant;
+                text = `Evaluate ${coeff}x + ${constant} when x = ${xVal}`;
+                answer = result;
+            }
+
+            currentProblem = { text, ans: answer };
+            equationEl.textContent = text;
+            inputVal.value = '';
+            
+            // Diagnostics hud update
+            document.getElementById('hud-level').textContent = `Level ${level} (${getLevelName()})`;
+            document.getElementById('hud-score').textContent = `${score} / 5`;
+            feedbackEl.textContent = "Calibrate the dials to the correct equation balance!";
+            feedbackEl.className = "feedback-text text-amber-400";
+        }
+
+        function getLevelName() {
+            if (level === 1) return "One-Step Addition";
+            if (level === 2) return "One-Step Subtraction";
+            if (level === 3) return "One-Step Multiplication";
+            if (level === 4) return "One-Step Division";
+            return "Expression Evaluator";
+        }
+
+        function getRating() {
+            if (score >= 20) return "Grandmaster Cryptanalyst 🏆";
+            if (score >= 15) return "Expert Code Breaker 🎖️";
+            if (score >= 10) return "Master Locksmith 🗝️";
+            if (score >= 5) return "Senior Cryptologist";
+            return "Cadet Cryptologist";
+        }
+
+        function checkVaultCombination() {
+            const userVal = parseFloat(inputVal.value);
+            if (isNaN(userVal)) {
+                feedbackEl.textContent = "Please enter a valid code number.";
+                feedbackEl.className = "feedback-text text-red-400 animate-bounce";
+                playSound('fail');
+                return;
+            }
+
+            if (userVal === currentProblem.ans) {
+                score += 1;
+                playSound('success');
+
+                // Spin the vault dial wheel as a visual feedback
+                rotDegree += 72;
+                dialWheel.style.transform = `rotate(${rotDegree}deg)`;
+                centerVal.textContent = String(userVal % 10);
+
+                if (score % 5 === 0) {
+                    // Level Up!
+                    addCoins(25); // Large bounty for fully resolving vault sector
+                    playSound('coin');
+                    level = Math.min(5, level + 1);
+                    feedbackEl.innerHTML = `🎉 SECTOR DECRYPTED! Level ${level} unlocked. +25 Coins!`;
+                    feedbackEl.className = "feedback-text text-emerald-400 font-bold";
+                } else {
+                    addCoins(5); // Small bounty for standard equation clearing
+                    feedbackEl.innerHTML = `🔓 Vault locks cleared! Code accepted. +5 Coins.`;
+                    feedbackEl.className = "feedback-text text-emerald-400";
+                }
+
+                // Update ratings
+                document.getElementById('hud-rating').textContent = getRating();
+
+                setTimeout(() => {
+                    generateProblem();
+                }, 1200);
+            } else {
+                feedbackEl.textContent = "Vault tumbler mismatch! Recalculate your variable.";
+                feedbackEl.className = "feedback-text text-red-400 animate-bounce";
+                playSound('fail');
+            }
+        }
+
+        // Spin dial manually if clicked for game feel!
+        dialWheel.addEventListener('click', () => {
+            rotDegree += 36;
+            dialWheel.style.transform = `rotate(${rotDegree}deg)`;
+            const currentNum = parseInt(centerVal.textContent) || 0;
+            centerVal.textContent = String((currentNum + 1) % 10);
+            playSound('coin');
+        });
+
+        submitBtn.addEventListener('click', checkVaultCombination);
+        inputVal.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkVaultCombination();
+        });
+
+        loadState();
+        generateProblem();
+    });
+</script>
+{% endblock %}

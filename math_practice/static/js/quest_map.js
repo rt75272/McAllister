@@ -1359,45 +1359,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupInteractiveTilt() {
-        const containers = document.querySelectorAll('.map-canvas-container');
-        
-        containers.forEach(container => {
-            container.addEventListener('mousemove', (e) => {
-                if (!state.mode3d) return;
-                
-                const rect = container.getBoundingClientRect();
-                const w = rect.width;
-                const h = rect.height;
-                
-                // Mouse position relative to center of container
-                const x = e.clientX - rect.left - w / 2;
-                const y = e.clientY - rect.top - h / 2;
-                
-                // Max tilt angle offsets
-                const maxTiltX = 5; // degrees
-                const maxTiltY = 5; // degrees
-                
-                const tiltX = -(y / (h / 2)) * maxTiltX;
-                const tiltY = (x / (w / 2)) * maxTiltY;
-                
-                // Apply dynamic 3D tilt with perspective
-                container.style.transition = 'none'; // Disable transition for real-time tracking
-                container.style.transform = `perspective(1400px) rotateX(${24 + tiltX}deg) rotateY(${-3 + tiltY}deg) rotateZ(1deg) translateY(-8px) scale(0.96)`;
-            });
-            
-            container.addEventListener('mouseleave', () => {
-                if (!state.mode3d) return;
-                
-                // Return to base 3D state smoothly
-                container.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
-                container.style.transform = `perspective(1400px) rotateX(24deg) rotateY(-3deg) rotateZ(1deg) translateY(-8px) scale(0.96)`;
-            });
-            
-            container.addEventListener('mouseenter', () => {
-                if (!state.mode3d) return;
-                container.style.transition = 'none';
-            });
-        });
+        // Disabled dynamic interactive tilt on mouse hover to prevent screen movement/wobbling and improve performance/usability.
+        return;
     }
 
     // Initialize map assets on page load

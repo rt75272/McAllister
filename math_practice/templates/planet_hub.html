@@ -237,6 +237,8 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             z-index: 10;
+            width: 50px;
+            height: 50px;
         }
 
         .station-circle {
@@ -251,7 +253,7 @@
             justify-content: center;
             font-size: 20px;
             color: white;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .station-node:hover .station-circle {
@@ -288,6 +290,12 @@
             border-radius: 16px;
             padding: 16px;
             margin-top: 16px;
+            height: 95px;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         /* Accessible Modal custom rules */
@@ -532,6 +540,162 @@
                         max_questions: 1
                     }
                 ]
+            },
+            {
+                unit_id: "planet_3_rational_numbers",
+                planet_name: "Bathhouse Battle",
+                activities: [
+                    { id: "p3_warmup", type: "quick_facts", skill: "integers_and_opposites", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    {
+                        id: "p3_game_1",
+                        type: "gamified_skill",
+                        theme: "sub_zero",
+                        mechanic: "timeline_slider",
+                        skill: "rational_numbers_on_line",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Plunge Thermostat", task: "Navigate temperature values. Slide the gauge to -4.5 degrees.", answer: "-4.5" },
+                            { scenario: "Sync Pressure Valve", task: "Calibrate vacuum pressure. Slide safety lines to opposite of -3.", answer: "3" }
+                        ]
+                    },
+                    {
+                        id: "p3_game_coordinate_navigator",
+                        type: "coordinate_flight",
+                        points_reward: 150,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
+                    { id: "p3_fun_1", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "rational_integers", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p3_create_1",
+                        type: "student_creation",
+                        skill_focus: "rational_numbers",
+                        prompt: "Adopt the teacher role! Craft a creative coordinate graphing question. Write the coordinates (x, y) as the answer.",
+                        points_reward: 300,
+                        min_questions: 1,
+                        max_questions: 1
+                    }
+                ]
+            },
+            {
+                unit_id: "planet_4_expressions",
+                planet_name: "Tenting Trouble",
+                activities: [
+                    { id: "p4_warmup", type: "quick_facts", skill: "order_of_operations", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    {
+                        id: "p4_game_1",
+                        type: "gamified_skill",
+                        theme: "engine_calibrator",
+                        mechanic: "drag_and_drop_blocks",
+                        skill: "variables_and_expressions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Pitch Expression", task: "Evaluate 3x + 5 when x = 2.", answer: "11" },
+                            { scenario: "Fuel Campfire", task: "Evaluate 5y - 3 when y = 4.", answer: "17" }
+                        ]
+                    },
+                    {
+                        id: "p4_game_2",
+                        type: "gamified_skill",
+                        theme: "reactor_core",
+                        mechanic: "dial_tuning",
+                        skill: "evaluating_expressions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Calibrate Thermostat", task: "Evaluate x^2 + 1 when x = 3.", answer: "10" },
+                            { scenario: "Fuel Engine", task: "Evaluate 2y^3 when y = 2.", answer: "16" }
+                        ]
+                    },
+                    {
+                        id: "p4_game_3",
+                        type: "gamified_skill",
+                        theme: "space_bakery",
+                        mechanic: "ingredient_sequencing",
+                        skill: "writing_expressions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Write Addition Expression", task: "Solve the word problem: 5 more than x.", answer: "x + 5" },
+                            { scenario: "Write Multiplication Expression", task: "Solve the word problem: product of 4 and y.", answer: "4y" }
+                        ]
+                    },
+                    {
+                        id: "p4_game_4",
+                        type: "gamified_skill",
+                        theme: "cargo_loader",
+                        mechanic: "timeline_slider",
+                        skill: "equivalent_expressions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Combine Log Weight", task: "Simplify 2x + 3x.", answer: "5x" },
+                            { scenario: "Sort Fuel Bars", task: "Simplify 4y - y + 2.", answer: "3y + 2" }
+                        ]
+                    },
+                    {
+                        id: "p4_game_5",
+                        type: "gamified_skill",
+                        theme: "nav_computer",
+                        mechanic: "wire_sorting",
+                        skill: "identifying_parts_of_expressions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_bank: [
+                            { scenario: "Identify Constant", task: "In the expression 3x + 7, identify the constant term.", answer: "7" },
+                            { scenario: "Identify Coefficient", task: "In the expression 5y - 2, identify the coefficient.", answer: "5" }
+                        ]
+                    },
+                    {
+                        id: "p4_game_vault",
+                        type: "vault_unlocking",
+                        points_reward: 150,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
+                    { id: "p4_fun_1", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "expressions", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p4_fun_2", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p4_create_1",
+                        type: "student_creation",
+                        skill_focus: "expressions",
+                        prompt: "Adopt the teacher role! Create a custom algebra expression. Type the problem, the value of the variable, and the correct evaluation.",
+                        points_reward: 300,
+                        min_questions: 1,
+                        max_questions: 1
+                    }
+                ]
+            },
+            {
+                unit_id: "planet_6_ratios",
+                planet_name: "Slo-Mo Valley",
+                activities: [
+                    { id: "p6_warmup", type: "quick_facts", skill: "ratios_and_fractions", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    {
+                        id: "p6_game_ratio_river",
+                        type: "ratio_river_crossing",
+                        points_reward: 150,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
+                    {
+                        id: "p6_create_1",
+                        type: "student_creation",
+                        skill_focus: "ratios",
+                        prompt: "Adopt the teacher role! Create an equivalent ratio puzzle. Write the matching terms as the answer.",
+                        points_reward: 300,
+                        min_questions: 1,
+                        max_questions: 1
+                    }
+                ]
             }
         ];
 
@@ -605,6 +769,9 @@
             if (activity.type === 'quick_facts') return `Warmup ${stationNum}`;
             if (activity.type === 'student_creation') return 'Alien Teacher Studio';
             if (activity.type === 'arcade_action_with_pause') return activity.theme === 'flappy_rocket' ? 'Flappy Rocket Bay' : 'Lunar Rover Jump Bay';
+            if (activity.type === 'coordinate_flight') return 'Coordinate Flight';
+            if (activity.type === 'ratio_river_crossing') return 'Ratio River Crossing';
+            if (activity.type === 'vault_unlocking') return 'Equation Vault Solver';
             if (activity.type === 'gamified_skill') {
                 const labelMap = {
                     ingredient_sequencing: 'Space Bakery',
@@ -624,6 +791,9 @@
             if (activity.type === 'gamified_skill') return `Mechanic: ${activity.mechanic}. Skill: ${activity.skill}.`;
             if (activity.type === 'arcade_action_with_pause') return `Arcade challenge with ${activity.question_topic} checks.`;
             if (activity.type === 'quick_facts') return `Quick facts warmup (${activity.skill}).`;
+            if (activity.type === 'coordinate_flight') return 'Pilot your airship across the coordinate plane, plot integers, and unlock engines!';
+            if (activity.type === 'ratio_river_crossing') return 'Steer cargo baskets to catch apples and oranges in exact target proportions!';
+            if (activity.type === 'vault_unlocking') return 'Solve algebraic expressions and one-step equations to breach the stone lock codes!';
             return 'Curriculum mission.';
         }
 
@@ -708,22 +878,15 @@
                     document.getElementById('detail-desc').textContent = `${station.desc} [Type: ${station.type}]`;
                 });
 
-                node.addEventListener('mouseleave', () => {
-                    document.getElementById('detail-title').textContent = '🌟 Mission Coordinate Computer';
-                    document.getElementById('detail-desc').textContent = 'Hover over any station on the constellation map to examine mathematical coordinates, objectives, and game goals.';
-                });
-
                 node.addEventListener('click', () => launchStation(station));
                 nodesContainer.appendChild(node);
             });
 
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('launch') === 'star360') {
-                const station = activeStations.find((s) => s.type === 'quick_facts') || activeStations[0];
-                if (station) {
-                    setTimeout(() => launchStation(station), 300);
-                }
-            }
+            // Revert back to the default message only when leaving the entire constellation map area
+            mapSurface.addEventListener('mouseleave', () => {
+                document.getElementById('detail-title').textContent = '🌟 Mission Coordinate Computer';
+                document.getElementById('detail-desc').textContent = 'Hover over any station on the constellation map to examine mathematical coordinates, objectives, and game goals.';
+            });
         }
 
         function launchStation(station) {
@@ -751,6 +914,18 @@
 
             if (activity.type === 'quick_facts') {
                 loadQuickFacts(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'coordinate_flight') {
+                loadCoordinateFlightEmbed(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'ratio_river_crossing') {
+                loadRatioRiverEmbed(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'vault_unlocking') {
+                loadVaultUnlockingEmbed(mBody, station, activity);
                 return;
             }
             if (activity.type === 'gamified_skill') {
@@ -1658,6 +1833,96 @@
                 answer: String(product),
                 hint: `Count by sixes until you reach ${product}.`
             };
+        }
+
+        function loadCoordinateFlightEmbed(container, station, activity) {
+            const points = activity.points_reward || 150;
+            container.innerHTML = `
+                <p class="text-slate-400">Launch into the Coordinate Plane Navigator simulation! Solve coordinate locks and fly your explorer across the grid lines.</p>
+                <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
+                    <span class="text-4xl block animate-bounce">🛸</span>
+                    <h4 class="font-extrabold text-sm text-yellow-400">Coordinate Plane Navigator</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">Click below to open the pilot console interface inside the simulator grid and earn bonus coins!</p>
+                    <a href="/coordinate-navigator" class="btn-accessible inline-flex items-center gap-1.5 no-underline">
+                        🛸 Launch Navigator Simulator
+                    </a>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/70 border border-slate-800 rounded-xl p-3 mt-3">
+                    <span class="text-xs text-slate-400">Verify completion below once you secure at least 1 checkpoint:</span>
+                    <button id="coord-verify-btn" class="btn-accessible py-2 text-xs">Verify Completion</button>
+                </div>
+                <p id="coord-feedback" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('coord-verify-btn').addEventListener('click', () => {
+                const feedback = document.getElementById('coord-feedback');
+                feedback.textContent = 'Mission verified! Checkpoint coordinates secured. +150 points!';
+                feedback.style.color = '#10b981';
+                setTimeout(() => {
+                    awardStation(station, points);
+                    closeModal();
+                }, 1000);
+            });
+        }
+
+        function loadRatioRiverEmbed(container, station, activity) {
+            const points = activity.points_reward || 150;
+            container.innerHTML = `
+                <p class="text-slate-400">Launch into the Ratio River Crossing game! Match proportions of falling crates and escape river eddies.</p>
+                <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
+                    <span class="text-4xl block animate-bounce">🌊</span>
+                    <h4 class="font-extrabold text-sm text-cyan-400">Ratio River Crossing</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">Click below to test your proportion arithmetic and steer baskets across wild rapids!</p>
+                    <a href="/ratio-river" class="btn-accessible inline-flex items-center gap-1.5 no-underline">
+                        🌊 Launch Ratio River Game
+                    </a>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/70 border border-slate-800 rounded-xl p-3 mt-3">
+                    <span class="text-xs text-slate-400">Verify completion below once you successfully cross the river:</span>
+                    <button id="ratio-verify-btn" class="btn-accessible py-2 text-xs">Verify Completion</button>
+                </div>
+                <p id="ratio-feedback" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('ratio-verify-btn').addEventListener('click', () => {
+                const feedback = document.getElementById('ratio-feedback');
+                feedback.textContent = 'Mission verified! River safely crossed. +150 points!';
+                feedback.style.color = '#10b981';
+                setTimeout(() => {
+                    awardStation(station, points);
+                    closeModal();
+                }, 1000);
+            });
+        }
+
+        function loadVaultUnlockingEmbed(container, station, activity) {
+            const points = activity.points_reward || 150;
+            container.innerHTML = `
+                <p class="text-slate-400">Launch into the Equation Vault Solver! Solve algebraic expressions and equations to unlock ancient passcode dials.</p>
+                <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
+                    <span class="text-4xl block animate-bounce">🔐</span>
+                    <h4 class="font-extrabold text-sm text-yellow-400">The Vault Password Solver</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">Click below to begin the codebreaking simulation and calibrate the cryptologist vault passcodes!</p>
+                    <a href="/vault-solver" class="btn-accessible inline-flex items-center gap-1.5 no-underline">
+                        🔐 Launch Vault Solver Game
+                    </a>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/70 border border-slate-800 rounded-xl p-3 mt-3">
+                    <span class="text-xs text-slate-400">Verify completion below once you breach at least 1 vault level:</span>
+                    <button id="vault-verify-btn" class="btn-accessible py-2 text-xs">Verify Completion</button>
+                </div>
+                <p id="vault-feedback" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('vault-verify-btn').addEventListener('click', () => {
+                const feedback = document.getElementById('vault-feedback');
+                feedback.textContent = 'Mission verified! Passcodes solved and vault breached. +150 points!';
+                feedback.style.color = '#10b981';
+                setTimeout(() => {
+                    awardStation(station, points);
+                    closeModal();
+                }, 1000);
+            });
         }
 
         function loadStudentCreationForm(container, station, activity) {

@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Planetary Moon Base - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body { 
+        background: #050508; 
+        color: #f8fafc; 
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif; 
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+    
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 550px;
+        margin-bottom: 24px;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .moon-module { 
+        background: rgba(30, 41, 59, 0.85); 
+        border: 4px solid #8b5a2b; 
+        border-radius: 24px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 30px; 
+        margin-top: 10px; 
+        max-width: 550px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input[type="text"] { 
+        font-size: 16px; 
+        padding: 12px; 
+        width: 100%; 
+        box-sizing: border-box;
+        border-radius: 12px; 
+        border: 2px solid #475569; 
+        background: #02040a;
+        color: #fff;
+        margin-bottom: 20px; 
+        font-weight: bold;
+    }
+
+    input[type="text"]:focus {
+        border-color: #38bdf8;
+        outline: none;
+    }
+
+    .question-group {
+        text-align: left;
+        background: #1e293b;
+        padding: 18px;
+        border: 2px solid #334155;
+        border-radius: 16px;
+        margin-bottom: 15px;
+    }
+
+    .question-group label.group-title {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: #38bdf8;
+        font-size: 0.95rem;
+    }
+
+    .radio-options {
+        display: flex;
+        gap: 20px;
+    }
+
+    .radio-options label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #f8fafc;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .radio-options input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    button.transmit-btn { 
+        font-size: 16px; 
+        padding: 12px 24px; 
+        cursor: pointer; 
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        border: 2px solid #60a5fa;
+        color: white;
+        border-radius: 12px;
+        font-weight: bold;
+        transition: all 0.2s;
+        margin-top: 10px;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+
+    button.transmit-btn:hover { 
+        background-color: #1d4ed8; 
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    #feedback { 
+        margin-top: 15px; 
+        font-weight: bold; 
+        font-size: 16px; 
+        line-height: 1.5; 
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('quest_map') }}" class="home-btn">
+            🚀 Back to Space Flight
+        </a>
+        <div class="flex items-center gap-4 bg-slate-900/90 border-2 border-[#8b5a2b] px-4 py-2 rounded-xl text-sm font-bold shadow-lg">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+        </div>
+    </div>
+
+    <div class="text-center" style="max-width: 550px; width:100%;">
+        <h2 id="moon-title" class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-tight" style="font-family: 'Lexend', sans-serif;">
+            🌙 Lunar Orbit Check-In Station
+        </h2>
+        <p class="text-slate-400 text-xs mt-1 mb-4">You have landed on the planetary moon! Log your Star360 diagnostic check-ins below.</p>
+    </div>
+    
+    <div class="moon-module">
+        <div id="form-container">
+            <div>
+                <label for="student-name" style="display:block; text-align:left; margin-bottom:8px; color:#38bdf8; font-weight:700; font-size: 0.95rem;">First Name:</label>
+                <input type="text" id="student-name" placeholder="Enter your first name" autocomplete="off">
+            </div>
+
+            <!-- Fix the mutually exclusive radio buttons by grouping each question uniquely -->
+            <div class="question-group">
+                <label class="group-title">Did you take your BOY Star360 test?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="starTestBOY" value="boy"> Yes (+5 coins)</label>
+                    <label><input type="radio" name="starTestBOY" value="none"> No (0 coins)</label>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <label class="group-title">Did you take your MOY Star360 test?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="starTestMOY" value="moy"> Yes (+5 coins)</label>
+                    <label><input type="radio" name="starTestMOY" value="none"> No (0 coins)</label>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <label class="group-title">Did you take your EOY Star360 test?</label>
+                <div class="radio-options">
+                    <label><input type="radio" name="starTestEOY" value="eoy"> Yes (+5 coins)</label>
+                    <label><input type="radio" name="starTestEOY" value="none"> No (0 coins)</label>
+                </div>
+            </div>
+
+            <button class="transmit-btn" onclick="submitCheckIn()">Transmit Log to Base 📡</button>
+        </div>
+        <p id="feedback"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Audio synthesizer helper matching website style
+    function playSound(type) {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+
+            if (type === 'success') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            } else if (type === 'coin') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now);
+                osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.25);
+            } else if (type === 'fail') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220.00, now);
+                osc.frequency.linearRampToValueAtTime(110.00, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+        } catch (e) {}
+    }
+
+    let coins = 15;
+
+    function loadState() {
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                coins = parsed.coins || 15;
+                document.getElementById('coins-count').textContent = coins;
+            } catch(e) {}
+        }
+    }
+
+    function saveState() {
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        let state = {};
+        if (saved) {
+            try { state = JSON.parse(saved); } catch (e) {}
+        }
+        state.coins = coins;
+        localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+        document.getElementById('coins-count').textContent = coins;
+    }
+
+    async function submitCheckIn() {
+        let name = document.getElementById("student-name").value.trim();
+        let feedback = document.getElementById("feedback");
+
+        if (name === "") {
+            feedback.style.color = "#f43f5e";
+            feedback.innerText = "Error: Please type your first name before transmitting!";
+            playSound('fail');
+            return;
+        }
+
+        // Grab answers from all three groups
+        let optBoy = document.querySelector('input[name="starTestBOY"]:checked');
+        let optMoy = document.querySelector('input[name="starTestMOY"]:checked');
+        let optEoy = document.querySelector('input[name="starTestEOY"]:checked');
+
+        if (!optBoy || !optMoy || !optEoy) {
+            feedback.style.color = "#f43f5e";
+            feedback.innerText = "Please select Yes or No for all three testing windows.";
+            playSound('fail');
+            return;
+        }
+
+        let earnedPoints = 0;
+        let completedTests = [];
+
+        if (optBoy.value === 'boy') { earnedPoints += 5; completedTests.push('BOY'); }
+        if (optMoy.value === 'moy') { earnedPoints += 5; completedTests.push('MOY'); }
+        if (optEoy.value === 'eoy') { earnedPoints += 5; completedTests.push('EOY'); }
+
+        try {
+            // Send log to PostgreSQL database for teacher visibility!
+            const response = await fetch('/api/star360-checkin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_name: name,
+                    boy_status: optBoy.value.toUpperCase(),
+                    moy_status: optMoy.value.toUpperCase(),
+                    eoy_status: optEoy.value.toUpperCase(),
+                    earned_points: earnedPoints
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Transmitter connection failed.");
+            }
+
+            // Award points in student's active adventure state
+            if (earnedPoints > 0) {
+                coins += earnedPoints;
+                saveState();
+                playSound('coin');
+            } else {
+                playSound('success');
+            }
+
+            // Lock form and show success message with their name and points
+            document.getElementById("form-container").style.display = "none";
+            feedback.style.color = "#10b981";
+            feedback.innerHTML = `Transmission Successful! 📡<br><br>
+                Explorer: <strong>${name}</strong><br>
+                Tests Logged: ${completedTests.length > 0 ? completedTests.join(', ') : 'None'}<br>
+                <strong>Total Coins Awarded: ${earnedPoints} 🪙</strong><br><br>
+                <em>You may now return to your map quest path!</em>`;
+
+        } catch (err) {
+            feedback.style.color = "#f43f5e";
+            feedback.innerText = "Error transmitting log. Please try again.";
+            playSound('fail');
+        }
+    }
+
+    loadState();
+</script>
+{% endblock %}

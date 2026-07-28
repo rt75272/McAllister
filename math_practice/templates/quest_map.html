@@ -610,7 +610,7 @@
             document.getElementById('descend-moon-btn').addEventListener('click', () => {
                 const targetId = activeApproachedMoonId || activeApproachedPlanetId;
                 if (targetId !== null) {
-                    window.location.href = `/quest-map/planet/${targetId}?launch=star360`;
+                    window.location.href = `/star360-checkin`;
                 }
             });
 
@@ -707,7 +707,7 @@
                 if (clickedPlanet) {
                     // Instantly steer ship towards moon and trigger check-in
                     ship.position.copy(clickedMoonMesh.position);
-                    window.location.href = `/quest-map/planet/${clickedPlanet.data.id}?launch=star360`;
+                    window.location.href = `/star360-checkin`;
                     return;
                 }
             }
