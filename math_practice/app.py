@@ -7,7 +7,7 @@ from collections import deque
 from datetime import datetime
 from urllib import error, request as urllib_request
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import psycopg2
 # ########################################################################################################
 # Math Practice Web App.
@@ -592,6 +592,14 @@ def expression_comparison():
 def math_adventure():
     return render_template('math_adventure.html')
 
+# All ten 6th-grade curriculum destinations are available from the Quest Map.
+ACTIVE_CURRICULUM_UNITS = set(range(1, 11))
+
+@app.route('/orientation')
+def orientation_planet():
+    """Orientation Planet (Module 0) - Canvas/platform navigation check before Unit 1."""
+    return render_template('orientation_planet.html')
+
 @app.route('/quest-map')
 def quest_map():
     """The Quest Map - comprehensive 6th grade math curriculum adventure."""
@@ -600,12 +608,19 @@ def quest_map():
 @app.route('/quest-map/planet/<int:planet_id>')
 def planet_hub(planet_id):
     """A dedicated page for the active planet's curriculum stations."""
+    if planet_id not in ACTIVE_CURRICULUM_UNITS:
+        return redirect(url_for('quest_map'))
     return render_template('planet_hub.html', planet_id=planet_id)
 
 @app.route('/pet-land')
 def pet_land():
     """Dedicated pet adoption and pet equipment world."""
     return render_template('pet_land.html')
+
+@app.route('/solar-system')
+def solar_system():
+    """Freely explorable solar-system enrichment map."""
+    return render_template('solar_flight.html')
 
 @app.route('/percentage_quest')
 def percentage_quest():
@@ -687,6 +702,9 @@ def save_student_creation():
         planet_id = int(planet_id_raw)
     except (TypeError, ValueError):
         return jsonify({'error': 'planet_id must be a valid integer.'}), 400
+
+    if planet_id not in ACTIVE_CURRICULUM_UNITS:
+        return jsonify({'error': 'planet_id is not part of the active curriculum.'}), 400
 
     if len(question_text) > 1200 or len(answer_text) > 600 or len(hint_text) > 1200:
         return jsonify({'error': 'Submission is too long.'}), 400

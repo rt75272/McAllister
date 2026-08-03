@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Solar System Explorer - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --ink: #eaf5ff;
+        --muted: #a8b9d4;
+        --panel: rgba(7, 19, 43, .88);
+        --line: rgba(125, 211, 252, .28);
+        --cyan: #67e8f9;
+        --gold: #fbbf24;
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Lexend', sans-serif;
+        background-color: #020817;
+        background-image: radial-gradient(circle at 18% 18%, rgba(37, 99, 235, .22), transparent 23rem), radial-gradient(circle at 84% 72%, rgba(14, 165, 233, .12), transparent 28rem), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23dbeafe' fill-opacity='.35'%3E%3Ccircle cx='16' cy='20' r='1'/%3E%3Ccircle cx='94' cy='31' r='.7'/%3E%3Ccircle cx='146' cy='16' r='1'/%3E%3Ccircle cx='55' cy='112' r='.9'/%3E%3Ccircle cx='169' cy='138' r='.7'/%3E%3Ccircle cx='122' cy='163' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .solar-shell { max-width: 1380px; margin: 0 auto; padding: 24px; color: var(--ink) !important; }
+    .solar-shell p, .solar-shell h1, .solar-shell h2, .solar-shell li, .solar-shell span, .solar-shell div { color: inherit; }
+    .solar-shell p, .solar-shell .fact-list li, .solar-shell .planet-name, .solar-shell .keyboard-note, .solar-shell .image-credit, .solar-shell .scale-note { color: var(--muted) !important; }
+    .solar-shell .eyebrow, .solar-shell .au-guide { color: var(--cyan) !important; }
+    .solar-shell h1, .solar-shell h2, .solar-shell .back-link, .solar-shell .step-button, .solar-shell .planet-nav button { color: var(--ink) !important; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .back-link, .planet-nav button, .map-planet, .step-button { font: inherit; }
+    .back-link { color: var(--ink); text-decoration: none; border: 1px solid rgba(148, 163, 184, .55); background: rgba(15, 23, 42, .72); padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 700; }
+    .back-link:hover, .back-link:focus-visible { border-color: var(--cyan); color: var(--cyan); }
+    .eyebrow { color: var(--cyan); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 4px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: 0; }
+    .scale-note { color: var(--muted); font-size: 12px; max-width: 460px; text-align: right; line-height: 1.5; }
+
+    .explorer-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: stretch; }
+    .solar-map, .fact-card { border: 1px solid var(--line); background: var(--panel); box-shadow: 0 18px 44px rgba(0, 0, 0, .32); }
+    .solar-map { min-height: 540px; position: relative; overflow: hidden; border-radius: 8px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; }
+    .solar-map::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 8, 23, .05), rgba(2, 8, 23, .62)); pointer-events: none; }
+    .map-heading, .orbit-region { position: relative; z-index: 1; }
+    .map-heading { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+    .map-heading h2 { margin: 3px 0; font-size: 18px; }
+    .map-heading p { color: var(--muted); margin: 0; font-size: 12px; line-height: 1.45; max-width: 530px; }
+    .au-guide { color: #dbeafe; font-size: 11px; white-space: nowrap; border-bottom: 1px solid var(--line); padding-bottom: 5px; }
+    .orbit-region { height: 385px; margin-top: 20px; display: flex; align-items: center; }
+    .orbit-line { position: absolute; left: 8%; right: 2%; height: 1px; background: linear-gradient(90deg, transparent, rgba(125, 211, 252, .45), transparent); top: 50%; }
+    .orbit-line::after { content: 'not to scale: distances compressed for exploration'; position: absolute; right: 2%; top: 13px; color: #94a3b8; font-size: 10px; }
+    .planet-row { position: relative; width: 100%; height: 100%; display: grid; grid-template-columns: 1.35fr repeat(4, 1fr) 1.3fr repeat(3, 1.15fr); align-items: center; gap: clamp(8px, 1.8vw, 24px); }
+    .map-planet { border: 0; background: transparent !important; color: var(--ink); padding: 10px 0; cursor: pointer; display: flex !important; flex-direction: column; align-items: center; gap: 9px; min-width: 0; min-height: 0; margin: 0; }
+    .map-planet:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; border-radius: 4px; }
+    .map-planet:hover .planet-disc, .map-planet[aria-pressed='true'] .planet-disc { transform: translateY(-8px) scale(1.11); box-shadow: 0 0 0 4px rgba(103, 232, 249, .35), 0 0 26px currentColor; }
+    .planet-disc { width: var(--size); height: var(--size); border-radius: 50%; transition: transform .2s ease, box-shadow .2s ease; box-shadow: inset -12px -10px 15px rgba(0, 0, 0, .34), 0 4px 13px rgba(0, 0, 0, .7); }
+    .planet-name { font-size: 11px; font-weight: 700; color: #cbd5e1; text-align: center; }
+    .sun { --size: clamp(64px, 8vw, 104px); background: radial-gradient(circle at 35% 35%, #fff7b2 0 7%, #fbbf24 30%, #f97316 70%, #b45309); color: #fbbf24; }
+    .mercury { --size: 14px; background: #a8a29e; color: #d6d3d1; }
+    .venus { --size: 25px; background: #d8a85c; color: #fcd34d; }
+    .earth { --size: 29px; background: radial-gradient(circle at 30% 28%, #e0f2fe 0 6%, #2563eb 7% 48%, #16a34a 49% 60%, #1d4ed8 61%); color: #38bdf8; }
+    .mars { --size: 20px; background: #c2410c; color: #fb923c; }
+    .jupiter { --size: clamp(52px, 6vw, 76px); background: repeating-linear-gradient(0deg, #d6a16d 0 12%, #f0d3a5 13% 24%, #9a4c30 25% 30%, #e7c18e 31% 43%); color: #fed7aa; }
+    .saturn { --size: clamp(43px, 5vw, 60px); position: relative; background: linear-gradient(140deg, #f1cf89, #b88948); color: #fde68a; }
+    .saturn::after { content: ''; position: absolute; width: 165%; height: 35%; border: 5px solid rgba(237, 207, 145, .82); border-left-color: rgba(151, 105, 52, .6); border-right-color: rgba(151, 105, 52, .6); border-radius: 50%; top: 31%; left: -36%; transform: rotate(-14deg); z-index: -1; }
+    .uranus { --size: 35px; background: #67c9dd; color: #a5f3fc; }
+    .neptune { --size: 34px; background: #2563eb; color: #93c5fd; }
+    .planet-nav { display: flex; flex-wrap: wrap; gap: 7px; border-top: 1px solid var(--line); padding-top: 15px; position: relative; z-index: 1; }
+    .planet-nav button { background: transparent; border: 1px solid rgba(148, 163, 184, .35); color: #cbd5e1; padding: 6px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; display: inline-flex !important; width: auto !important; max-width: none !important; min-width: 0; min-height: 0; margin: 0; }
+    .planet-nav button:hover, .planet-nav button[aria-current='true'] { border-color: var(--cyan); color: var(--cyan); background: rgba(8, 145, 178, .13); }
+
+    .fact-card { border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+    .fact-image { height: 204px; width: 100%; object-fit: cover; object-position: center; background: #0f172a; }
+    .fact-content { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .fact-content h2 { margin: 0; font-size: 28px; }
+    .fact-lede { margin: 0; color: #dbeafe; line-height: 1.55; font-size: 14px; }
+    .fact-list { padding: 0; margin: 0; list-style: none; display: grid; gap: 9px; }
+    .fact-list li { color: var(--muted); font-size: 12px; line-height: 1.45; padding-left: 16px; position: relative; }
+    .fact-list li::before { content: '•'; color: var(--gold); position: absolute; left: 0; font-size: 17px; line-height: 11px; }
+    .image-credit { margin: 0; font-size: 10px; color: #94a3b8; }
+    .explore-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .step-button { border: 1px solid rgba(103, 232, 249, .45); background: rgba(8, 145, 178, .16); color: var(--ink); border-radius: 5px; padding: 9px; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .step-button:hover { background: rgba(8, 145, 178, .3); }
+    .keyboard-note { font-size: 11px; color: #94a3b8; margin: 0; text-align: center; }
+
+    @media (max-width: 980px) { .explorer-grid { grid-template-columns: 1fr; } .fact-card { display: grid; grid-template-columns: 260px 1fr; } .fact-image { height: 100%; min-height: 240px; } }
+    @media (max-width: 680px) { .solar-shell { padding: 14px; } .topbar { align-items: start; } .scale-note { display: none; } .solar-map { min-height: 455px; padding: 16px; } .orbit-region { height: 270px; overflow-x: auto; } .planet-row { min-width: 760px; } .fact-card { display: flex; } .fact-image { height: 200px; min-height: 0; } .map-heading { display: block; } .au-guide { display: inline-block; margin-top: 10px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="solar-shell">
+    <header class="topbar">
+        <a href="{{ url_for('home') }}" class="back-link">← Learning Center</a>
+        <div>
+            <div class="eyebrow">Open Enrichment Zone</div>
+            <h1>Solar System Explorer</h1>
+        </div>
+        <p class="scale-note">Explore whenever curiosity strikes. This map keeps the real planet order and relative planet sizes while compressing the huge distances between worlds.</p>
+    </header>
+
+    <section class="explorer-grid" aria-label="Interactive solar system map and planet details">
+        <section class="solar-map" aria-labelledby="map-title">
+            <div class="map-heading">
+                <div><div class="eyebrow">Our Neighborhood in Space</div><h2 id="map-title">Select a world to investigate</h2><p>Each planet orbits the Sun. Start anywhere; there are no missions, scores, or locks here.</p></div>
+                <span class="au-guide">1 AU = Earth’s average distance from the Sun</span>
+            </div>
+            <div class="orbit-region">
+                <div class="orbit-line" aria-hidden="true"></div>
+                <div id="planet-row" class="planet-row" aria-label="Solar system planets"></div>
+            </div>
+            <nav id="planet-nav" class="planet-nav" aria-label="Jump to a solar system object"></nav>
+        </section>
+
+        <aside class="fact-card" aria-live="polite" aria-labelledby="fact-title">
+            <img id="fact-image" class="fact-image" alt="">
+            <div class="fact-content">
+                <div><div id="fact-type" class="eyebrow"></div><h2 id="fact-title"></h2></div>
+                <p id="fact-lede" class="fact-lede"></p>
+                <ul id="fact-list" class="fact-list"></ul>
+                <p id="image-credit" class="image-credit"></p>
+                <div class="explore-controls"><button id="previous-planet" class="step-button" type="button">← Previous</button><button id="next-planet" class="step-button" type="button">Next →</button></div>
+                <p class="keyboard-note">Tip: use the left and right arrow keys to explore.</p>
+            </div>
+        </aside>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const solarBodies = [
+        { id: 'sun', name: 'Sun', type: 'Star', image: 'https://images-assets.nasa.gov/image/PIA03149/PIA03149~orig.jpg', lede: 'The Sun is the star at the center of our solar system. Its light and heat make life on Earth possible.', facts: ['It holds about 99.8% of all the mass in our solar system.', 'The Sun is mostly hydrogen and helium gas.', 'Sunlight takes about 8 minutes to travel from the Sun to Earth.'], credit: 'NASA / Solar Dynamics Observatory' },
+        { id: 'mercury', name: 'Mercury', type: 'Rocky planet', image: 'https://images-assets.nasa.gov/image/PIA16853/PIA16853~orig.jpg', lede: 'Mercury is the smallest planet and the closest planet to the Sun.', facts: ['A year on Mercury lasts only 88 Earth days.', 'Its surface is covered with craters, like our Moon.', 'Mercury has almost no atmosphere to hold in heat.'], credit: 'NASA / Johns Hopkins University Applied Physics Laboratory / Carnegie Institution of Washington' },
+        { id: 'venus', name: 'Venus', type: 'Rocky planet', image: 'https://images-assets.nasa.gov/image/PIA00271/PIA00271~orig.jpg', lede: 'Venus is wrapped in thick clouds and is the hottest planet in our solar system.', facts: ['Its thick carbon-dioxide atmosphere traps heat in a powerful greenhouse effect.', 'Venus spins so slowly that one day there is longer than one year.', 'It is about the same size as Earth.'], credit: 'NASA / Jet Propulsion Laboratory' },
+        { id: 'earth', name: 'Earth', type: 'Rocky planet', image: 'https://images-assets.nasa.gov/image/PIA18033/PIA18033~orig.jpg', lede: 'Earth is our home planet and the only known world with life.', facts: ['About 71% of Earth’s surface is covered by ocean.', 'Earth’s atmosphere gives us air to breathe and helps keep temperatures livable.', 'One trip around the Sun takes about 365 days.'], credit: 'NASA / NOAA' },
+        { id: 'mars', name: 'Mars', type: 'Rocky planet', image: 'https://images-assets.nasa.gov/image/PIA00407/PIA00407~orig.jpg', lede: 'Mars is called the Red Planet because iron minerals in its soil rust and give it a reddish color.', facts: ['Mars has the largest volcano in the solar system: Olympus Mons.', 'Its two small moons are named Phobos and Deimos.', 'Robots have explored its surface, looking for clues about ancient water.'], credit: 'NASA / Jet Propulsion Laboratory / USGS' },
+        { id: 'jupiter', name: 'Jupiter', type: 'Gas giant', image: 'https://images-assets.nasa.gov/image/PIA22946/PIA22946~orig.jpg', lede: 'Jupiter is the largest planet and is a gas giant made mostly of hydrogen and helium.', facts: ['More than 1,300 Earths could fit inside Jupiter by volume.', 'Its Great Red Spot is a giant storm that has lasted for centuries.', 'Jupiter has many moons, including Europa and Ganymede.'], credit: 'NASA / JPL-Caltech / SwRI / MSSS / Kevin M. Gill' },
+        { id: 'saturn', name: 'Saturn', type: 'Gas giant', image: 'https://images-assets.nasa.gov/image/PIA11141/PIA11141~orig.jpg', lede: 'Saturn is famous for its bright, wide rings made mostly of ice and rock pieces.', facts: ['Saturn is so low-density that it would float in a giant bathtub of water.', 'Its rings are not solid; they contain countless tiny orbiting pieces.', 'Titan, Saturn’s largest moon, has a thick atmosphere.'], credit: 'NASA / JPL / Space Science Institute' },
+        { id: 'uranus', name: 'Uranus', type: 'Ice giant', image: 'https://images-assets.nasa.gov/image/PIA18182/PIA18182~orig.jpg', lede: 'Uranus is an ice giant that spins on its side, as if it were rolling around the Sun.', facts: ['It is tipped about 98 degrees, likely because of a huge ancient collision.', 'Methane gas makes Uranus look blue-green.', 'Its seasons can last more than 20 Earth years.'], credit: 'NASA / Jet Propulsion Laboratory' },
+        { id: 'neptune', name: 'Neptune', type: 'Ice giant', image: 'https://images-assets.nasa.gov/image/PIA01492/PIA01492~orig.jpg', lede: 'Neptune is the farthest major planet from the Sun and has incredibly fast winds.', facts: ['Its winds can reach more than 1,200 miles per hour.', 'Neptune appears deep blue because methane absorbs red light.', 'One Neptune year lasts about 165 Earth years.'], credit: 'NASA / Jet Propulsion Laboratory' }
+    ];
+
+    let activeIndex = 3;
+    const bodyRow = document.getElementById('planet-row');
+    const planetNav = document.getElementById('planet-nav');
+    const factImage = document.getElementById('fact-image');
+
+    function selectBody(index, moveFocus = false) {
+        activeIndex = (index + solarBodies.length) % solarBodies.length;
+        const body = solarBodies[activeIndex];
+        document.querySelectorAll('.map-planet').forEach((button, buttonIndex) => button.setAttribute('aria-pressed', buttonIndex === activeIndex));
+        document.querySelectorAll('[data-nav-index]').forEach((button) => button.setAttribute('aria-current', Number(button.dataset.navIndex) === activeIndex));
+        document.getElementById('fact-type').textContent = body.type;
+        document.getElementById('fact-title').textContent = body.name;
+        document.getElementById('fact-lede').textContent = body.lede;
+        document.getElementById('fact-list').innerHTML = body.facts.map((fact) => `<li>${fact}</li>`).join('');
+        factImage.src = body.image;
+        factImage.alt = `NASA image of ${body.name}`;
+        document.getElementById('image-credit').textContent = `Image: ${body.credit}`;
+        if (moveFocus) document.querySelector(`.map-planet[data-index="${activeIndex}"]`).focus();
+    }
+
+    solarBodies.forEach((body, index) => {
+        const mapButton = document.createElement('button');
+        mapButton.type = 'button';
+        mapButton.className = 'map-planet';
+        mapButton.dataset.index = index;
+        mapButton.setAttribute('aria-pressed', 'false');
+        mapButton.setAttribute('aria-label', `Learn about ${body.name}`);
+        mapButton.innerHTML = `<span class="planet-disc ${body.id}"></span><span class="planet-name">${body.name}</span>`;
+        mapButton.addEventListener('click', () => selectBody(index));
+        bodyRow.appendChild(mapButton);
+
+        const navButton = document.createElement('button');
+        navButton.type = 'button';
+        navButton.dataset.navIndex = index;
+        navButton.textContent = body.name;
+        navButton.addEventListener('click', () => selectBody(index, true));
+        planetNav.appendChild(navButton);
+    });
+
+    document.getElementById('previous-planet').addEventListener('click', () => selectBody(activeIndex - 1, true));
+    document.getElementById('next-planet').addEventListener('click', () => selectBody(activeIndex + 1, true));
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') selectBody(activeIndex - 1, true);
+        if (event.key === 'ArrowRight') selectBody(activeIndex + 1, true);
+    });
+    selectBody(activeIndex);
+</script>
+{% endblock %}

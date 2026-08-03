@@ -198,6 +198,23 @@
             background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
             color: white;
         }
+
+        .solar-section .section-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+        }
+
+        .solar-section .game-count {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .solar-section .features-list li:before {
+            color: #2563eb;
+        }
+
+        .solar-section .cta-button {
+            background: linear-gradient(135deg, #0f4c81 0%, #0284c7 100%);
+        }
         
         .finale-section .section-header {
             background: linear-gradient(135deg, #1A365D 0%, #2d3a8c 100%);
@@ -413,18 +430,39 @@
                     <h2 class="section-title">The Quest Map</h2>
                 </div>
                 <div class="section-content">
-                    <div class="game-count">10 Units • Semester 1 &amp; 2</div>
+                    <div class="game-count">Orientation + Units 1-5 Now Open</div>
                     <p class="section-description">
-                        Embark on a gamified educational journey! Complete different topics and play interactive games to earn coins, unlock units, and master the entire 6th-grade math curriculum.
+                        Embark on a gamified educational journey! Start at the Orientation Station, then complete Units 1-5 and play interactive games to earn coins and master this year's 6th-grade math curriculum.
                     </p>
                     <ul class="features-list">
-                        <li>10 comprehensive curriculum units with 30 interactive topics</li>
-                        <li>Semester 1 &amp; Semester 2 seasonal maps</li>
+                        <li>Orientation Station: a Canvas &amp; platform navigation check before Unit 1</li>
+                        <li>5 active curriculum units (Number Properties through Equations)</li>
                         <li>Ratio Baking Game &amp; Space Arithmetic Shooter (Galaga)</li>
                         <li>Teacher Pacing Lock to keep the class synced together</li>
                         <li>Earn coins to unlock detailed zoomed-in quest locations!</li>
+                        <li>More units unlock later this year!</li>
                     </ul>
                     <span class="cta-button">Open Quest Map →</span>
+                </div>
+            </a>
+
+            <a href="{{ url_for('solar_system') }}" class="section-card solar-section">
+                <div class="section-header">
+                    <div class="section-icon">☀️</div>
+                    <h2 class="section-title">Solar System Explorer</h2>
+                </div>
+                <div class="section-content">
+                    <div class="game-count">Open Exploration</div>
+                    <p class="section-description">
+                        Travel through our real solar system anytime. Select a planet to see its place in space, NASA imagery, and surprising astronomy facts.
+                    </p>
+                    <ul class="features-list">
+                        <li>Sun and all eight planets</li>
+                        <li>Planet-scale visual map</li>
+                        <li>Kid-friendly space facts</li>
+                        <li>No coins, scores, or locks</li>
+                    </ul>
+                    <span class="cta-button">Explore the Solar System →</span>
                 </div>
             </a>
 

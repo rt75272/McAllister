@@ -159,9 +159,12 @@
 <div class="space-hud">
     <!-- Top HUD Bar -->
     <div class="flex items-center justify-between w-full h-fit pointer-events-none">
-        <div class="hud-element">
+        <div class="hud-element flex items-center gap-2">
             <a href="{{ url_for('home') }}" class="home-btn flex items-center gap-1.5">
                 🏠 Back to Home
+            </a>
+            <a href="{{ url_for('orientation_planet') }}" class="home-btn flex items-center gap-1.5" style="background: linear-gradient(to right, #0c4a6e, #0369a1);">
+                🛰️ Orientation
             </a>
         </div>
         
@@ -237,20 +240,24 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Data configuration: 10 Curriculum Planets Orbiting in Space with Star 360 Moons
-        const planetsData = [
+        // Data configuration: Curriculum Planets Orbiting in Space with Star 360 Moons.
+        const allPlanetsData = [
+            { id: 0, name: "Orientation Station", unitLabel: "ORIENTATION", color: 0x38bdf8, size: 1.0, radius: 6, speed: 0.2, icon: "🛰️", specialRoute: "/orientation" },
             { id: 1, name: "Sky Garden Planet (Number Properties)", color: 0xec4899, size: 1.2, radius: 10, speed: 0.15, icon: "🌸", moon: "BOY Star 360" },
             { id: 2, name: "Gorilla Nebula (Fractions & Decimals)", color: 0xa855f7, size: 1.4, radius: 14, speed: 0.12, icon: "🦍" },
             { id: 3, name: "Bathhouse Battle (Rational Numbers)", color: 0x3b82f6, size: 1.1, radius: 18, speed: 0.10, icon: "♨️" },
             { id: 4, name: "Tenting Trouble (Expressions)", color: 0x06b6d4, size: 1.3, radius: 22, speed: 0.08, icon: "⛺" },
             { id: 5, name: "Construction Canyon (Equations)", color: 0x14b8a6, size: 1.2, radius: 26, speed: 0.07, icon: "🏗️", moon: "MOY Star 360" },
             { id: 6, name: "Slo-Mo Valley (Ratios & Rates)", color: 0x10b981, size: 1.2, radius: 30, speed: 0.06, icon: "⏳" },
-            { id: 7, name: "Dumbo Beat (Area of Polygons)", color: 0x84cc16, size: 1.3, radius: 34, speed: 0.05, icon: "🐘" },
-            { id: 8, name: "Djinn's Revenge (Surface Area & Volume)", color: 0xeab308, size: 1.4, radius: 38, speed: 0.04, icon: "🧞" },
-            { id: 9, name: "Safari Park (Statistics & Graphs)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
-            { id: 10, name: "The Mothership (Coordinate Planes)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" },
-            { id: 11, name: "Pet Land & Character Port", color: 0x22c55e, size: 1.9, radius: 53, speed: 0.024, icon: "🐾", specialRoute: "/pet-land", asteroidRing: true }
+            { id: 7, name: "Dumbo Beat (Percents & Models)", color: 0x84cc16, size: 1.3, radius: 34, speed: 0.05, icon: "🐘" },
+            { id: 8, name: "Djinn's Revenge (Area)", color: 0xeab308, size: 1.4, radius: 38, speed: 0.04, icon: "🧞" },
+            { id: 9, name: "Safari Park (Surface Area & Volume)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
+            { id: 10, name: "The Mothership (Statistical Graphs)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" },
+            { id: 11, name: "Pet Land & Character Port", color: 0x22c55e, size: 1.9, radius: 53, speed: 0.024, icon: "🐾", specialRoute: "/pet-land", asteroidRing: true },
+            { id: 12, name: "Black Hole: Solar System Portal", unitLabel: "OPEN EXPLORATION", color: 0x000000, size: 2.7, radius: 61, speed: 0.018, icon: "🕳️", specialRoute: "/solar-system", blackHole: true }
         ];
+
+        const planetsData = allPlanetsData;
 
         const spaceJunkData = [
             { id: 'junk-a', label: 'Satellite Scrap', color: 0x94a3b8, radius: 63, speed: 0.022, size: 0.55 },
@@ -462,15 +469,28 @@
                 orbitMesh.rotation.x = Math.PI / 2;
                 scene.add(orbitMesh);
 
-                // Planet mesh (dodecahedron for low-poly look)
-                const planetGeo = new THREE.DodecahedronGeometry(data.size, 1);
+                // Planet mesh (dodecahedron for low-poly look, with a distinct black-hole portal)
+                const planetGeo = data.blackHole
+                    ? new THREE.SphereGeometry(data.size, 28, 20)
+                    : new THREE.DodecahedronGeometry(data.size, 1);
                 const planetMat = new THREE.MeshStandardMaterial({
                     color: data.color,
                     flatShading: true,
                     roughness: 0.8,
-                    metalness: 0.1
+                    metalness: data.blackHole ? 0 : 0.1
                 });
                 const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+
+                if (data.blackHole) {
+                    const accretionDisk = new THREE.Mesh(
+                        new THREE.TorusGeometry(data.size * 1.6, data.size * 0.42, 12, 48),
+                        new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.86 })
+                    );
+                    accretionDisk.rotation.x = Math.PI / 2;
+                    planetMesh.add(accretionDisk);
+                    const portalGlow = new THREE.PointLight(0xf97316, 2.2, 12);
+                    planetMesh.add(portalGlow);
+                }
                 
                 // Starting angles distributed
                 const startingAngle = (data.id * Math.PI * 2) / 10;
@@ -588,7 +608,7 @@
             exhaust.rotation.x = Math.PI / 2;
             ship.add(exhaust);
 
-            ship.position.set(0, 0, 10); // Start near Planet 1
+            ship.position.set(0, 0, 6); // Start near the Orientation Station
             scene.add(ship);
 
             // Setup camera starting point behind ship
@@ -816,11 +836,16 @@
                 const thresholdPlanet = p.data.size + 2.5;
 
                 if (distPlanet < thresholdPlanet) {
+                    if (p.data.blackHole) {
+                        window.location.href = p.data.specialRoute;
+                        return;
+                    }
                     nearAnyPlanet = true;
                     activeApproachedPlanetId = p.data.id;
                     activeApproachedMoonId = null;
                     
-                    document.getElementById('proximity-title').textContent = `APPROACHING PLANET: UNIT ${p.data.id}`;
+                    const unitLabel = p.data.unitLabel || `UNIT ${p.data.id}`;
+                    document.getElementById('proximity-title').textContent = `APPROACHING PLANET: ${unitLabel}`;
                     document.getElementById('proximity-desc').textContent = `${p.data.icon} You have entered the gravity field of ${p.data.name}!`;
                     document.getElementById('proximity-alert').style.display = 'block';
                 }

@@ -3,6 +3,9 @@
 {% block title %}Planet Hub Console - Mrs. McAllister's Learning Center{% endblock %}
 
 {% block extra_styles %}
+    <!-- Tailwind CSS Engine (this template's layout/utility classes like flex, grid,
+         gap-*, and hidden all depend on it; see grand_finale.html for precedent). -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Immersive Space Station Theme for the Planet Hub */
         body {
@@ -438,14 +441,18 @@
     <script>
         const planetId = parseInt("{{ planet_id }}") || 1;
 
+        // Each of the 5 active units below defines exactly 10 stations. Every gamified
+        // station uses a `question_generator` function (instead of a static bank) so
+        // students get freshly randomized numbers on every attempt. `getFreshChallenge`
+        // (defined further down) also guards against back-to-back duplicate questions.
         const curriculumData = [
             {
                 unit_id: "planet_1_number_properties",
                 planet_name: "Prime Alpha",
                 activities: [
-                    { id: "p1_warmup", type: "quick_facts", skill: "multiplication_0_to_10", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    { id: "p1_s1", type: "quick_facts", skill: "multiplication_0_to_10", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
                     {
-                        id: "p1_game_1",
+                        id: "p1_s2",
                         type: "gamified_skill",
                         theme: "space_bakery",
                         mechanic: "ingredient_sequencing",
@@ -453,13 +460,22 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Bake a Martian Pie", task: "Mix ingredients to the GCF of 12 and 18 before the oven unlocks.", answer: "6" },
-                            { scenario: "Bake Lunar Loaves", task: "Mix ingredients to the GCF of 20 and 30 before the oven unlocks.", answer: "10" }
-                        ]
+                        question_generator: () => {
+                            const base = randomInt(2, 9);
+                            const a = base * randomInt(2, 5);
+                            const b = base * randomInt(2, 5);
+                            const answer = gcdOf(a, b);
+                            return {
+                                scenario: "Bake a Cosmic Pie",
+                                task: `Mix ingredients to the GCF of ${a} and ${b} before the oven unlocks.`,
+                                answer: String(answer),
+                                options: buildNumericOptionPool(answer, 6, 5),
+                                key: `${a}_${b}`
+                            };
+                        }
                     },
                     {
-                        id: "p1_game_2",
+                        id: "p1_s3",
                         type: "gamified_skill",
                         theme: "cargo_loader",
                         mechanic: "timeline_slider",
@@ -467,13 +483,19 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Schedule Droids", task: "Droid A takes 4 mins, Droid B takes 6 mins. Slide the timeline to when they meet.", answer: "12" },
-                            { scenario: "Sync Satellites", task: "Sat 1 orbits in 9 hrs, Sat 2 in 12 hrs. Slide the timeline to their LCM.", answer: "36" }
-                        ]
+                        question_generator: () => {
+                            const [a, b] = pickRandom([[3, 4], [3, 5], [4, 5], [4, 6], [3, 8], [5, 6], [4, 9], [6, 8], [9, 6], [5, 4]]);
+                            const answer = lcmOf(a, b);
+                            return {
+                                scenario: "Schedule Sync",
+                                task: `Droid A repeats every ${a} mins, Droid B every ${b} mins. Slide the timeline to when they next meet.`,
+                                answer: String(answer),
+                                key: `${a}_${b}`
+                            };
+                        }
                     },
                     {
-                        id: "p1_game_3",
+                        id: "p1_s4",
                         type: "gamified_skill",
                         theme: "airlock_hacker",
                         mechanic: "node_connecting",
@@ -481,13 +503,20 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Breach Sector 4", task: "Connect the prime factor nodes of 24 to hack the door.", answer: "2, 2, 2, 3" },
-                            { scenario: "Breach Sector 9", task: "Connect the prime factor nodes of 36 to hack the door.", answer: "2, 2, 3, 3" }
-                        ]
+                        question_generator: () => {
+                            const composite = pickRandom([18, 24, 30, 36, 40, 45, 48, 54, 60, 84]);
+                            const factors = primeFactorsOf(composite);
+                            return {
+                                scenario: "Breach the Sector",
+                                task: `Connect the prime factor nodes of ${composite} in order to hack the door.`,
+                                answer: factors.join(", "),
+                                options: Array.from(new Set(factors.concat([2, 3, 5, 7]))),
+                                key: String(composite)
+                            };
+                        }
                     },
                     {
-                        id: "p1_game_4",
+                        id: "p1_s5",
                         type: "gamified_skill",
                         theme: "engine_calibrator",
                         mechanic: "drag_and_drop_blocks",
@@ -495,43 +524,25 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Route Thruster Power", task: "Drag the expanded blocks to match 4(3 + 5).", answer: "12 + 20" },
-                            { scenario: "Route Shield Power", task: "Drag the expanded blocks to match 5(7 - 2).", answer: "35 - 10" }
-                        ]
+                        question_generator: () => {
+                            const a = randomInt(2, 9);
+                            const b = randomInt(2, 12);
+                            const c = randomInt(2, 12);
+                            const usePlus = Math.random() < 0.5;
+                            return {
+                                scenario: "Route Thruster Power",
+                                task: `Drag the expanded blocks to match ${a}(${b} ${usePlus ? "+" : "-"} ${c}).`,
+                                answer: usePlus ? `${a * b} + ${a * c}` : `${a * b} - ${a * c}`,
+                                key: `${a}_${b}_${c}_${usePlus}`
+                            };
+                        }
                     },
+                    { id: "p1_s6", type: "asteroid_shooter", question_topic: "number_properties", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p1_s7", type: "tic_tac_toe_bot", question_topic: "number_properties", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    { id: "p1_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p1_s9", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
                     {
-                        id: "p1_game_5",
-                        type: "gamified_skill",
-                        theme: "nav_computer",
-                        mechanic: "wire_sorting",
-                        skill: "order_of_operations",
-                        points_reward: 100,
-                        min_questions: 6,
-                        max_questions: 10,
-                        question_bank: [
-                            { scenario: "Plot Hyper-jump", task: "Sort the operations wires in the correct order to solve: 3 + 4 * 2.", answer: "11" },
-                            { scenario: "Plot Orbit", task: "Sort the operations wires in the correct order to solve: (15 - 5) * 3.", answer: "30" }
-                        ]
-                    },
-                    {
-                        id: "p1_game_6",
-                        type: "gamified_skill",
-                        theme: "reactor_core",
-                        mechanic: "dial_tuning",
-                        skill: "exponents",
-                        points_reward: 100,
-                        min_questions: 6,
-                        max_questions: 10,
-                        question_bank: [
-                            { scenario: "Stabilize Core", task: "Tune the dials to match the output of 5^3.", answer: "125" },
-                            { scenario: "Boost Output", task: "Tune the dials to match the output of 4^3.", answer: "64" }
-                        ]
-                    },
-                    { id: "p1_fun_1", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "multiples", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    { id: "p1_fun_2", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "factors", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    {
-                        id: "p1_create_1",
+                        id: "p1_s10",
                         type: "student_creation",
                         skill_focus: "number_properties",
                         prompt: "You are the alien teacher! Create your own math problem using Greatest Common Factors. Type the question, provide the answer, and write a hint for your classmates.",
@@ -542,34 +553,216 @@
                 ]
             },
             {
-                unit_id: "planet_3_rational_numbers",
-                planet_name: "Bathhouse Battle",
+                unit_id: "planet_2_fractions_decimals",
+                planet_name: "Gorilla Nebula",
                 activities: [
-                    { id: "p3_warmup", type: "quick_facts", skill: "integers_and_opposites", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    { id: "p2_s1", type: "quick_facts", skill: "simplify_fractions", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
                     {
-                        id: "p3_game_1",
+                        id: "p2_s2",
                         type: "gamified_skill",
-                        theme: "sub_zero",
-                        mechanic: "timeline_slider",
-                        skill: "rational_numbers_on_line",
+                        theme: "space_bakery",
+                        mechanic: "ingredient_sequencing",
+                        skill: "adding_fractions_like_denominators",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Plunge Thermostat", task: "Navigate temperature values. Slide the gauge to -4.5 degrees.", answer: "-4.5" },
-                            { scenario: "Sync Pressure Valve", task: "Calibrate vacuum pressure. Slide safety lines to opposite of -3.", answer: "3" }
-                        ]
+                        question_generator: () => {
+                            const denom = pickRandom([4, 5, 6, 8, 10]);
+                            const n1 = randomInt(1, denom - 2);
+                            const n2 = randomInt(1, Math.max(1, denom - n1 - 1));
+                            const answer = n1 + n2;
+                            return {
+                                scenario: "Fuel Tank Mixing",
+                                task: `Add ${n1}/${denom} tank of fuel and ${n2}/${denom} tank of fuel. What numerator goes over ${denom}?`,
+                                answer: String(answer),
+                                options: buildNumericOptionPool(answer, 6, 4),
+                                key: `${n1}_${n2}_${denom}`
+                            };
+                        }
                     },
                     {
-                        id: "p3_game_coordinate_navigator",
-                        type: "coordinate_flight",
-                        points_reward: 150,
+                        id: "p2_s3",
+                        type: "gamified_skill",
+                        theme: "cargo_loader",
+                        mechanic: "timeline_slider",
+                        skill: "equivalent_fractions",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const denomSmall = pickRandom([2, 3, 4, 5, 6]);
+                            const numeratorSmall = randomInt(1, denomSmall - 1);
+                            const scale = randomInt(2, 8);
+                            const denomBig = denomSmall * scale;
+                            const answer = numeratorSmall * scale;
+                            return {
+                                scenario: "Equivalent Fuel Ratios",
+                                task: `Scale ${numeratorSmall}/${denomSmall} to an equivalent fraction over ${denomBig}. Slide to the new numerator.`,
+                                answer: String(answer),
+                                key: `${numeratorSmall}_${denomSmall}_${scale}`
+                            };
+                        }
+                    },
+                    {
+                        id: "p2_s4",
+                        type: "gamified_skill",
+                        theme: "airlock_hacker",
+                        mechanic: "node_connecting",
+                        skill: "comparing_ordering_decimals",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const values = new Set();
+                            while (values.size < 3) {
+                                values.add((randomInt(1, 90) / 10).toFixed(1));
+                            }
+                            const list = Array.from(values);
+                            const sorted = list.slice().sort((x, y) => parseFloat(x) - parseFloat(y));
+                            return {
+                                scenario: "Order the Fuel Gauges",
+                                task: `Click the decimal gauge readings in order from smallest to largest: ${list.join(", ")}.`,
+                                answer: sorted.join(", "),
+                                options: list,
+                                key: list.join("_")
+                            };
+                        }
+                    },
+                    {
+                        id: "p2_s5",
+                        type: "gamified_skill",
+                        theme: "engine_calibrator",
+                        mechanic: "drag_and_drop_blocks",
+                        skill: "decompose_mixed_numbers",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const whole = randomInt(1, 9);
+                            const numerator = randomInt(1, 4);
+                            const denom = randomInt(numerator + 1, 8);
+                            const fractionPart = `${numerator}/${denom}`;
+                            return {
+                                scenario: "Split the Fuel Mix",
+                                task: `Express the mixed number ${whole} ${fractionPart} as an addition of two terms: a whole number + a fraction.`,
+                                answer: `${whole} + ${fractionPart}`,
+                                key: `${whole}_${numerator}_${denom}`
+                            };
+                        }
+                    },
+                    { id: "p2_s6", type: "asteroid_shooter", question_topic: "fractions_decimals", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p2_s7", type: "tic_tac_toe_bot", question_topic: "fractions_decimals", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    { id: "p2_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "fractions_decimals", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p2_s9", type: "fraction_master_embed", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    {
+                        id: "p2_s10",
+                        type: "student_creation",
+                        skill_focus: "fractions_and_decimals",
+                        prompt: "Adopt the teacher role! Create a fraction or decimal operation problem. Type the question, the answer, and a helpful hint.",
+                        points_reward: 300,
                         min_questions: 1,
                         max_questions: 1
-                    },
-                    { id: "p3_fun_1", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "rational_integers", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    }
+                ]
+            },
+            {
+                unit_id: "planet_3_rational_numbers",
+                planet_name: "Bathhouse Battle",
+                activities: [
+                    { id: "p3_s1", type: "quick_facts", skill: "integers_and_opposites", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
                     {
-                        id: "p3_create_1",
+                        id: "p3_s2",
+                        type: "gamified_skill",
+                        theme: "sub_zero",
+                        mechanic: "timeline_slider",
+                        skill: "absolute_value",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const n = randomInt(-40, 40) || 3;
+                            const answer = Math.abs(n);
+                            return {
+                                scenario: "Steam Distance Gauge",
+                                task: `What is the absolute value of ${n}? Slide the gauge to the distance from zero.`,
+                                answer: String(answer),
+                                key: String(n)
+                            };
+                        }
+                    },
+                    {
+                        id: "p3_s3",
+                        type: "gamified_skill",
+                        theme: "space_bakery",
+                        mechanic: "ingredient_sequencing",
+                        skill: "adding_integers",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const a = randomInt(-15, 15) || 2;
+                            const b = randomInt(-15, 15) || 3;
+                            const answer = a + b;
+                            return {
+                                scenario: "Pressure Valve Sum",
+                                task: `Calculate ${a} + (${b}). Pick the matching pressure chip.`,
+                                answer: String(answer),
+                                options: buildNumericOptionPool(answer, 6, 5),
+                                key: `${a}_${b}`
+                            };
+                        }
+                    },
+                    {
+                        id: "p3_s4",
+                        type: "gamified_skill",
+                        theme: "airlock_hacker",
+                        mechanic: "node_connecting",
+                        skill: "ordering_rational_numbers",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const values = new Set();
+                            while (values.size < 3) {
+                                values.add(String(randomInt(-20, 20) || 1));
+                            }
+                            const list = Array.from(values);
+                            const sorted = list.slice().sort((x, y) => Number(x) - Number(y));
+                            return {
+                                scenario: "Sort the Pressure Readings",
+                                task: `Click the integer readings in order from least to greatest: ${list.join(", ")}.`,
+                                answer: sorted.join(", "),
+                                options: list,
+                                key: list.join("_")
+                            };
+                        }
+                    },
+                    {
+                        id: "p3_s5",
+                        type: "gamified_skill",
+                        theme: "engine_calibrator",
+                        mechanic: "drag_and_drop_blocks",
+                        skill: "subtracting_integers",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const start = randomInt(10, 30);
+                            const drop = randomInt(2, start - 1);
+                            return {
+                                scenario: "Temperature Drop Log",
+                                task: `The bathhouse started at ${start}\u00b0 and dropped by ${drop}\u00b0. Drag the two terms that show this as a subtraction.`,
+                                answer: `${start} - ${drop}`,
+                                key: `${start}_${drop}`
+                            };
+                        }
+                    },
+                    { id: "p3_s6", type: "asteroid_shooter", question_topic: "rational_numbers", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p3_s7", type: "tic_tac_toe_bot", question_topic: "rational_numbers", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    { id: "p3_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "rational_numbers", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p3_s9", type: "coordinate_flight", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    {
+                        id: "p3_s10",
                         type: "student_creation",
                         skill_focus: "rational_numbers",
                         prompt: "Adopt the teacher role! Craft a creative coordinate graphing question. Write the coordinates (x, y) as the answer.",
@@ -583,9 +776,9 @@
                 unit_id: "planet_4_expressions",
                 planet_name: "Tenting Trouble",
                 activities: [
-                    { id: "p4_warmup", type: "quick_facts", skill: "order_of_operations", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    { id: "p4_s1", type: "quick_facts", skill: "order_of_operations", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
                     {
-                        id: "p4_game_1",
+                        id: "p4_s2",
                         type: "gamified_skill",
                         theme: "engine_calibrator",
                         mechanic: "drag_and_drop_blocks",
@@ -593,13 +786,22 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Pitch Expression", task: "Evaluate 3x + 5 when x = 2.", answer: "11" },
-                            { scenario: "Fuel Campfire", task: "Evaluate 5y - 3 when y = 4.", answer: "17" }
-                        ]
+                        question_generator: () => {
+                            const coeff = randomInt(2, 9);
+                            const x = randomInt(1, 12);
+                            const constant = randomInt(1, 15);
+                            const usePlus = Math.random() < 0.5;
+                            const answer = usePlus ? coeff * x + constant : coeff * x - constant;
+                            return {
+                                scenario: "Pitch the Expression",
+                                task: `Evaluate ${coeff}x ${usePlus ? "+" : "-"} ${constant} when x = ${x}.`,
+                                answer: String(answer),
+                                key: `${coeff}_${x}_${constant}_${usePlus}`
+                            };
+                        }
                     },
                     {
-                        id: "p4_game_2",
+                        id: "p4_s3",
                         type: "gamified_skill",
                         theme: "reactor_core",
                         mechanic: "dial_tuning",
@@ -607,13 +809,21 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Calibrate Thermostat", task: "Evaluate x^2 + 1 when x = 3.", answer: "10" },
-                            { scenario: "Fuel Engine", task: "Evaluate 2y^3 when y = 2.", answer: "16" }
-                        ]
+                        question_generator: () => {
+                            const x = randomInt(2, 5);
+                            const exp = randomInt(2, 3);
+                            const constant = randomInt(1, 10);
+                            const answer = Math.pow(x, exp) + constant;
+                            return {
+                                scenario: "Calibrate Thermostat",
+                                task: `Evaluate x^${exp} + ${constant} when x = ${x}.`,
+                                answer: String(answer),
+                                key: `${x}_${exp}_${constant}`
+                            };
+                        }
                     },
                     {
-                        id: "p4_game_3",
+                        id: "p4_s4",
                         type: "gamified_skill",
                         theme: "space_bakery",
                         mechanic: "ingredient_sequencing",
@@ -621,50 +831,48 @@
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Write Addition Expression", task: "Solve the word problem: 5 more than x.", answer: "x + 5" },
-                            { scenario: "Write Multiplication Expression", task: "Solve the word problem: product of 4 and y.", answer: "4y" }
-                        ]
+                        question_generator: () => {
+                            const n = randomInt(3, 12);
+                            const isSum = Math.random() < 0.5;
+                            const variable = pickRandom(["x", "y", "n"]);
+                            const phrase = isSum ? `${n} more than ${variable}` : `${n} less than ${variable}`;
+                            const answer = isSum ? `${variable} + ${n}` : `${variable} - ${n}`;
+                            const distractors = [`${variable} + ${n + 1}`, `${n} - ${variable}`, `${variable} * ${n}`, `${variable} - ${n + 1}`];
+                            return {
+                                scenario: "Translate the Phrase",
+                                task: `Write an algebraic expression for: "${phrase}."`,
+                                answer,
+                                options: Array.from(new Set([answer, ...distractors])),
+                                key: `${n}_${isSum}_${variable}`
+                            };
+                        }
                     },
                     {
-                        id: "p4_game_4",
+                        id: "p4_s5",
                         type: "gamified_skill",
                         theme: "cargo_loader",
                         mechanic: "timeline_slider",
-                        skill: "equivalent_expressions",
+                        skill: "combining_like_terms",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
-                        question_bank: [
-                            { scenario: "Combine Log Weight", task: "Simplify 2x + 3x.", answer: "5x" },
-                            { scenario: "Sort Fuel Bars", task: "Simplify 4y - y + 2.", answer: "3y + 2" }
-                        ]
+                        question_generator: () => {
+                            const c1 = randomInt(2, 9);
+                            const c2 = randomInt(1, 9);
+                            return {
+                                scenario: "Combine Log Weights",
+                                task: `Simplify ${c1}x + ${c2}x. Slide to the new coefficient of x.`,
+                                answer: String(c1 + c2),
+                                key: `${c1}_${c2}`
+                            };
+                        }
                     },
+                    { id: "p4_s6", type: "asteroid_shooter", question_topic: "expressions", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p4_s7", type: "tic_tac_toe_bot", question_topic: "expressions", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    { id: "p4_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "expressions", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p4_s9", type: "vault_unlocking", points_reward: 150, min_questions: 1, max_questions: 1 },
                     {
-                        id: "p4_game_5",
-                        type: "gamified_skill",
-                        theme: "nav_computer",
-                        mechanic: "wire_sorting",
-                        skill: "identifying_parts_of_expressions",
-                        points_reward: 100,
-                        min_questions: 6,
-                        max_questions: 10,
-                        question_bank: [
-                            { scenario: "Identify Constant", task: "In the expression 3x + 7, identify the constant term.", answer: "7" },
-                            { scenario: "Identify Coefficient", task: "In the expression 5y - 2, identify the coefficient.", answer: "5" }
-                        ]
-                    },
-                    {
-                        id: "p4_game_vault",
-                        type: "vault_unlocking",
-                        points_reward: 150,
-                        min_questions: 1,
-                        max_questions: 1
-                    },
-                    { id: "p4_fun_1", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "expressions", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    { id: "p4_fun_2", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    {
-                        id: "p4_create_1",
+                        id: "p4_s10",
                         type: "student_creation",
                         skill_focus: "expressions",
                         prompt: "Adopt the teacher role! Create a custom algebra expression. Type the problem, the value of the variable, and the correct evaluation.",
@@ -675,28 +883,112 @@
                 ]
             },
             {
-                unit_id: "planet_6_ratios",
-                planet_name: "Slo-Mo Valley",
+                unit_id: "planet_5_equations",
+                planet_name: "Construction Canyon",
                 activities: [
-                    { id: "p6_warmup", type: "quick_facts", skill: "ratios_and_fractions", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    { id: "p5_s1", type: "quick_facts", skill: "one_step_add_sub_equations", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
                     {
-                        id: "p6_game_ratio_river",
-                        type: "ratio_river_crossing",
-                        points_reward: 150,
-                        min_questions: 1,
-                        max_questions: 1
+                        id: "p5_s2",
+                        type: "gamified_skill",
+                        theme: "space_bakery",
+                        mechanic: "ingredient_sequencing",
+                        skill: "one_step_mult_div_equations",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const x = randomInt(2, 12);
+                            const coeff = randomInt(2, 9);
+                            const product = coeff * x;
+                            return {
+                                scenario: "Balance the Girder",
+                                task: `Solve for x: ${coeff}x = ${product}. Pick the matching value chip.`,
+                                answer: String(x),
+                                options: buildNumericOptionPool(x, 6, 4),
+                                key: `${x}_${coeff}`
+                            };
+                        }
                     },
                     {
-                        id: "p6_create_1",
+                        id: "p5_s3",
+                        type: "gamified_skill",
+                        theme: "cargo_loader",
+                        mechanic: "timeline_slider",
+                        skill: "writing_equations_from_words",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const perItem = randomInt(2, 9);
+                            const count = randomInt(2, 8);
+                            const total = perItem * count;
+                            return {
+                                scenario: "Crew Supply Log",
+                                task: `Each crate holds ${perItem} tools. Slide to how many crates are needed for ${total} tools total.`,
+                                answer: String(count),
+                                key: `${perItem}_${count}`
+                            };
+                        }
+                    },
+                    {
+                        id: "p5_s4",
+                        type: "gamified_skill",
+                        theme: "airlock_hacker",
+                        mechanic: "node_connecting",
+                        skill: "dependent_independent_variables",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const rate = randomInt(2, 8);
+                            const constant = randomInt(0, 5);
+                            const xs = [1, 2, 3];
+                            const ys = xs.map((x) => x * rate + constant);
+                            return {
+                                scenario: "Cargo Rate Table",
+                                task: `The rule is y = ${rate}x${constant > 0 ? " + " + constant : ""}. Click the y-values in order for x = 1, 2, then 3.`,
+                                answer: ys.join(", "),
+                                options: ys.map(String).sort(() => Math.random() - 0.5),
+                                key: `${rate}_${constant}`
+                            };
+                        }
+                    },
+                    {
+                        id: "p5_s5",
+                        type: "gamified_skill",
+                        theme: "engine_calibrator",
+                        mechanic: "drag_and_drop_blocks",
+                        skill: "one_step_inequalities",
+                        points_reward: 100,
+                        min_questions: 6,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const bound = randomInt(3, 20);
+                            const useGreater = Math.random() < 0.5;
+                            return {
+                                scenario: "Canyon Safety Bridge",
+                                task: `A support beam is safe when x ${useGreater ? ">" : "<"} ${bound}. Drag the symbol and value that describe the safe zone.`,
+                                answer: `${useGreater ? ">" : "<"} ${bound}`,
+                                key: `${bound}_${useGreater}`
+                            };
+                        }
+                    },
+                    { id: "p5_s6", type: "asteroid_shooter", question_topic: "equations", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p5_s7", type: "tic_tac_toe_bot", question_topic: "equations", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    { id: "p5_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    { id: "p5_s9", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p5_s10",
                         type: "student_creation",
-                        skill_focus: "ratios",
-                        prompt: "Adopt the teacher role! Create an equivalent ratio puzzle. Write the matching terms as the answer.",
+                        skill_focus: "equations",
+                        prompt: "Adopt the teacher role! Write a one-step equation word problem. Type the equation, the answer, and a helpful hint.",
                         points_reward: 300,
                         min_questions: 1,
                         max_questions: 1
                     }
                 ]
-            }
+            },
+            ...buildLaterUnitCurriculum()
         ];
 
         const planetProfiles = {
@@ -706,10 +998,10 @@
             4: { name: "Tenting Trouble", icon: "⛺", desc: "A rocky ridge trail climbs through expression campsites and canyon tents.", theme: "rocky", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_4_fiery_geothermal.png') }}", pathColor: "#f97316", completedPathColor: "#fbbf24" },
             5: { name: "Construction Canyon", icon: "🏗️", desc: "Industrial scaffold paths and steel plateaus shape the algebra route.", theme: "industrial", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_5_dunes_exploration.png') }}", pathColor: "#14b8a6", completedPathColor: "#34d399" },
             6: { name: "Slo-Mo Valley", icon: "⏳", desc: "Wind-carved desert lanes stretch across ratio dunes and timing ridges.", theme: "desert", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_6_mystic_swamp.png') }}", pathColor: "#f59e0b", completedPathColor: "#fde047" },
-            7: { name: "Dumbo Beat", icon: "🐘", desc: "Savanna mesas and geometric hills guide the area-of-polygons expedition.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_7_clockwork_central.png') }}", pathColor: "#84cc16", completedPathColor: "#bef264" },
-            8: { name: "Djinn's Revenge", icon: "🧞", desc: "Crystal dunes and glowing prism peaks frame the surface area mission.", theme: "crystal", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_8_whispering_woods.png') }}", pathColor: "#a78bfa", completedPathColor: "#c4b5fd" },
-            9: { name: "Safari Park", icon: "🦁", desc: "Wild grass ridges and data trails weave through the statistics preserve.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_9_skyloft_citadel.png') }}", pathColor: "#fb923c", completedPathColor: "#facc15" },
-            10: { name: "The Mothership", icon: "🛸", desc: "A volcanic docking world and glowing coordinate trenches lead to the finale.", theme: "volcanic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_10_stargazer_command.png') }}", pathColor: "#ef4444", completedPathColor: "#fb7185" },
+            7: { name: "Dumbo Beat", icon: "🐘", desc: "Savanna market trails turn percent models, tables, and discounts into expedition supplies.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_7_clockwork_central.png') }}", pathColor: "#84cc16", completedPathColor: "#bef264" },
+            8: { name: "Djinn's Revenge", icon: "🧞", desc: "Crystal dunes and glowing tile fields frame the area expedition.", theme: "crystal", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_8_whispering_woods.png') }}", pathColor: "#a78bfa", completedPathColor: "#c4b5fd" },
+            9: { name: "Safari Park", icon: "🦁", desc: "Wild habitat prisms make surface area and volume a hands-on supply mission.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_9_skyloft_citadel.png') }}", pathColor: "#fb923c", completedPathColor: "#facc15" },
+            10: { name: "The Mothership", icon: "🛸", desc: "A data-command finale uses statistical graphs to guide the crew home.", theme: "volcanic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_10_stargazer_command.png') }}", pathColor: "#ef4444", completedPathColor: "#fb7185" },
             default: { name: "Learning Planet", icon: "🌌", desc: "Complete stations to earn points and unlock mastery.", theme: "cosmic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_galaxy_strip.png') }}", pathColor: "#38bdf8", completedPathColor: "#4ade80" }
         };
 
@@ -766,12 +1058,18 @@
         }
 
         function stationNameFromActivity(activity, stationNum) {
+            if (activity.title) return activity.title;
             if (activity.type === 'quick_facts') return `Warmup ${stationNum}`;
             if (activity.type === 'student_creation') return 'Alien Teacher Studio';
             if (activity.type === 'arcade_action_with_pause') return activity.theme === 'flappy_rocket' ? 'Flappy Rocket Bay' : 'Lunar Rover Jump Bay';
             if (activity.type === 'coordinate_flight') return 'Coordinate Flight';
             if (activity.type === 'ratio_river_crossing') return 'Ratio River Crossing';
             if (activity.type === 'vault_unlocking') return 'Equation Vault Solver';
+            if (activity.type === 'asteroid_shooter') return 'Asteroid Blaster Bay';
+            if (activity.type === 'tic_tac_toe_bot') return 'Tactic-Toe Outpost';
+            if (activity.type === 'fraction_master_embed') return 'Fraction Master Bay';
+            if (activity.type === 'math_snake') return 'Math Snake Arena';
+            if (activity.type === 'adaptive_practice') return `Practice Mission ${stationNum}`;
             if (activity.type === 'gamified_skill') {
                 const labelMap = {
                     ingredient_sequencing: 'Space Bakery',
@@ -787,13 +1085,19 @@
         }
 
         function stationDescFromActivity(activity) {
+            if (activity.description) return activity.description;
+            if (activity.type === 'adaptive_practice') return 'A fresh curriculum challenge appears after every correct answer.';
+            if (activity.type === 'math_snake') return 'Collect energy cells, avoid hazard cores, and solve a unit math question when a hazard is hit.';
             if (activity.type === 'student_creation') return 'Build a custom math problem for classmates and submit it to teacher review.';
             if (activity.type === 'gamified_skill') return `Mechanic: ${activity.mechanic}. Skill: ${activity.skill}.`;
-            if (activity.type === 'arcade_action_with_pause') return `Arcade challenge with ${activity.question_topic} checks.`;
+            if (activity.type === 'arcade_action_with_pause') return `Obby-style obstacle run with ${activity.question_topic} checkpoints.`;
             if (activity.type === 'quick_facts') return `Quick facts warmup (${activity.skill}).`;
             if (activity.type === 'coordinate_flight') return 'Pilot your airship across the coordinate plane, plot integers, and unlock engines!';
             if (activity.type === 'ratio_river_crossing') return 'Steer cargo baskets to catch apples and oranges in exact target proportions!';
             if (activity.type === 'vault_unlocking') return 'Solve algebraic expressions and one-step equations to breach the stone lock codes!';
+            if (activity.type === 'asteroid_shooter') return `Blast falling space rocks, then answer a ${activity.question_topic} checkpoint for an upgraded boost shot.`;
+            if (activity.type === 'tic_tac_toe_bot') return 'Face off with a clever tic-tac-toe bot, then solve a quick wrap-up question.';
+            if (activity.type === 'fraction_master_embed') return 'Launch the full Fraction Master game and bank bonus coins for finishing a round.';
             return 'Curriculum mission.';
         }
 
@@ -817,7 +1121,14 @@
         }
 
         function saveState() {
-            localStorage.setItem('6th_grade_quest_state', JSON.stringify({ coins, completedStations, studentProfile, highestUnitVisited }));
+            const saved = localStorage.getItem('6th_grade_quest_state');
+            let existingState = {};
+            if (saved) {
+                try {
+                    existingState = JSON.parse(saved);
+                } catch (e) {}
+            }
+            localStorage.setItem('6th_grade_quest_state', JSON.stringify({ ...existingState, coins, completedStations, studentProfile, highestUnitVisited }));
             updateHUD();
         }
 
@@ -866,7 +1177,7 @@
                 const coord = usedCoords[index];
                 const node = document.createElement('div');
                 node.className = 'station-node';
-                if (completedStations.includes(String(station.id))) {
+                if (completedStations.includes(`${planetId}:${station.id}`) || completedStations.includes(String(station.id))) {
                     node.classList.add('completed');
                 }
                 node.style.left = `${coord.x}%`;
@@ -928,6 +1239,26 @@
                 loadVaultUnlockingEmbed(mBody, station, activity);
                 return;
             }
+            if (activity.type === 'fraction_master_embed') {
+                loadFractionMasterEmbed(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'asteroid_shooter') {
+                loadAsteroidShooter(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'tic_tac_toe_bot') {
+                loadTicTacToeBot(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'adaptive_practice') {
+                loadAdaptivePractice(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'math_snake') {
+                loadMathSnake(mBody, station, activity);
+                return;
+            }
             if (activity.type === 'gamified_skill') {
                 loadMechanicGame(mBody, station, activity);
                 return;
@@ -978,6 +1309,304 @@
 
         function pickRandom(list) {
             return list[Math.floor(Math.random() * list.length)];
+        }
+
+        // Units 6-10 share a flexible practice shell, but every node names a distinct
+        // skill and draws a new, grade-appropriate problem on every attempt.
+        function buildLaterUnitCurriculum() {
+            const units = [
+                { number: 6, id: 'ratios_rates', name: 'Slo-Mo Valley: Ratios & Rates', topic: 'ratios_rates', stations: [
+                    ['Ratio Relay', 'simplify_ratio'], ['Unit Rate Depot', 'unit_rate'], ['Ratio Table Trail', 'ratio_table'], ['Equivalent Ratio Forge', 'equivalent_ratio'], ['Better Buy Base', 'compare_rates'], ['Recipe Scale Lab', 'scale_recipe'], ['Proportion Portal', 'proportion'], ['Rate Graph Grid', 'rate_graph'], ['Ratio Word Quest', 'ratio_word']
+                ] },
+                { number: 7, id: 'percents', name: 'Dumbo Beat: Percents', topic: 'percents', stations: [
+                    ['Percent Model Match', 'percent_model'], ['Percent Table Trek', 'percent_table'], ['Part of a Whole', 'percent_of'], ['Decimal Converter', 'decimal_percent'], ['Fraction Converter', 'fraction_percent'], ['Discount Dash', 'discount'], ['Tax Terminal', 'tax'], ['Tip Top-Up', 'tip'], ['Percent Increase Lab', 'percent_change']
+                ] },
+                { number: 8, id: 'area', name: "Djinn's Revenge: Area", topic: 'area', stations: [
+                    ['Rectangle Tile Field', 'rectangle_area'], ['Triangle Tent Camp', 'triangle_area'], ['Parallelogram Platform', 'parallelogram_area'], ['Trapezoid Terrace', 'trapezoid_area'], ['Composite Courtyard', 'composite_area'], ['Missing Side Scanner', 'missing_dimension'], ['Coordinate Garden', 'coordinate_area'], ['Unit Conversion Plot', 'area_conversion'], ['Area Comparison Course', 'compare_area']
+                ] },
+                { number: 9, id: 'surface_area_volume', name: 'Safari Park: Surface Area & Volume', topic: 'surface_area_volume', stations: [
+                    ['Prism Volume Habitat', 'rectangular_volume'], ['Cube Cargo Bay', 'cube_volume'], ['Surface Area Supply Crate', 'rectangular_surface_area'], ['Cube Net Workshop', 'cube_surface_area'], ['Base Area Tunnel', 'prism_base_area'], ['Water Tank Fill-Up', 'tank_volume'], ['Missing Dimension Dock', 'volume_missing_dimension'], ['Prism Comparison Trail', 'compare_volume'], ['Unit Cube Converter', 'volume_conversion']
+                ] },
+                { number: 10, id: 'statistical_graphs', name: 'The Mothership: Statistical Graphs', topic: 'statistical_graphs', stations: [
+                    ['Mean Mission Control', 'mean'], ['Median Message', 'median'], ['Mode Monitor', 'mode'], ['Range Radar', 'range'], ['Bar Graph Bridge', 'bar_graph'], ['Dot Plot Deck', 'dot_plot'], ['Frequency Table Flight', 'frequency_table'], ['Data Comparison Console', 'data_compare'], ['Outlier Observatory', 'outlier']
+                ] }
+            ];
+
+            return units.map((unit) => ({
+                unit_id: `planet_${unit.number}_${unit.id}`,
+                planet_name: unit.name,
+                activities: [
+                    ...unit.stations.map(([title, skill], index) => ({
+                        id: `p${unit.number}_s${index + 1}`,
+                        title,
+                        type: 'adaptive_practice',
+                        skill,
+                        points_reward: 100,
+                        min_questions: 4,
+                        max_questions: 6,
+                        question_generator: () => generateLaterUnitQuestion(unit.topic, skill)
+                    })),
+                    {
+                        id: `p${unit.number}_s10`,
+                        title: 'Math Snake Arena',
+                        type: 'math_snake',
+                        question_topic: unit.topic,
+                        points_reward: 200,
+                        min_questions: 1,
+                        max_questions: 1,
+                        question_generator: () => generateLaterUnitQuestion(unit.topic, 'snake')
+                    }
+                ]
+            }));
+        }
+
+        function makeChallenge(scenario, task, answer, key, hint) {
+            return { scenario, task, answer: String(answer), key, hint };
+        }
+
+        function generateLaterUnitQuestion(topic, skill) {
+            if (skill === 'snake') {
+                const snakeSkills = {
+                    ratios_rates: ['simplify_ratio', 'unit_rate', 'ratio_table', 'proportion'],
+                    percents: ['percent_model', 'percent_table', 'percent_of', 'discount'],
+                    area: ['rectangle_area', 'triangle_area', 'composite_area', 'missing_dimension'],
+                    surface_area_volume: ['rectangular_volume', 'rectangular_surface_area', 'cube_surface_area', 'volume_missing_dimension'],
+                    statistical_graphs: ['mean', 'median', 'range', 'frequency_table']
+                };
+                skill = pickRandom(snakeSkills[topic]);
+            }
+
+            if (topic === 'ratios_rates') {
+                const a = randomInt(2, 9), b = randomInt(2, 9), scale = randomInt(2, 6);
+                if (skill === 'simplify_ratio') return makeChallenge('Ratio Relay', `Simplify the ratio ${a * scale}:${b * scale}.`, `${a}:${b}`, `${a}_${b}_${scale}`, 'Divide both parts by their shared factor.');
+                if (skill === 'unit_rate') { const rate = randomInt(2, 12), count = randomInt(2, 8); return makeChallenge('Unit Rate Depot', `${rate * count} energy cells are packed into ${count} crates. How many cells are in 1 crate?`, rate, `${rate}_${count}`, 'Divide the total by the number of crates.'); }
+                if (skill === 'ratio_table') { const rate = randomInt(2, 10), count = randomInt(3, 9); return makeChallenge('Ratio Table Trail', `A ratio table starts at 1 pilot : ${rate} fuel packs. How many fuel packs match ${count} pilots?`, rate * count, `${rate}_${count}`, 'Keep the rate per one pilot constant.'); }
+                if (skill === 'equivalent_ratio') return makeChallenge('Equivalent Ratio Forge', `${a}:${b} = ${a * scale}:?. Fill the missing value.`, b * scale, `${a}_${b}_${scale}`, 'Multiply both parts of a ratio by the same factor.');
+                if (skill === 'compare_rates') { const r1 = randomInt(4, 12), r2 = randomInt(2, r1 - 1); return makeChallenge('Better Buy Base', `Pack A has ${r1} batteries per box. Pack B has ${r2} batteries per box. Type A or B for the better rate.`, 'A', `${r1}_${r2}`, 'Compare how much is in one box.'); }
+                if (skill === 'scale_recipe') { const cups = randomInt(2, 5), batches = randomInt(2, 6); return makeChallenge('Recipe Scale Lab', `One batch needs ${cups} cups of water. How many cups are needed for ${batches} batches?`, cups * batches, `${cups}_${batches}`, 'Multiply the amount for one batch by the number of batches.'); }
+                if (skill === 'proportion') { const per = randomInt(2, 9), groups = randomInt(2, 8); return makeChallenge('Proportion Portal', `${per} star maps cost ${per * groups} credits. How many star maps can ${per * groups * 2} credits buy at the same rate?`, groups * 2, `${per}_${groups}`, 'Find the cost of one map, then scale up.'); }
+                if (skill === 'rate_graph') { const rate = randomInt(2, 8), hours = randomInt(2, 10); return makeChallenge('Rate Graph Grid', `A graph follows y = ${rate}x. What is y when x = ${hours}?`, rate * hours, `${rate}_${hours}`, 'Multiply the rate by x.'); }
+                { const red = randomInt(2, 8), blue = randomInt(2, 8), scaleWord = randomInt(2, 5); return makeChallenge('Ratio Word Quest', `A rover uses ${red} red chips for every ${blue} blue chips. If it uses ${red * scaleWord} red chips, how many blue chips does it use?`, blue * scaleWord, `${red}_${blue}_${scaleWord}`, 'Use the same scale factor for each part of the ratio.'); }
+            }
+
+            if (topic === 'percents') {
+                const percent = pickRandom([10, 20, 25, 30, 40, 50, 60, 75]);
+                if (skill === 'percent_model') return makeChallenge('Percent Model Match', `A 100-square model has ${percent} shaded squares. What percent is shaded?`, `${percent}%`, `${percent}`, 'Out of 100, the shaded count is the percent.');
+                if (skill === 'percent_table') { const whole = pickRandom([20, 40, 60, 80, 100]), part = Math.round(whole * percent / 100); return makeChallenge('Percent Table Trek', `Complete the table: ${part} out of ${whole} is what percent?`, `${percent}%`, `${whole}_${percent}`, 'Part divided by whole, then multiply by 100.'); }
+                if (skill === 'percent_of') { const whole = pickRandom([20, 40, 60, 80, 100, 120]), part = Math.round(whole * percent / 100); return makeChallenge('Part of a Whole', `Find ${percent}% of ${whole}.`, part, `${whole}_${percent}`, 'Change the percent to a decimal and multiply.'); }
+                if (skill === 'decimal_percent') { const decimal = percent / 100; return makeChallenge('Decimal Converter', `Write ${decimal} as a percent.`, `${percent}%`, `${percent}`, 'Move the decimal point two places right.'); }
+                if (skill === 'fraction_percent') { const numerator = pickRandom([1, 1, 1, 3, 1]), denominator = numerator === 3 ? 4 : pickRandom([2, 4, 5, 10]); const value = numerator / denominator * 100; return makeChallenge('Fraction Converter', `Write ${numerator}/${denominator} as a percent.`, `${value}%`, `${numerator}_${denominator}`, 'Divide, then multiply by 100.'); }
+                if (skill === 'discount') { const price = pickRandom([20, 40, 60, 80, 100]), off = pickRandom([10, 20, 25, 50]); return makeChallenge('Discount Dash', `A ${price}-credit item is ${off}% off. What is the discount amount?`, price * off / 100, `${price}_${off}`, 'Find the percent of the original price.'); }
+                if (skill === 'tax') { const price = pickRandom([20, 40, 60, 80]), tax = pickRandom([5, 10, 15]); return makeChallenge('Tax Terminal', `A ${price}-credit item has ${tax}% tax. What is the tax amount?`, price * tax / 100, `${price}_${tax}`, 'Find the percent of the original price.'); }
+                if (skill === 'tip') { const bill = pickRandom([20, 40, 60, 80]), tip = pickRandom([10, 15, 20, 25]); return makeChallenge('Tip Top-Up', `What is a ${tip}% tip on a ${bill}-credit bill?`, bill * tip / 100, `${bill}_${tip}`, 'Multiply the bill by the percent as a decimal.'); }
+                { const start = pickRandom([20, 40, 60, 80]), increase = pickRandom([10, 25, 50]); return makeChallenge('Percent Increase Lab', `A supply count of ${start} increases by ${increase}%. What is the increase amount?`, start * increase / 100, `${start}_${increase}`, 'Find the stated percent of the starting amount.'); }
+            }
+
+            if (topic === 'area') {
+                const length = randomInt(4, 14), width = randomInt(3, 10), height = randomInt(3, 12);
+                if (skill === 'rectangle_area') return makeChallenge('Rectangle Tile Field', `Find the area of a rectangle with length ${length} units and width ${width} units.`, length * width, `${length}_${width}`, 'Area = length times width.');
+                if (skill === 'triangle_area') return makeChallenge('Triangle Tent Camp', `Find the area of a triangle with base ${length} units and height ${height} units.`, length * height / 2, `${length}_${height}`, 'Area = one-half times base times height.');
+                if (skill === 'parallelogram_area') return makeChallenge('Parallelogram Platform', `Find the area of a parallelogram with base ${length} units and height ${height} units.`, length * height, `${length}_${height}`, 'Area = base times perpendicular height.');
+                if (skill === 'trapezoid_area') { const base2 = randomInt(4, 14); return makeChallenge('Trapezoid Terrace', `Find the area of a trapezoid with bases ${length} and ${base2} units and height ${height} units.`, (length + base2) * height / 2, `${length}_${base2}_${height}`, 'Average the bases, then multiply by height.'); }
+                if (skill === 'composite_area') { const extra = randomInt(2, 8); return makeChallenge('Composite Courtyard', `A courtyard has two non-overlapping rectangles: ${length} by ${width}, and ${extra} by ${width}. What is the total area?`, (length + extra) * width, `${length}_${width}_${extra}`, 'Find both rectangle areas and add them.'); }
+                if (skill === 'missing_dimension') { const area = length * width; return makeChallenge('Missing Side Scanner', `A rectangle has area ${area} square units and width ${width} units. What is its length?`, length, `${length}_${width}`, 'Divide area by the known side length.'); }
+                if (skill === 'coordinate_area') { const x = randomInt(3, 10), y = randomInt(3, 10); return makeChallenge('Coordinate Garden', `A rectangle has corners (0,0), (${x},0), (${x},${y}), and (0,${y}). What is its area?`, x * y, `${x}_${y}`, 'Use the horizontal and vertical side lengths.'); }
+                if (skill === 'area_conversion') { const side = randomInt(2, 9); return makeChallenge('Unit Conversion Plot', `A square has side length ${side} meters. What is its area in square meters?`, side * side, `${side}`, 'Square the side length.'); }
+                { const areaA = length * width, areaB = randomInt(2, 8) * randomInt(2, 8); return makeChallenge('Area Comparison Course', `Rectangle A has area ${areaA}. Rectangle B has area ${areaB}. Type A or B for the larger area.`, areaA >= areaB ? 'A' : 'B', `${areaA}_${areaB}`, 'Compare the two area values.'); }
+            }
+
+            if (topic === 'surface_area_volume') {
+                const l = randomInt(3, 10), w = randomInt(2, 8), h = randomInt(2, 8);
+                if (skill === 'rectangular_volume') return makeChallenge('Prism Volume Habitat', `Find the volume of a rectangular prism: ${l} by ${w} by ${h} units.`, l * w * h, `${l}_${w}_${h}`, 'Volume = length times width times height.');
+                if (skill === 'cube_volume') { const side = randomInt(2, 9); return makeChallenge('Cube Cargo Bay', `Find the volume of a cube with side length ${side} units.`, side ** 3, `${side}`, 'A cube has three equal dimensions.'); }
+                if (skill === 'rectangular_surface_area') return makeChallenge('Surface Area Supply Crate', `Find the surface area of a ${l} by ${w} by ${h} rectangular prism.`, 2 * (l * w + l * h + w * h), `${l}_${w}_${h}`, 'Add the areas of all six faces.');
+                if (skill === 'cube_surface_area') { const side = randomInt(2, 9); return makeChallenge('Cube Net Workshop', `Find the surface area of a cube with side length ${side} units.`, 6 * side * side, `${side}`, 'A cube has six congruent square faces.'); }
+                if (skill === 'prism_base_area') { const baseArea = l * w; return makeChallenge('Base Area Tunnel', `A prism has base area ${baseArea} square units and height ${h} units. What is its volume?`, baseArea * h, `${baseArea}_${h}`, 'Volume = base area times height.'); }
+                if (skill === 'tank_volume') return makeChallenge('Water Tank Fill-Up', `A tank is ${l} m by ${w} m by ${h} m. How many cubic meters can it hold?`, l * w * h, `${l}_${w}_${h}`, 'Multiply all three dimensions.');
+                if (skill === 'volume_missing_dimension') { const volume = l * w * h; return makeChallenge('Missing Dimension Dock', `A prism has volume ${volume}, length ${l}, and width ${w}. What is its height?`, h, `${l}_${w}_${h}`, 'Divide volume by length times width.'); }
+                if (skill === 'compare_volume') { const other = randomInt(3, 9) * randomInt(2, 7) * randomInt(2, 7); const current = l * w * h; return makeChallenge('Prism Comparison Trail', `Prism A has volume ${current}. Prism B has volume ${other}. Type A or B for the larger volume.`, current >= other ? 'A' : 'B', `${current}_${other}`, 'Compare the cubic-unit totals.'); }
+                { const side = randomInt(2, 8); return makeChallenge('Unit Cube Converter', `A cube is built from ${side} layers of ${side} by ${side} unit cubes. How many unit cubes are used?`, side ** 3, `${side}`, 'Multiply side length three times.'); }
+            }
+
+            const values = Array.from({ length: 5 }, () => randomInt(2, 18));
+            if (skill === 'mean') { const base = randomInt(3, 14); const offsets = [-2, -1, 0, 1, 2]; const list = offsets.map((offset) => base + offset); return makeChallenge('Mean Mission Control', `Find the mean of: ${list.join(', ')}.`, base, list.join('_'), 'Add the values and divide by how many there are.'); }
+            if (skill === 'median') { const list = values.sort((a, b) => a - b); return makeChallenge('Median Message', `Find the median of: ${list.join(', ')}.`, list[2], list.join('_'), 'The median is the middle value after sorting.'); }
+            if (skill === 'mode') { const repeated = randomInt(3, 12); const list = [repeated, repeated, repeated, randomInt(13, 20), randomInt(21, 28)]; return makeChallenge('Mode Monitor', `Find the mode of: ${list.sort(() => Math.random() - 0.5).join(', ')}.`, repeated, `${repeated}_${list.join('_')}`, 'The mode appears most often.'); }
+            if (skill === 'range') { const low = randomInt(2, 8), high = randomInt(14, 25); return makeChallenge('Range Radar', `Find the range of: ${low}, ${randomInt(low + 1, high - 1)}, ${high}.`, high - low, `${low}_${high}`, 'Subtract smallest from largest.'); }
+            if (skill === 'bar_graph') { const a = randomInt(4, 12), b = randomInt(4, 12), c = randomInt(4, 12); return makeChallenge('Bar Graph Bridge', `A bar graph shows Rover A: ${a}, Rover B: ${b}, Rover C: ${c}. What is the total?`, a + b + c, `${a}_${b}_${c}`, 'Add all bar heights.'); }
+            if (skill === 'dot_plot') { const dotValue = randomInt(2, 12), count = randomInt(3, 7); return makeChallenge('Dot Plot Deck', `A dot plot has ${count} dots above ${dotValue}. What is the total of those data values?`, dotValue * count, `${dotValue}_${count}`, 'Repeated values add together.'); }
+            if (skill === 'frequency_table') { const frequency = randomInt(3, 9), value = randomInt(2, 12); return makeChallenge('Frequency Table Flight', `A frequency table lists value ${value} with frequency ${frequency}. What is the total contribution?`, value * frequency, `${value}_${frequency}`, 'Multiply value by frequency.'); }
+            if (skill === 'data_compare') { const a = randomInt(8, 20), b = randomInt(2, a - 1); return makeChallenge('Data Comparison Console', `Dataset A has mean ${a}; Dataset B has mean ${b}. Type A or B for the larger mean.`, 'A', `${a}_${b}`, 'Compare the mean values.'); }
+            { const normal = randomInt(4, 10), outlier = randomInt(25, 40); return makeChallenge('Outlier Observatory', `Which value is the outlier in: ${normal - 1}, ${normal}, ${normal + 1}, ${outlier}?`, outlier, `${normal}_${outlier}`, 'Look for the value far from the cluster.'); }
+        }
+
+        // ---------------------------------------------------------------
+        // MATH HELPERS + RANDOMIZED QUESTION GENERATION
+        // ---------------------------------------------------------------
+        function gcdOf(a, b) {
+            a = Math.abs(a); b = Math.abs(b);
+            while (b) { const t = b; b = a % b; a = t; }
+            return a || 1;
+        }
+
+        function lcmOf(a, b) {
+            return Math.abs(a * b) / gcdOf(a, b);
+        }
+
+        function primeFactorsOf(n) {
+            const factors = [];
+            let remaining = n;
+            let divisor = 2;
+            while (remaining > 1 && divisor <= remaining) {
+                if (remaining % divisor === 0) {
+                    factors.push(divisor);
+                    remaining /= divisor;
+                } else {
+                    divisor += 1;
+                }
+            }
+            return factors;
+        }
+
+        // Builds a small shuffled pool of plausible numeric distractors (including
+        // the correct answer) for chip-based mechanics. Negative answers are supported.
+        function buildNumericOptionPool(answer, count, spread) {
+            const pool = new Set([String(answer)]);
+            let guard = 0;
+            while (pool.size < count && guard < 40) {
+                guard += 1;
+                const delta = randomInt(-spread, spread);
+                if (delta === 0) continue;
+                pool.add(String(Number(answer) + delta));
+            }
+            return Array.from(pool).sort(() => Math.random() - 0.5);
+        }
+
+        // Wraps a station's question_generator so students never see the exact same
+        // question twice in a row. Falls back to the legacy static question_bank
+        // format when a generator isn't defined.
+        const recentChallengeKeys = {};
+        function getFreshChallenge(activity) {
+            if (typeof activity.question_generator !== 'function') {
+                return randomFromQuestionBank(activity);
+            }
+            if (!recentChallengeKeys[activity.id]) recentChallengeKeys[activity.id] = [];
+            const history = recentChallengeKeys[activity.id];
+            let challenge;
+            let attempts = 0;
+            do {
+                challenge = activity.question_generator();
+                attempts += 1;
+            } while (history.includes(challenge.key) && attempts < 8);
+            history.push(challenge.key);
+            if (history.length > 5) history.shift();
+            return challenge;
+        }
+
+        // Per-unit warmup fluency generators keyed by activity.skill.
+        const QUICK_FACTS_GENERATORS = {
+            multiplication_0_to_10: () => {
+                const a = randomInt(0, 10);
+                const b = randomInt(0, 10);
+                return { prompt: `${a} \u00d7 ${b} = ?`, answer: String(a * b) };
+            },
+            simplify_fractions: () => {
+                const factor = randomInt(2, 6);
+                const denom = randomInt(2, 6) * factor;
+                const num = randomInt(1, Math.max(1, denom / factor - 1)) * factor;
+                const g = gcdOf(num, denom);
+                return { prompt: `Simplify ${num}/${denom} to lowest terms (format a/b).`, answer: `${num / g}/${denom / g}` };
+            },
+            integers_and_opposites: () => {
+                const n = randomInt(-12, 12) || 4;
+                return { prompt: `What is the opposite of ${n}?`, answer: String(-n) };
+            },
+            order_of_operations: () => {
+                const a = randomInt(2, 9);
+                const b = randomInt(2, 9);
+                const c = randomInt(2, 9);
+                return { prompt: `${a} + ${b} \u00d7 ${c} = ?`, answer: String(a + b * c) };
+            },
+            one_step_add_sub_equations: () => {
+                const x = randomInt(2, 20);
+                const add = randomInt(1, 15);
+                const usePlus = Math.random() < 0.5;
+                const total = usePlus ? x + add : x - add;
+                return {
+                    prompt: usePlus ? `x + ${add} = ${total}. What is x?` : `x - ${add} = ${total}. What is x?`,
+                    answer: String(x)
+                };
+            }
+        };
+
+        // Shared checkpoint question bank used by the asteroid shooter, the tic-tac-toe
+        // wrap-up question, and (as a fallback) the obstacle course checkpoints.
+        function buildShooterCheckpoint(topic) {
+            if (topic === 'number_properties') {
+                const a = randomInt(2, 12), b = randomInt(2, 9), c = randomInt(2, 9);
+                return { prompt: `Checkpoint: ${a} + ${b} \u00d7 ${c} = ?`, answer: String(a + b * c), hint: 'Multiply before you add (order of operations).' };
+            }
+            if (topic === 'fractions_decimals') {
+                const whole = randomInt(1, 9);
+                const tenth = randomInt(1, 9);
+                return { prompt: `Checkpoint: How many tenths are in ${whole}.${tenth}?`, answer: String(whole * 10 + tenth), hint: `Multiply ${whole}.${tenth} by 10.` };
+            }
+            if (topic === 'rational_numbers') {
+                const a = randomInt(-9, -1);
+                const b = randomInt(2, 9);
+                return { prompt: `Checkpoint: ${a} \u00d7 ${b} = ?`, answer: String(a * b), hint: 'A negative times a positive is negative.' };
+            }
+            if (topic === 'expressions') {
+                const coeff = randomInt(2, 9);
+                const x = randomInt(1, 9);
+                const constant = randomInt(1, 9);
+                return { prompt: `Checkpoint: Evaluate ${coeff}x + ${constant} when x = ${x}.`, answer: String(coeff * x + constant), hint: `Substitute x = ${x}, then multiply before adding.` };
+            }
+            if (topic === 'equations') {
+                const x = randomInt(2, 20);
+                const add = randomInt(1, 15);
+                return { prompt: `Checkpoint: x + ${add} = ${x + add}. What is x?`, answer: String(x), hint: `Subtract ${add} from ${x + add}.` };
+            }
+            const multiplier = randomInt(3, 9);
+            const product = multiplier * 6;
+            return { prompt: `Checkpoint: what multiple of 6 equals ${product}?`, answer: String(product), hint: 'Count by sixes.' };
+        }
+
+        // Minimal 3x3 tic-tac-toe engine (minimax with an occasional relaxed move so
+        // students can still win sometimes against the "smart" bot).
+        function ticTacToeWinner(board) {
+            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (const [a, b, c] of lines) {
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+            }
+            if (board.every((cell) => cell)) return 'draw';
+            return null;
+        }
+
+        function minimaxTicTacToe(board, player) {
+            const winner = ticTacToeWinner(board);
+            if (winner === 'O') return { score: 1 };
+            if (winner === 'X') return { score: -1 };
+            if (winner === 'draw') return { score: 0 };
+
+            const moves = [];
+            for (let i = 0; i < 9; i += 1) {
+                if (board[i]) continue;
+                const next = board.slice();
+                next[i] = player;
+                const result = minimaxTicTacToe(next, player === 'O' ? 'X' : 'O');
+                moves.push({ index: i, score: result.score });
+            }
+            moves.sort((m1, m2) => (player === 'O' ? m2.score - m1.score : m1.score - m2.score));
+            return moves[0];
+        }
+
+        function pickBotMove(board) {
+            const emptyIdx = board.reduce((acc, cell, idx) => { if (!cell) acc.push(idx); return acc; }, []);
+            if (Math.random() < 0.2) {
+                return pickRandom(emptyIdx);
+            }
+            return minimaxTicTacToe(board, 'O').index;
         }
 
         function progressBanner(points) {
@@ -1033,25 +1662,24 @@
         }
 
         function loadQuickFacts(container, station, activity) {
-            const a = Math.floor(Math.random() * 11);
-            const b = Math.floor(Math.random() * 11);
-            const expected = a * b;
+            const generator = QUICK_FACTS_GENERATORS[activity.skill] || QUICK_FACTS_GENERATORS.multiplication_0_to_10;
+            const challenge = generator();
             const points = activity.points_reward || 50;
             container.innerHTML = `
-                <p class="text-slate-400">Quick Facts Warmup: Solve this multiplication check.</p>
+                <p class="text-slate-400">Quick Facts Warmup: Solve this fluency check.</p>
                 ${progressBanner(points)}
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono text-sm">${a} × ${b} = ?</div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono text-sm">${challenge.prompt}</div>
                 <div class="flex gap-2">
-                    <input id="quick-input" type="number" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white" placeholder="Answer">
+                    <input id="quick-input" type="text" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white" placeholder="Answer">
                     <button id="quick-submit" class="btn-accessible px-4">Verify</button>
                 </div>
                 <p id="quick-feedback" class="text-xs font-bold text-center h-4"></p>
             `;
 
             const submitQuick = () => {
-                const val = parseFloat(document.getElementById('quick-input').value);
+                const raw = document.getElementById('quick-input').value.trim();
                 const feedback = document.getElementById('quick-feedback');
-                if (val === expected) {
+                if (raw !== '' && raw.replace(/\s+/g, '') === String(challenge.answer).replace(/\s+/g, '')) {
                     resolveCorrectAttempt(container, station, activity, points, feedback, 'Correct!', loadQuickFacts);
                 } else {
                     feedback.textContent = 'Try again.';
@@ -1063,8 +1691,256 @@
             bindEnterSubmit(['quick-input'], submitQuick);
         }
 
+        function normalizeChallengeAnswer(value) {
+            return String(value).trim().toLowerCase().replace(/\s+/g, '').replace(/%/g, '');
+        }
+
+        function loadAdaptivePractice(container, station, activity) {
+            const challenge = getFreshChallenge(activity);
+            const points = activity.points_reward || 100;
+            container.innerHTML = `
+                <p class="text-slate-400"><span class="math-label">${challenge.scenario}</span>: ${challenge.task}</p>
+                ${progressBanner(points)}
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <label class="block text-[11px] text-slate-400" for="adaptive-answer">Answer</label>
+                    <div class="flex gap-2">
+                        <input id="adaptive-answer" type="text" autocomplete="off" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-center text-white" placeholder="Type your answer">
+                        <button id="adaptive-submit" class="btn-accessible px-4">Check</button>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Fresh values are generated every round.</p>
+                </div>
+                <p id="adaptive-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            const submit = () => {
+                const answer = document.getElementById('adaptive-answer').value;
+                const feedback = document.getElementById('adaptive-feedback');
+                if (normalizeChallengeAnswer(answer) === normalizeChallengeAnswer(challenge.answer)) {
+                    resolveCorrectAttempt(container, station, activity, points, feedback, 'Correct!', loadAdaptivePractice);
+                } else {
+                    feedback.textContent = challenge.hint || 'Not quite. Try a new calculation.';
+                    feedback.style.color = '#ef4444';
+                }
+            };
+
+            document.getElementById('adaptive-submit').addEventListener('click', submit);
+            bindEnterSubmit(['adaptive-answer'], submit);
+            document.getElementById('adaptive-answer').focus();
+        }
+
+        // ---------------------------------------------------------------
+        // MINI-GAME: MATH SNAKE (hazards pause the loop for unit questions)
+        // ---------------------------------------------------------------
+        function loadMathSnake(container, station, activity) {
+            const points = activity.points_reward || 200;
+            const goalScore = 120;
+            container.innerHTML = `
+                <p class="text-slate-400">Collect blue energy cells. Red hazard cores freeze the arena and open a ${planetId === 7 ? 'percent' : 'unit'} challenge.</p>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-3">
+                    <div class="flex flex-wrap justify-between gap-2 text-[11px] font-mono text-slate-300">
+                        <span id="snake-score">Score: 0/${goalScore}</span>
+                        <span id="snake-lives">Lives: 3</span>
+                        <span id="snake-status">Press Start</span>
+                    </div>
+                    <canvas id="math-snake-canvas" width="420" height="300" class="max-w-full border border-slate-700 rounded-lg bg-slate-950"></canvas>
+                    <p class="text-[10px] text-slate-500 text-center">Use arrow keys or W A S D. Blue cells grow the snake; red hazard cores trigger math.</p>
+                    <button id="snake-start" class="btn-accessible w-full">Start Snake</button>
+                </div>
+                <div id="snake-question-modal" class="hidden fixed inset-0 z-[80] bg-slate-950/85 p-4">
+                    <div class="max-w-md mx-auto mt-[12vh] bg-slate-900 border-2 border-rose-500 rounded-xl p-5 space-y-4 shadow-2xl">
+                        <p class="text-center font-bold text-rose-300">Hazard core intercepted. The arena is paused.</p>
+                        <p id="snake-question" class="text-center text-sm font-mono text-white"></p>
+                        <div class="flex gap-2">
+                            <input id="snake-answer" type="text" autocomplete="off" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-center text-white" placeholder="Answer">
+                            <button id="snake-submit" class="btn-accessible px-4">Unlock</button>
+                        </div>
+                        <p id="snake-feedback" class="text-xs font-bold text-center min-h-[1.25rem]"></p>
+                    </div>
+                </div>
+                <p id="snake-run-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            const canvas = document.getElementById('math-snake-canvas');
+            const ctx = canvas.getContext('2d');
+            const startButton = document.getElementById('snake-start');
+            const scoreLabel = document.getElementById('snake-score');
+            const livesLabel = document.getElementById('snake-lives');
+            const statusLabel = document.getElementById('snake-status');
+            const questionModal = document.getElementById('snake-question-modal');
+            const questionEl = document.getElementById('snake-question');
+            const answerInput = document.getElementById('snake-answer');
+            const feedback = document.getElementById('snake-feedback');
+            const runFeedback = document.getElementById('snake-run-feedback');
+            const gridSize = 20;
+            const cols = canvas.width / gridSize;
+            const rows = canvas.height / gridSize;
+            let tickId = null;
+            let activeQuestion = null;
+            const state = {
+                snake: [], direction: { x: 1, y: 0 }, queuedDirection: { x: 1, y: 0 }, food: null,
+                hazards: [], score: 0, lives: 3, running: false, paused: false, completed: false
+            };
+
+            function sameCell(a, b) { return a.x === b.x && a.y === b.y; }
+            function occupied(cell) { return state.snake.some((part) => sameCell(part, cell)) || state.hazards.some((hazard) => sameCell(hazard, cell)); }
+            function randomOpenCell() {
+                let cell;
+                do { cell = { x: randomInt(0, cols - 1), y: randomInt(0, rows - 1) }; } while (occupied(cell) || (state.food && sameCell(state.food, cell)));
+                return cell;
+            }
+            function updateHud() {
+                scoreLabel.textContent = `Score: ${state.score}/${goalScore}`;
+                livesLabel.textContent = `Lives: ${state.lives}`;
+            }
+            function startLoop() {
+                if (tickId) clearInterval(tickId);
+                tickId = setInterval(step, 130);
+            }
+            function resetGame() {
+                state.snake = [{ x: 8, y: 7 }, { x: 7, y: 7 }, { x: 6, y: 7 }];
+                state.direction = { x: 1, y: 0 };
+                state.queuedDirection = { x: 1, y: 0 };
+                state.score = 0;
+                state.lives = 3;
+                state.running = true;
+                state.paused = false;
+                state.completed = false;
+                state.hazards = [randomOpenCell()];
+                state.food = randomOpenCell();
+                runFeedback.textContent = '';
+                statusLabel.textContent = 'Running';
+                startButton.textContent = 'Restart Snake';
+                updateHud();
+                startLoop();
+                draw();
+            }
+            function endGame(message) {
+                state.running = false;
+                if (tickId) clearInterval(tickId);
+                tickId = null;
+                statusLabel.textContent = 'Run ended';
+                runFeedback.textContent = message;
+                runFeedback.style.color = '#ef4444';
+            }
+            function triggerHazardQuestion() {
+                state.running = false;
+                state.paused = true;
+                if (tickId) clearInterval(tickId);
+                tickId = null;
+                activeQuestion = getFreshChallenge(activity);
+                questionEl.textContent = activeQuestion.task;
+                answerInput.value = '';
+                feedback.textContent = '';
+                questionModal.classList.remove('hidden');
+                statusLabel.textContent = 'Math pause';
+                setTimeout(() => answerInput.focus(), 0);
+            }
+            function resumeAfterQuestion() {
+                questionModal.classList.add('hidden');
+                state.paused = false;
+                state.running = true;
+                statusLabel.textContent = 'Running';
+                startLoop();
+            }
+            function finishStation() {
+                state.running = false;
+                state.completed = true;
+                if (tickId) clearInterval(tickId);
+                tickId = null;
+                statusLabel.textContent = 'Arena cleared';
+                runFeedback.textContent = `Arena cleared! +${points} companion coins.`;
+                runFeedback.style.color = '#10b981';
+                setTimeout(() => resolveCorrectAttempt(container, station, activity, points, runFeedback, 'Snake arena cleared!', loadMathSnake), 650);
+            }
+            function step() {
+                if (!state.running || state.paused || state.completed) return;
+                state.direction = state.queuedDirection;
+                const head = { x: state.snake[0].x + state.direction.x, y: state.snake[0].y + state.direction.y };
+                const hitWall = head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows;
+                const hitSelf = state.snake.some((part) => sameCell(part, head));
+                if (hitWall || hitSelf) { endGame('Snake collision. Restart and try a new board.'); return; }
+                state.snake.unshift(head);
+                if (sameCell(head, state.food)) {
+                    state.score += 20;
+                    state.food = randomOpenCell();
+                    if (state.hazards.length < 3 && Math.random() < 0.7) state.hazards.push(randomOpenCell());
+                    updateHud();
+                    if (state.score >= goalScore) { finishStation(); return; }
+                } else {
+                    state.snake.pop();
+                }
+                const hazardIndex = state.hazards.findIndex((hazard) => sameCell(hazard, head));
+                if (hazardIndex >= 0) {
+                    state.hazards.splice(hazardIndex, 1);
+                    state.hazards.push(randomOpenCell());
+                    triggerHazardQuestion();
+                }
+                draw();
+            }
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+                for (let x = 0; x <= cols; x += 1) { ctx.beginPath(); ctx.moveTo(x * gridSize, 0); ctx.lineTo(x * gridSize, canvas.height); ctx.stroke(); }
+                for (let y = 0; y <= rows; y += 1) { ctx.beginPath(); ctx.moveTo(0, y * gridSize); ctx.lineTo(canvas.width, y * gridSize); ctx.stroke(); }
+                if (state.food) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(state.food.x * gridSize + 4, state.food.y * gridSize + 4, gridSize - 8, gridSize - 8);
+                }
+                state.hazards.forEach((hazard) => { ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(hazard.x * gridSize + 10, hazard.y * gridSize + 10, 7, 0, Math.PI * 2); ctx.fill(); });
+                state.snake.forEach((part, index) => { ctx.fillStyle = index === 0 ? '#facc15' : '#22c55e'; ctx.fillRect(part.x * gridSize + 2, part.y * gridSize + 2, gridSize - 4, gridSize - 4); });
+            }
+            function queueDirection(x, y) {
+                if (state.paused || !state.running) return;
+                if (x === -state.direction.x && y === -state.direction.y) return;
+                state.queuedDirection = { x, y };
+            }
+            const keyHandler = (event) => {
+                if (document.activeElement === answerInput || state.paused) return;
+                const controls = { ArrowUp: [0, -1], w: [0, -1], W: [0, -1], ArrowDown: [0, 1], s: [0, 1], S: [0, 1], ArrowLeft: [-1, 0], a: [-1, 0], A: [-1, 0], ArrowRight: [1, 0], d: [1, 0], D: [1, 0] };
+                if (controls[event.key]) { event.preventDefault(); queueDirection(...controls[event.key]); }
+            };
+            const submitAnswer = () => {
+                if (!state.paused || !activeQuestion) return;
+                if (normalizeChallengeAnswer(answerInput.value) === normalizeChallengeAnswer(activeQuestion.answer)) {
+                    state.score += 50;
+                    state.lives = Math.min(5, state.lives + 1);
+                    state.snake.push({ ...state.snake[state.snake.length - 1] });
+                    feedback.textContent = 'Correct! +50 points, +1 life, and a longer snake.';
+                    feedback.style.color = '#10b981';
+                    updateHud();
+                    setTimeout(() => {
+                        if (state.score >= goalScore) { questionModal.classList.add('hidden'); finishStation(); } else { resumeAfterQuestion(); }
+                    }, 700);
+                } else {
+                    state.lives -= 1;
+                    state.snake = state.snake.slice(0, Math.max(2, state.snake.length - 2));
+                    updateHud();
+                    if (state.lives <= 0) {
+                        questionModal.classList.add('hidden');
+                        state.paused = false;
+                        endGame('No lives remain. Restart and use the hazard question to rebuild your run.');
+                    } else {
+                        feedback.textContent = 'Incorrect. You lost 1 life and 2 snake segments.';
+                        feedback.style.color = '#f87171';
+                        setTimeout(resumeAfterQuestion, 900);
+                    }
+                }
+            };
+
+            startButton.addEventListener('click', resetGame);
+            document.getElementById('snake-submit').addEventListener('click', submitAnswer);
+            bindEnterSubmit(['snake-answer'], submitAnswer);
+            window.addEventListener('keydown', keyHandler);
+            draw();
+            activeModalCleanup = () => {
+                if (tickId) clearInterval(tickId);
+                window.removeEventListener('keydown', keyHandler);
+            };
+        }
+
         function loadMechanicGame(container, station, activity) {
-            const challenge = randomFromQuestionBank(activity);
+            const challenge = getFreshChallenge(activity);
             if (!challenge) {
                 loadFallbackPractice(container, station);
                 return;
@@ -1099,7 +1975,7 @@
         }
 
         function renderIngredientSequencing(container, station, activity, challenge) {
-            const options = ['4', '5', '6', '8', '10', '12'];
+            const options = challenge.options || ['4', '5', '6', '8', '10', '12'];
             const points = activity.points_reward || 100;
             container.innerHTML = `
                 <p class="text-slate-400"><span class="math-label">${challenge.scenario}</span>: ${challenge.task}</p>
@@ -1174,9 +2050,9 @@
         }
 
         function renderNodeConnecting(container, station, activity, challenge) {
-            const target = challenge.answer.split(',').map((s) => s.trim());
+            const target = String(challenge.answer).split(',').map((s) => s.trim());
             const selected = [];
-            const choices = ['2', '3', '5', '7'];
+            const choices = challenge.options || ['2', '3', '5', '7'];
             const points = activity.points_reward || 100;
 
             container.innerHTML = `
@@ -1734,6 +2610,166 @@
                         }
                     ]
                 },
+                2: {
+                    flappy_rocket: [
+                        {
+                            name: 'Fraction Fields',
+                            description: 'Bounce over drifting numerator and denominator blocks in the fraction orchard lane.',
+                            goalDistance: 190,
+                            baseSpeed: 4.6,
+                            speedStep: 0.58,
+                            spawnGap: 45,
+                            gravity: 0.6,
+                            jumpPower: 10.7,
+                            phaseNames: ['Orchard Entry', 'Fraction Fields', 'Decimal Ridge'],
+                            obstacleTypes: ['short', 'tall', 'wide'],
+                            skyColors: ['#4a044e', '#701a75', '#86198f'],
+                            groundColor: '#581c87',
+                            obstacleColor: '#f0abfc',
+                            playerColor: '#38bdf8',
+                            checkpointFlavor: 'fractions_decimals'
+                        }
+                    ],
+                    lunar_rover_jump: [
+                        {
+                            name: 'Decimal Dust Trail',
+                            description: 'Roll across decimal place-value stepping stones scattered on the lunar bakery trail.',
+                            goalDistance: 185,
+                            baseSpeed: 4.0,
+                            speedStep: 0.5,
+                            spawnGap: 48,
+                            gravity: 0.53,
+                            jumpPower: 10.3,
+                            phaseNames: ['Dust Trail', 'Decimal Steps', 'Ratio Ridge'],
+                            obstacleTypes: ['short', 'hover', 'wide'],
+                            skyColors: ['#164e63', '#155e75', '#0e7490'],
+                            groundColor: '#0891b2',
+                            obstacleColor: '#fef08a',
+                            playerColor: '#f472b6',
+                            checkpointFlavor: 'fractions_decimals'
+                        }
+                    ]
+                },
+                3: {
+                    flappy_rocket: [
+                        {
+                            name: 'Sub-Zero Sky Lane',
+                            description: 'Weather sudden temperature drops and rising steam vents above the bathhouse.',
+                            goalDistance: 195,
+                            baseSpeed: 4.7,
+                            speedStep: 0.6,
+                            spawnGap: 44,
+                            gravity: 0.6,
+                            jumpPower: 10.8,
+                            phaseNames: ['Steam Vent', 'Sub-Zero Drift', 'Pressure Surge'],
+                            obstacleTypes: ['short', 'tall', 'hover'],
+                            skyColors: ['#082f49', '#0c4a6e', '#164e63'],
+                            groundColor: '#334155',
+                            obstacleColor: '#67e8f9',
+                            playerColor: '#38bdf8',
+                            checkpointFlavor: 'rational_numbers'
+                        }
+                    ],
+                    lunar_rover_jump: [
+                        {
+                            name: 'Negative Number Ridge',
+                            description: 'Rover hops between positive and negative elevation markers on the frozen ridge.',
+                            goalDistance: 190,
+                            baseSpeed: 4.1,
+                            speedStep: 0.5,
+                            spawnGap: 47,
+                            gravity: 0.54,
+                            jumpPower: 10.4,
+                            phaseNames: ['Ice Shelf', 'Below Zero', 'Absolute Peak'],
+                            obstacleTypes: ['short', 'wide', 'hover'],
+                            skyColors: ['#0f172a', '#1e293b', '#334155'],
+                            groundColor: '#64748b',
+                            obstacleColor: '#93c5fd',
+                            playerColor: '#e879f9',
+                            checkpointFlavor: 'rational_numbers'
+                        }
+                    ]
+                },
+                4: {
+                    flappy_rocket: [
+                        {
+                            name: 'Campfire Expression Camp',
+                            description: 'Dodge drifting variable embers above the tenting grounds.',
+                            goalDistance: 190,
+                            baseSpeed: 4.6,
+                            speedStep: 0.58,
+                            spawnGap: 45,
+                            gravity: 0.6,
+                            jumpPower: 10.7,
+                            phaseNames: ['Camp Entry', 'Variable Vents', 'Exponent Ridge'],
+                            obstacleTypes: ['short', 'tall', 'wide'],
+                            skyColors: ['#431407', '#7c2d12', '#9a3412'],
+                            groundColor: '#78350f',
+                            obstacleColor: '#fdba74',
+                            playerColor: '#38bdf8',
+                            checkpointFlavor: 'expressions'
+                        }
+                    ],
+                    lunar_rover_jump: [
+                        {
+                            name: 'Equation Canyon Trail',
+                            description: 'Rover jumps loose scaffolding boards while balancing expression weights.',
+                            goalDistance: 190,
+                            baseSpeed: 4.0,
+                            speedStep: 0.5,
+                            spawnGap: 48,
+                            gravity: 0.53,
+                            jumpPower: 10.3,
+                            phaseNames: ['Trailhead', 'Scaffold Gaps', 'Summit Terms'],
+                            obstacleTypes: ['short', 'hover', 'wide'],
+                            skyColors: ['#1c1917', '#292524', '#44403c'],
+                            groundColor: '#57534e',
+                            obstacleColor: '#fcd34d',
+                            playerColor: '#f472b6',
+                            checkpointFlavor: 'expressions'
+                        }
+                    ]
+                },
+                5: {
+                    flappy_rocket: [
+                        {
+                            name: 'Girder Balance Run',
+                            description: 'Weave through swinging construction girders while equations stay balanced.',
+                            goalDistance: 195,
+                            baseSpeed: 4.7,
+                            speedStep: 0.6,
+                            spawnGap: 44,
+                            gravity: 0.6,
+                            jumpPower: 10.8,
+                            phaseNames: ['Site Entry', 'Girder Gaps', 'Load Limit'],
+                            obstacleTypes: ['short', 'tall', 'wide'],
+                            skyColors: ['#0c4a6e', '#075985', '#0369a1'],
+                            groundColor: '#334155',
+                            obstacleColor: '#5eead4',
+                            playerColor: '#38bdf8',
+                            checkpointFlavor: 'equations'
+                        }
+                    ],
+                    lunar_rover_jump: [
+                        {
+                            name: 'Inequality Ridge',
+                            description: 'Rover hops across canyon plates marked with safe inequality zones.',
+                            goalDistance: 190,
+                            baseSpeed: 4.1,
+                            speedStep: 0.5,
+                            spawnGap: 47,
+                            gravity: 0.54,
+                            jumpPower: 10.4,
+                            phaseNames: ['Canyon Edge', 'Safety Zone', 'Summit Lock'],
+                            obstacleTypes: ['short', 'wide', 'hover'],
+                            skyColors: ['#134e4a', '#115e59', '#0f766e'],
+                            groundColor: '#0d9488',
+                            obstacleColor: '#fde68a',
+                            playerColor: '#e879f9',
+                            checkpointFlavor: 'equations'
+                        }
+                    ]
+                },
                 default: {
                     flappy_rocket: [
                         {
@@ -1826,13 +2862,9 @@
                 };
             }
 
-            const multiplier = pickRandom([3, 4, 5, 6, 7, 8]);
-            const product = multiplier * 6;
-            return {
-                prompt: `${courseProfile.name} checkpoint: what multiple of 6 equals ${product}?`,
-                answer: String(product),
-                hint: `Count by sixes until you reach ${product}.`
-            };
+            // Units 2-5 (fractions_decimals / rational_numbers / expressions / equations)
+            // reuse the same topic-aligned checkpoint bank as the asteroid shooter.
+            return buildShooterCheckpoint(checkpointTopic);
         }
 
         function loadCoordinateFlightEmbed(container, station, activity) {
@@ -1923,6 +2955,404 @@
                     closeModal();
                 }, 1000);
             });
+        }
+
+        function loadFractionMasterEmbed(container, station, activity) {
+            const points = activity.points_reward || 150;
+            container.innerHTML = `
+                <p class="text-slate-400">Launch into Fraction Master! Simplify, compare, and operate on fractions across timed rounds.</p>
+                <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
+                    <span class="text-4xl block animate-bounce">🍕</span>
+                    <h4 class="font-extrabold text-sm text-cyan-400">Fraction Master</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">Click below to sharpen your fraction skills, then return here to bank your bonus coins!</p>
+                    <a href="/fraction-master" class="btn-accessible inline-flex items-center gap-1.5 no-underline">
+                        🍕 Launch Fraction Master
+                    </a>
+                </div>
+                <div class="flex justify-between items-center bg-slate-950/70 border border-slate-800 rounded-xl p-3 mt-3">
+                    <span class="text-xs text-slate-400">Verify completion below once you finish a round:</span>
+                    <button id="fraction-verify-btn" class="btn-accessible py-2 text-xs">Verify Completion</button>
+                </div>
+                <p id="fraction-feedback" class="text-xs font-bold text-center h-4 mt-2"></p>
+            `;
+
+            document.getElementById('fraction-verify-btn').addEventListener('click', () => {
+                const feedback = document.getElementById('fraction-feedback');
+                feedback.textContent = `Mission verified! Fraction round complete. +${points} points!`;
+                feedback.style.color = '#10b981';
+                setTimeout(() => {
+                    awardStation(station, points);
+                    closeModal();
+                }, 1000);
+            });
+        }
+
+        // ---------------------------------------------------------------
+        // MINI-GAME: ASTEROID SHOOTER (blast rocks, pause for math, earn a boost shot)
+        // ---------------------------------------------------------------
+        function loadAsteroidShooter(container, station, activity) {
+            const points = activity.points_reward || 180;
+            const topic = activity.question_topic || 'number_properties';
+            const roundTarget = activity.round_target || 6;
+            container.innerHTML = `
+                <p class="text-slate-400">Blast falling space rocks! Clear the round, then answer a math checkpoint to charge an upgraded boost shot.</p>
+                ${progressBanner(points)}
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between text-[11px] font-mono text-slate-300">
+                        <span id="shooter-score">Rocks Cleared: 0/${roundTarget}</span>
+                        <span id="shooter-lives">Shields: 3</span>
+                        <span id="shooter-status">Press Start</span>
+                    </div>
+                    <canvas id="shooter-canvas" width="420" height="240"></canvas>
+                    <p class="text-[10px] text-slate-500 text-center">Arrow keys / A-D to move &middot; Space or click to fire</p>
+                    <button id="shooter-start" class="btn-accessible w-full">Start Blasting</button>
+                </div>
+                <div id="shooter-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                    <p id="shooter-prompt" class="text-center font-mono text-sm"></p>
+                    <div class="flex gap-2">
+                        <input id="shooter-input" type="text" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white" placeholder="Type value">
+                        <button id="shooter-submit" class="btn-accessible px-4">Fire Boost</button>
+                    </div>
+                </div>
+                <p id="shooter-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            const canvas = document.getElementById('shooter-canvas');
+            const ctx = canvas.getContext('2d');
+            const startBtn = document.getElementById('shooter-start');
+            const scoreLabel = document.getElementById('shooter-score');
+            const livesLabel = document.getElementById('shooter-lives');
+            const statusLabel = document.getElementById('shooter-status');
+            const checkpoint = document.getElementById('shooter-checkpoint');
+            const promptEl = document.getElementById('shooter-prompt');
+            const feedback = document.getElementById('shooter-feedback');
+
+            const startBoosted = !!activity._boostActive;
+            activity._boostActive = false;
+
+            const ship = { x: canvas.width / 2, width: 26, height: 16, speed: 5.5 };
+            const state = {
+                rocksCleared: 0,
+                lives: 3,
+                rocks: [],
+                lasers: [],
+                boosted: startBoosted,
+                frame: 0,
+                running: false,
+                finished: false,
+                animationId: null,
+                keys: {},
+                awaitingMath: false,
+                checkpointAnswer: null,
+                checkpointHint: '',
+            };
+
+            function resetRound() {
+                state.rocksCleared = 0;
+                state.lives = 3;
+                state.rocks = [];
+                state.lasers = [];
+                state.frame = 0;
+                state.running = true;
+                state.finished = false;
+                state.awaitingMath = false;
+                ship.x = canvas.width / 2;
+                checkpoint.classList.add('hidden');
+                feedback.textContent = '';
+                statusLabel.textContent = state.boosted ? 'Blasting (Boost Shot Online!)' : 'Blasting';
+                startBtn.textContent = 'Restart Round';
+                scoreLabel.textContent = `Rocks Cleared: 0/${roundTarget}`;
+                livesLabel.textContent = 'Shields: 3';
+            }
+
+            function spawnRock() {
+                state.rocks.push({
+                    x: randomInt(24, canvas.width - 24),
+                    y: -18,
+                    radius: randomInt(12, 20),
+                    speed: 1.4 + Math.random() * 1.6,
+                });
+            }
+
+            function playFireSound() {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    const actx = new AudioCtx();
+                    const osc = actx.createOscillator();
+                    const gain = actx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(state.boosted ? 1100 : 700, actx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, actx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.05, actx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.12);
+                    osc.connect(gain);
+                    gain.connect(actx.destination);
+                    osc.start();
+                    osc.stop(actx.currentTime + 0.12);
+                } catch (e) { /* audio unavailable */ }
+            }
+
+            function fireLaser() {
+                if (!state.running || state.awaitingMath) return;
+                state.lasers.push({ x: ship.x, y: canvas.height - 34, width: state.boosted ? 6 : 3 });
+                if (state.boosted) {
+                    state.lasers.push({ x: ship.x - 12, y: canvas.height - 34, width: 4 });
+                    state.lasers.push({ x: ship.x + 12, y: canvas.height - 34, width: 4 });
+                }
+                playFireSound();
+            }
+
+            function collides(rock, laser) {
+                return Math.abs(rock.x - laser.x) < rock.radius + laser.width && Math.abs(rock.y - laser.y) < rock.radius + 10;
+            }
+
+            function update() {
+                state.frame += 1;
+                if (state.keys.left) ship.x = Math.max(16, ship.x - ship.speed);
+                if (state.keys.right) ship.x = Math.min(canvas.width - 16, ship.x + ship.speed);
+
+                if (state.frame % Math.max(24, 46 - state.rocksCleared * 2) === 0) {
+                    spawnRock();
+                }
+
+                state.lasers.forEach((laser) => { laser.y -= 7; });
+                state.lasers = state.lasers.filter((laser) => laser.y > -10);
+                state.rocks.forEach((rock) => { rock.y += rock.speed; });
+
+                for (let ri = state.rocks.length - 1; ri >= 0; ri -= 1) {
+                    const rock = state.rocks[ri];
+                    let hit = false;
+                    for (let li = state.lasers.length - 1; li >= 0; li -= 1) {
+                        if (collides(rock, state.lasers[li])) {
+                            state.rocks.splice(ri, 1);
+                            state.lasers.splice(li, 1);
+                            state.rocksCleared += 1;
+                            hit = true;
+                            break;
+                        }
+                    }
+                    if (hit) continue;
+                    if (rock.y - rock.radius > canvas.height) {
+                        state.rocks.splice(ri, 1);
+                        state.lives -= 1;
+                    }
+                }
+
+                scoreLabel.textContent = `Rocks Cleared: ${Math.min(state.rocksCleared, roundTarget)}/${roundTarget}`;
+                livesLabel.textContent = `Shields: ${Math.max(0, state.lives)}`;
+
+                if (state.lives <= 0) {
+                    state.running = false;
+                    statusLabel.textContent = 'Shields down!';
+                    feedback.textContent = 'Your shields were destroyed. Restart the round and try again!';
+                    feedback.style.color = '#ef4444';
+                    return;
+                }
+
+                if (state.rocksCleared >= roundTarget) {
+                    state.running = false;
+                    state.finished = true;
+                    state.awaitingMath = true;
+                    statusLabel.textContent = 'Checkpoint reached!';
+                    checkpoint.classList.remove('hidden');
+                    const challenge = buildShooterCheckpoint(topic);
+                    state.checkpointAnswer = challenge.answer;
+                    state.checkpointHint = challenge.hint;
+                    promptEl.textContent = challenge.prompt;
+                    document.getElementById('shooter-input').value = '';
+                    document.getElementById('shooter-input').focus();
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                for (let i = 0; i < 24; i += 1) {
+                    const x = (i * 53 + state.frame * 0.3) % canvas.width;
+                    const y = (i * 31) % canvas.height;
+                    ctx.fillRect(x, y, 1.5, 1.5);
+                }
+
+                state.rocks.forEach((rock) => {
+                    ctx.fillStyle = '#78716c';
+                    ctx.beginPath();
+                    ctx.arc(rock.x, rock.y, rock.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#44403c';
+                    ctx.stroke();
+                });
+
+                state.lasers.forEach((laser) => {
+                    ctx.fillStyle = state.boosted ? '#f472b6' : '#38bdf8';
+                    ctx.fillRect(laser.x - laser.width / 2, laser.y, laser.width, 14);
+                });
+
+                ctx.fillStyle = state.boosted ? '#f472b6' : '#38bdf8';
+                ctx.beginPath();
+                ctx.moveTo(ship.x, canvas.height - 34 - ship.height);
+                ctx.lineTo(ship.x - ship.width / 2, canvas.height - 34);
+                ctx.lineTo(ship.x + ship.width / 2, canvas.height - 34);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            function loop() {
+                draw();
+                if (state.running) update();
+                state.animationId = requestAnimationFrame(loop);
+            }
+
+            const handleKeydown = (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.keys.left = true;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.keys.right = true;
+                if (e.key === ' ') { e.preventDefault(); fireLaser(); }
+            };
+            const handleKeyup = (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.keys.left = false;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.keys.right = false;
+            };
+
+            canvas.addEventListener('click', fireLaser);
+            window.addEventListener('keydown', handleKeydown);
+            window.addEventListener('keyup', handleKeyup);
+            startBtn.addEventListener('click', resetRound);
+
+            const submitShooter = () => {
+                const raw = document.getElementById('shooter-input').value.trim();
+                if (!state.finished) {
+                    feedback.textContent = 'Clear the round before answering the checkpoint.';
+                    feedback.style.color = '#ef4444';
+                    return;
+                }
+                if (raw !== '' && raw.replace(/\s+/g, '') === String(state.checkpointAnswer).replace(/\s+/g, '')) {
+                    activity._boostActive = true;
+                    feedback.textContent = 'Correct! Boost shot charged for your next run!';
+                    feedback.style.color = '#10b981';
+                    setTimeout(() => {
+                        resolveCorrectAttempt(container, station, activity, points, feedback, 'Boost shot charged!', loadAsteroidShooter);
+                    }, 700);
+                } else {
+                    feedback.textContent = state.checkpointHint;
+                    feedback.style.color = '#ef4444';
+                }
+            };
+
+            document.getElementById('shooter-submit').addEventListener('click', submitShooter);
+            bindEnterSubmit(['shooter-input'], submitShooter);
+            loop();
+
+            activeModalCleanup = () => {
+                if (state.animationId) cancelAnimationFrame(state.animationId);
+                canvas.removeEventListener('click', fireLaser);
+                window.removeEventListener('keydown', handleKeydown);
+                window.removeEventListener('keyup', handleKeyup);
+            };
+        }
+
+        // ---------------------------------------------------------------
+        // MINI-GAME: TIC-TAC-TOE VS SMART BOT (quick match + wrap-up question)
+        // ---------------------------------------------------------------
+        function loadTicTacToeBot(container, station, activity) {
+            const points = activity.points_reward || 150;
+            const topic = activity.question_topic || 'number_properties';
+            container.innerHTML = `
+                <p class="text-slate-400">Quick match: you are <span class="math-term">X</span>, the smart bot is <span class="math-term">O</span>. Win, draw, or learn from a loss, then clear the wrap-up question.</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div id="ttt-board" class="grid grid-cols-3 gap-2 max-w-[220px] mx-auto"></div>
+                    <p id="ttt-status" class="text-center text-xs font-bold text-slate-300">Your move! Pick a square.</p>
+                </div>
+                <div id="ttt-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                    <p id="ttt-prompt" class="text-center font-mono text-sm"></p>
+                    <div class="flex gap-2">
+                        <input id="ttt-input" type="text" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white" placeholder="Type value">
+                        <button id="ttt-submit" class="btn-accessible px-4">Submit</button>
+                    </div>
+                </div>
+                <p id="ttt-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            let board = Array(9).fill(null);
+            let gameOver = false;
+            let checkpointAnswer = null;
+            let checkpointHint = '';
+            const boardEl = document.getElementById('ttt-board');
+            const statusEl = document.getElementById('ttt-status');
+            const checkpoint = document.getElementById('ttt-checkpoint');
+            const feedback = document.getElementById('ttt-feedback');
+
+            function renderBoard() {
+                boardEl.innerHTML = '';
+                board.forEach((cell, idx) => {
+                    const cellBtn = document.createElement('button');
+                    cellBtn.type = 'button';
+                    cellBtn.className = 'aspect-square bg-slate-900 border border-slate-700 rounded-lg text-xl font-black flex items-center justify-center';
+                    cellBtn.textContent = cell || '';
+                    cellBtn.style.color = cell === 'X' ? '#38bdf8' : '#f472b6';
+                    cellBtn.disabled = !!cell || gameOver;
+                    cellBtn.addEventListener('click', () => handleStudentMove(idx));
+                    boardEl.appendChild(cellBtn);
+                });
+            }
+
+            function endGame(message) {
+                gameOver = true;
+                statusEl.textContent = message;
+                renderBoard();
+                checkpoint.classList.remove('hidden');
+                const challenge = buildShooterCheckpoint(topic);
+                checkpointAnswer = challenge.answer;
+                checkpointHint = challenge.hint;
+                document.getElementById('ttt-prompt').textContent = `Wrap-up question: ${challenge.prompt}`;
+                document.getElementById('ttt-input').value = '';
+                document.getElementById('ttt-input').focus();
+            }
+
+            function finishOrContinue(winner) {
+                if (winner === 'X') { endGame('You win! Great strategy.'); return; }
+                if (winner === 'O') { endGame('The bot wins this time. Nice try!'); return; }
+                if (winner === 'draw') { endGame("It's a draw! Solid defense."); return; }
+                statusEl.textContent = 'Your move! Pick a square.';
+            }
+
+            function handleStudentMove(idx) {
+                if (gameOver || board[idx]) return;
+                board[idx] = 'X';
+                let winner = ticTacToeWinner(board);
+                if (winner) {
+                    renderBoard();
+                    finishOrContinue(winner);
+                    return;
+                }
+                statusEl.textContent = 'Bot is thinking...';
+                renderBoard();
+                setTimeout(() => {
+                    const botIdx = pickBotMove(board);
+                    if (botIdx !== undefined && botIdx !== null) board[botIdx] = 'O';
+                    winner = ticTacToeWinner(board);
+                    renderBoard();
+                    finishOrContinue(winner);
+                }, 400);
+            }
+
+            renderBoard();
+
+            const submitTtt = () => {
+                const raw = document.getElementById('ttt-input').value.trim();
+                if (!gameOver) return;
+                if (raw !== '' && raw.replace(/\s+/g, '') === String(checkpointAnswer).replace(/\s+/g, '')) {
+                    resolveCorrectAttempt(container, station, activity, points, feedback, 'Correct!', loadTicTacToeBot);
+                } else {
+                    feedback.textContent = checkpointHint;
+                    feedback.style.color = '#ef4444';
+                }
+            };
+
+            document.getElementById('ttt-submit').addEventListener('click', submitTtt);
+            bindEnterSubmit(['ttt-input'], submitTtt);
+            activeModalCleanup = null;
         }
 
         function loadStudentCreationForm(container, station, activity) {
@@ -2019,8 +3449,9 @@
         }
 
         function markStationCompleted(id) {
-            if (!completedStations.includes(String(id))) {
-                completedStations.push(String(id));
+            const completionId = `${planetId}:${id}`;
+            if (!completedStations.includes(completionId)) {
+                completedStations.push(completionId);
             }
             saveState();
             setupPlanetHub();

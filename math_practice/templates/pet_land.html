@@ -3,6 +3,7 @@
 {% block title %}Pet Land - Character Port - Mrs. McAllister's Learning Center{% endblock %}
 
 {% block extra_styles %}
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background: radial-gradient(circle at top, #0f172a 0%, #020617 58%, #000 100%);
@@ -99,6 +100,22 @@
             justify-content: center;
             font-size: 40px;
         }
+
+        .companion-preview { position: relative; width: 156px; height: 156px; margin: 0 auto; display: grid; place-items: center; overflow: hidden; border: 2px solid #67e8f9; border-radius: 12px; background: radial-gradient(circle at 35% 28%, #334155, #0f172a 70%); }
+        .sprite-base, .sprite-layer { position: absolute; line-height: 1; pointer-events: none; }
+        .sprite-base { font-size: 78px; z-index: 1; }
+        .sprite-layer { font-size: 46px; z-index: 2; }
+        .sprite-layer[data-slot="hat"] { top: 12px; }
+        .sprite-layer[data-slot="outfit"] { bottom: 10px; }
+        .sprite-layer[data-slot="accessory"] { right: 12px; bottom: 28px; }
+        .rarity-tag, .milestone-tag { display: inline-block; border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+        .rarity-common { background: #334155; color: #e2e8f0; }
+        .rarity-uncommon { background: #065f46; color: #a7f3d0; }
+        .rarity-rare { background: #1e3a8a; color: #bfdbfe; }
+        .rarity-legendary { background: #78350f; color: #fde68a; }
+        .milestone-tag { background: #3f3f46; color: #e4e4e7; }
+        .gear-card-locked { border-color: #52525b; opacity: .72; }
+        .btn-accessible:disabled { cursor: not-allowed; opacity: .6; transform: none; }
     </style>
 {% endblock %}
 
@@ -117,7 +134,7 @@
             <div>
                 <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Special Destination</span>
                 <h1 class="text-3xl font-black text-slate-100">Pet Land & Character Port</h1>
-                <p class="text-sm text-slate-400">Adopt a sidekick, switch your active pet, unlock characters, and spend coins on merch.</p>
+                <p class="text-sm text-slate-400">Build a companion or explorer loadout with layered gear earned through 6th-grade math milestones.</p>
             </div>
         </div>
 
@@ -131,8 +148,8 @@
                 <div id="equipped-pet-summary" class="text-sm text-slate-300"></div>
             </div>
             <div class="pet-card space-y-2">
-                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Pet Care Notes</span>
-                <p class="text-sm text-slate-400">Pets stay with the student profile across units, but they do not appear inside the arcade games unless you decide to add that later.</p>
+                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Layered Loadout</span>
+                <div id="companion-preview" class="companion-preview" aria-label="Active companion customization preview"></div>
             </div>
         </div>
     </div>
@@ -152,10 +169,10 @@
     <div class="pet-panel space-y-4">
         <div class="flex items-center justify-between gap-4">
             <div>
-                <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Merch Dock</span>
-                <h2 class="text-xl font-black text-slate-100">Collect Gear</h2>
+                <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Companion Outfitters</span>
+                <h2 class="text-xl font-black text-slate-100">Collect and Equip Gear</h2>
             </div>
-            <div class="text-xs text-slate-400">Buy cosmetic merch and explorer gear with coins.</div>
+            <div class="text-xs text-slate-400">Every item has a rarity rate and a completed-unit milestone.</div>
         </div>
         <div id="merch-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
         <p id="merch-land-feedback" class="text-sm font-bold h-5"></p>
@@ -189,12 +206,13 @@
             { id: 'galaxy-engineer', name: 'Galaxy Engineer', emoji: '🛠️', style: 'Puzzle-solving crew chief with a utility belt.', cost: 160 }
         ];
 
-        const merchCatalog = [
-            { id: 'comet-cape', name: 'Comet Cape', emoji: '🧣', category: 'Cape', cost: 45 },
-            { id: 'rocket-skates', name: 'Rocket Skates', emoji: '🛼', category: 'Boots', cost: 60 },
-            { id: 'crystal-visor', name: 'Crystal Visor', emoji: '🥽', category: 'Helmet', cost: 55 },
-            { id: 'neon-rover-wrap', name: 'Neon Rover Wrap', emoji: '🚙', category: 'Vehicle', cost: 70 },
-            { id: 'star-sticker-pack', name: 'Star Sticker Pack', emoji: '🌟', category: 'Sticker', cost: 30 }
+        const gearCatalog = [
+            { id: 'navigator-hoodie', name: 'Navigator Hoodie', emoji: '🧥', slot: 'outfit', target: 'character', rarity: 'Common', dropRate: 60, cost: 45, milestoneUnit: 1 },
+            { id: 'factor-bandana', name: 'Factor Bandana', emoji: '🧣', slot: 'accessory', target: 'pet', rarity: 'Common', dropRate: 60, cost: 40, milestoneUnit: 1 },
+            { id: 'fraction-wings', name: 'Fraction Wings', emoji: '🪽', slot: 'accessory', target: 'pet', rarity: 'Uncommon', dropRate: 25, cost: 75, milestoneUnit: 2 },
+            { id: 'rational-visor', name: 'Rational Visor', emoji: '🥽', slot: 'hat', target: 'pet', rarity: 'Rare', dropRate: 10, cost: 120, milestoneUnit: 3 },
+            { id: 'expression-cape', name: 'Expression Cape', emoji: '🦸', slot: 'outfit', target: 'character', rarity: 'Rare', dropRate: 10, cost: 135, milestoneUnit: 4 },
+            { id: 'equation-crown', name: 'Equation Crown', emoji: '👑', slot: 'hat', target: 'pet', rarity: 'Legendary', dropRate: 5, cost: 220, milestoneUnit: 5 }
         ];
 
         const petCatalog = [
@@ -209,11 +227,13 @@
             ownedCharacters: ['nova-cadet'],
             equippedCharacter: 'nova-cadet',
             ownedMerch: [],
+            equippedGear: {},
             ownedPets: [],
             equippedPet: null,
         };
         let floatTimer = null;
         let petFloatState = null;
+        let completedStations = [];
 
         function loadState() {
             const saved = localStorage.getItem('6th_grade_quest_state');
@@ -221,6 +241,7 @@
             try {
                 const parsed = JSON.parse(saved);
                 coins = parsed.coins || 15;
+                completedStations = Array.isArray(parsed.completedStations) ? parsed.completedStations : [];
                 studentProfile = {
                     ...studentProfile,
                     ...(parsed.studentProfile || {})
@@ -252,6 +273,23 @@
             return petCatalog.find((pet) => pet.id === id) || null;
         }
 
+        function isUnitCompleted(unit) {
+            const scopedStations = Array.from({ length: 10 }, (_, index) => `${unit}:${index + 1}`);
+            if (scopedStations.every((station) => completedStations.includes(station))) return true;
+            return unit === 1 && Array.from({ length: 10 }, (_, index) => String(index + 1)).every((station) => completedStations.includes(station));
+        }
+
+        function getEquippedGear(target) {
+            return Object.values(studentProfile.equippedGear || {}).map((id) => gearCatalog.find((item) => item.id === id)).filter((item) => item && item.target === target);
+        }
+
+        function renderCompanionPreview(activeCharacter, activePet) {
+            const target = activePet ? 'pet' : 'character';
+            const base = activePet || activeCharacter;
+            const layers = getEquippedGear(target).map((item) => `<span class="sprite-layer" data-slot="${item.slot}" title="${item.name}">${item.emoji}</span>`).join('');
+            document.getElementById('companion-preview').innerHTML = `<span class="sprite-base">${base.emoji}</span>${layers}`;
+        }
+
         function updateHUD() {
             document.getElementById('pet-land-coins').textContent = coins;
             const activeCharacter = getCharacterById(studentProfile.equippedCharacter);
@@ -260,6 +298,7 @@
             document.getElementById('equipped-pet-summary').innerHTML = activePet
                 ? `<span class="text-2xl mr-2">${activePet.emoji}</span><span class="math-term">${activePet.name}</span><div class="text-xs text-slate-400 mt-1">${activePet.talent}</div>`
                 : 'No pet equipped yet. Adopt one below.';
+            renderCompanionPreview(activeCharacter, activePet);
             const floatBody = document.getElementById('pet-float-body');
             if (floatBody) floatBody.textContent = activePet ? activePet.emoji : activeCharacter.emoji;
         }
@@ -312,18 +351,21 @@
         function renderMerchShop() {
             const grid = document.getElementById('merch-shop-grid');
             const feedback = document.getElementById('merch-land-feedback');
-            grid.innerHTML = merchCatalog.map((item) => {
+            grid.innerHTML = gearCatalog.map((item) => {
                 const owned = studentProfile.ownedMerch.includes(item.id);
+                const equipped = studentProfile.equippedGear?.[item.slot] === item.id;
+                const unlocked = isUnitCompleted(item.milestoneUnit);
                 return `
-                    <div class="pet-card space-y-3">
+                    <div class="pet-card space-y-3 ${unlocked ? '' : 'gear-card-locked'}">
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <div class="text-lg font-black text-slate-100">${item.emoji} ${item.name}</div>
-                                <div class="text-xs text-slate-400 mt-1">Category: ${item.category}</div>
+                                <div class="text-xs text-slate-400 mt-1">${item.target === 'pet' ? 'Companion' : 'Explorer'} ${item.slot}</div>
+                                <div class="mt-2"><span class="rarity-tag rarity-${item.rarity.toLowerCase()}">${item.rarity} ${item.dropRate}%</span> <span class="milestone-tag">Unit ${item.milestoneUnit} complete</span></div>
                             </div>
                             <div class="text-yellow-400 font-black text-sm">${owned ? 'Owned' : `${item.cost} coins`}</div>
                         </div>
-                        <button data-merch-id="${item.id}" class="btn-accessible w-full text-xs">${owned ? 'Collected' : 'Buy Item'}</button>
+                        <button data-merch-id="${item.id}" class="btn-accessible w-full text-xs" ${unlocked ? '' : 'disabled'}>${!unlocked ? `Locked: finish Unit ${item.milestoneUnit}` : equipped ? 'Unequip Gear' : owned ? 'Equip Gear' : 'Buy Gear'}</button>
                     </div>
                 `;
             }).join('');
@@ -331,25 +373,33 @@
             grid.querySelectorAll('[data-merch-id]').forEach((button) => {
                 button.addEventListener('click', () => {
                     const id = button.getAttribute('data-merch-id');
-                    const item = merchCatalog.find((merch) => merch.id === id);
-                    if (!item || studentProfile.ownedMerch.includes(id)) {
-                        feedback.textContent = 'That item is already in your locker.';
-                        feedback.style.color = '#67e8f9';
+                    const item = gearCatalog.find((gear) => gear.id === id);
+                    if (!item) return;
+                    if (!isUnitCompleted(item.milestoneUnit)) {
+                        feedback.textContent = `Finish every station in Unit ${item.milestoneUnit} to unlock this gear.`;
+                        feedback.style.color = '#fbbf24';
                         return;
                     }
-                    if (coins < item.cost) {
+                    if (!studentProfile.ownedMerch.includes(id) && coins < item.cost) {
                         feedback.textContent = 'Not enough coins for that merch item.';
                         feedback.style.color = '#ef4444';
                         return;
                     }
-                    coins -= item.cost;
-                    studentProfile.ownedMerch.push(id);
+                    if (!studentProfile.ownedMerch.includes(id)) {
+                        coins -= item.cost;
+                        studentProfile.ownedMerch.push(id);
+                    }
+                    if (studentProfile.equippedGear[item.slot] === id) {
+                        delete studentProfile.equippedGear[item.slot];
+                    } else {
+                        studentProfile.equippedGear[item.slot] = id;
+                    }
                     saveState();
                     updateHUD();
                     renderMerchShop();
-                    feedback.textContent = `${item.name} added to the merch locker.`;
+                    feedback.textContent = studentProfile.equippedGear[item.slot] === id ? `${item.name} is now layered onto your ${item.target === 'pet' ? 'companion' : 'explorer'}.` : `${item.name} returned to your locker.`;
                     feedback.style.color = '#10b981';
-                    pulsePetBubble(`${item.emoji} ${item.name} has been shipped to your locker.`);
+                    pulsePetBubble(`${item.emoji} ${item.name} updated the active loadout.`);
                 });
             });
         }

@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+
+{% block title %}Orientation Station - Mrs. McAllister's Math Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #05030d;
+        color: #e0e0ed;
+        font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .home-btn {
+        background: linear-gradient(to right, #1e293b, #334155);
+        border: 2px solid #8b5a2b;
+        color: #e0e0ed;
+        font-weight: 700;
+        padding: 10px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .home-btn:hover {
+        transform: scale(1.05);
+        background: #475569;
+    }
+
+    .game-title {
+        font-size: 1.8rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(to right, #38bdf8, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .coins-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 2.5px solid #8b5a2b;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: #f3f4f6;
+    }
+
+    .module-tag {
+        text-align: center;
+        font-size: 0.85em;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        margin: 0 0 20px;
+    }
+
+    .glass-station-panel {
+        background: rgba(26, 26, 46, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .intro-panel h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        color: #38bdf8;
+    }
+
+    .intro-panel p {
+        line-height: 1.6;
+        color: #cbd5e1;
+    }
+
+    .intro-list {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+    }
+
+    .intro-list li {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 0.9em;
+    }
+
+    .wood-hud-panel {
+        background: rgba(30, 41, 59, 0.85);
+        border: 4px solid #8b5a2b;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+    }
+
+    .quiz-panel {
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .quiz-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .quiz-progress {
+        font-weight: 700;
+        color: #38bdf8;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .quiz-score-tag {
+        font-size: 0.75em;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .quiz-question-text {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin: 0 0 18px;
+        line-height: 1.5;
+    }
+
+    .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .quiz-option-btn {
+        text-align: left;
+        background: rgba(15, 23, 42, 0.75);
+        border: 2px solid #334155;
+        color: #e2e8f0;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 0.95em;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .quiz-option-btn:hover:not(:disabled) {
+        border-color: #38bdf8;
+        background: rgba(56, 189, 248, 0.1);
+    }
+
+    .quiz-option-btn:disabled {
+        cursor: default;
+    }
+
+    .quiz-option-btn.correct {
+        border-color: #34d399;
+        background: rgba(16, 185, 129, 0.18);
+    }
+
+    .quiz-option-btn.incorrect {
+        border-color: #f87171;
+        background: rgba(248, 113, 113, 0.18);
+    }
+
+    .quiz-feedback {
+        min-height: 24px;
+        font-weight: 700;
+        font-size: 0.9em;
+    }
+
+    .submit-btn, .quiz-next-btn, .continue-btn {
+        display: inline-block;
+        background: linear-gradient(to right, #0ea5e9, #6366f1);
+        color: #fff;
+        border: none;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 0.95em;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.15s ease;
+    }
+
+    .submit-btn:hover, .quiz-next-btn:hover, .continue-btn:hover {
+        transform: scale(1.04);
+    }
+
+    .quiz-next-btn {
+        display: none;
+    }
+
+    .secondary-btn {
+        background: rgba(51, 65, 85, 0.8);
+        border: 2px solid #475569;
+        color: #e2e8f0;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95em;
+        cursor: pointer;
+    }
+
+    .results-title {
+        margin-top: 0;
+        font-size: 1.4rem;
+        color: #fbbf24;
+        text-align: center;
+    }
+
+    .results-score {
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #38bdf8;
+        margin: 8px 0;
+    }
+
+    .results-message, .results-coins {
+        text-align: center;
+        color: #cbd5e1;
+    }
+
+    .results-actions {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+    }
+
+    .skip-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #64748b;
+        font-size: 0.85em;
+        text-decoration: none;
+    }
+
+    .skip-link:hover {
+        color: #94a3b8;
+        text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+        .nav-header {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <a href="{{ url_for('quest_map') }}" class="home-btn">
+            🗺️ Back to Quest Map
+        </a>
+        <h1 class="game-title">🛰️ Orientation Station</h1>
+        <div class="coins-box">
+            <span class="text-yellow-400">🪙 Coins: <span id="coins-count">15</span></span>
+        </div>
+    </div>
+
+    <p class="module-tag">Module 0 &middot; Complete this before launching to Unit 1</p>
+
+    <!-- Welcome / Intro -->
+    <div class="glass-station-panel intro-panel">
+        <h2>👋 Welcome to Mrs. McAllister's Math Center!</h2>
+        <p>
+            Before you blast off to Unit 1, complete this quick Platform Navigation Check.
+            It covers five things every student needs to know how to do on Canvas:
+        </p>
+        <ul class="intro-list">
+            <li>✅ Checking your grades</li>
+            <li>✅ Using the Inbox to message your teacher</li>
+            <li>✅ Finding your assignments in Modules</li>
+            <li>✅ Refreshing the page to fix common bugs</li>
+            <li>✅ Submitting an assignment</li>
+        </ul>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quiz-container" class="wood-hud-panel quiz-panel">
+        <div class="quiz-header-row">
+            <span id="quiz-progress" class="quiz-progress">Question 1 of 10</span>
+            <span class="quiz-score-tag">Navigation Check</span>
+        </div>
+        <p id="quiz-question-text" class="quiz-question-text"></p>
+        <div id="quiz-options" class="quiz-options"></div>
+        <p id="quiz-feedback" class="quiz-feedback"></p>
+        <button id="quiz-next-btn" type="button" class="submit-btn quiz-next-btn">Next Question →</button>
+    </div>
+
+    <!-- Results -->
+    <div id="results-container" class="wood-hud-panel quiz-panel" style="display:none;">
+        <h3 class="results-title">🎉 Orientation Complete!</h3>
+        <p class="results-score">Score: <span id="results-score">0 / 10</span></p>
+        <p id="results-message" class="results-message"></p>
+        <p id="results-coins" class="results-coins"></p>
+        <div class="results-actions">
+            <button id="retake-quiz-btn" type="button" class="secondary-btn">🔁 Retake Quiz</button>
+            <a href="{{ url_for('planet_hub', planet_id=1) }}" class="submit-btn continue-btn">🚀 Continue to Unit 1</a>
+        </div>
+    </div>
+
+    <a href="{{ url_for('quest_map') }}" class="skip-link">Skip for now &rarr; Return to Quest Map</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 10-question Canvas / Platform navigation check quiz. Covers: checking grades,
+    // using the inbox, finding modules, refreshing for bug fixes, and submitting assignments.
+    const quizQuestions = [
+        {
+            q: "Where should you go to check your current grade in a class?",
+            options: [
+                "The Modules tab",
+                "View Grades on your Dashboard, or the Grades tab inside the course",
+                "The Inbox icon",
+                "The Calendar"
+            ],
+            correct: 1,
+            explain: "Click View Grades on your Dashboard, or open the Grades tab inside a course."
+        },
+        {
+            q: "What tool lets you type in a hypothetical score to see how it might change your overall grade?",
+            options: ["What-If Scores", "Grade Predictor Pro", "Study Buddy", "Score Saver"],
+            correct: 0,
+            explain: "Grades pages let you type in 'What-If' scores to preview how a grade might change."
+        },
+        {
+            q: "You have a private question for your teacher. Which tool should you use?",
+            options: ["The Discussion Board", "The Inbox icon", "The Calendar", "The Modules tab"],
+            correct: 1,
+            explain: "Use the Inbox icon on the left side of Canvas to send your teacher a message."
+        },
+        {
+            q: "Which of these is the BEST reason to use the Canvas Inbox?",
+            options: [
+                "To check today's weather",
+                "To message your teacher directly, like when you're confused about an assignment",
+                "To play games",
+                "To change your password"
+            ],
+            correct: 1,
+            explain: "The Inbox is for sending messages to your teacher, such as asking questions about assignments."
+        },
+        {
+            q: "Where do you look to find your weekly assignments?",
+            options: ["The Modules tab", "Account Settings", "The Files page", "The Profile page"],
+            correct: 0,
+            explain: "Always look in the Modules tab for your weekly assignments."
+        },
+        {
+            q: "You don't see one of your classes on your Dashboard. What should you do?",
+            options: [
+                "Give up on that class",
+                "Go to Courses > All Courses and click the star next to the class",
+                "Delete your account",
+                "Only email tech support"
+            ],
+            correct: 1,
+            explain: "Click Courses > All Courses and click the star next to your class to pin it to your Dashboard."
+        },
+        {
+            q: "A page in Canvas won't load or looks broken. What's the FIRST thing you should try?",
+            options: ["Restart the whole computer", "Refresh the page", "Call tech support immediately", "Wait two weeks"],
+            correct: 1,
+            explain: "Start simple: refresh the page first. Then try Google Chrome or an Incognito window."
+        },
+        {
+            q: "You refreshed, tried Chrome, and even tried an Incognito window, but it's still broken. What should you do next?",
+            options: [
+                "Skip the assignment",
+                "Message your teacher in the Canvas Inbox",
+                "Turn off your computer for the rest of the day",
+                "Submit the assignment on paper instead"
+            ],
+            correct: 1,
+            explain: "If refreshing and trying another browser doesn't fix it, message your teacher in the Canvas Inbox."
+        },
+        {
+            q: "How do you turn in a completed assignment in Canvas?",
+            options: [
+                "Email it to yourself",
+                "Click the Submit Assignment button, choose your file, and click Submit again",
+                "Take a screenshot and post it in the Inbox",
+                "Ask a friend to submit it for you"
+            ],
+            correct: 1,
+            explain: "Click the big Submit Assignment button, select your file, and click Submit again. Look for the confetti!"
+        },
+        {
+            q: "If you miss a due date, how long do you generally have to submit an assignment for full credit?",
+            options: ["1 day", "2 weeks", "1 hour", "The rest of the school year"],
+            correct: 1,
+            explain: "You have 2 weeks after the due date to turn in an assignment for full credit."
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const quizContainer = document.getElementById('quiz-container');
+    const resultsContainer = document.getElementById('results-container');
+    const progressLabel = document.getElementById('quiz-progress');
+    const questionText = document.getElementById('quiz-question-text');
+    const optionsList = document.getElementById('quiz-options');
+    const feedbackText = document.getElementById('quiz-feedback');
+    const nextBtn = document.getElementById('quiz-next-btn');
+
+    function renderQuestion() {
+        answered = false;
+        const item = quizQuestions[currentQuestion];
+        progressLabel.textContent = `Question ${currentQuestion + 1} of ${quizQuestions.length}`;
+        questionText.textContent = item.q;
+        feedbackText.textContent = '';
+        nextBtn.style.display = 'none';
+        optionsList.innerHTML = '';
+
+        item.options.forEach((optionText, index) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-option-btn';
+            btn.textContent = optionText;
+            btn.addEventListener('click', () => selectAnswer(index));
+            optionsList.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(index) {
+        if (answered) return;
+        answered = true;
+        const item = quizQuestions[currentQuestion];
+        const allButtons = optionsList.querySelectorAll('.quiz-option-btn');
+
+        allButtons.forEach((b, i) => {
+            b.disabled = true;
+            if (i === item.correct) {
+                b.classList.add('correct');
+            } else if (i === index) {
+                b.classList.add('incorrect');
+            }
+        });
+
+        if (index === item.correct) {
+            score += 1;
+            feedbackText.textContent = `Correct! ${item.explain}`;
+            feedbackText.style.color = '#34d399';
+        } else {
+            feedbackText.textContent = `Not quite. ${item.explain}`;
+            feedbackText.style.color = '#f87171';
+        }
+
+        nextBtn.style.display = 'inline-block';
+        nextBtn.textContent = currentQuestion === quizQuestions.length - 1 ? 'See My Results' : 'Next Question →';
+    }
+
+    function goNext() {
+        currentQuestion += 1;
+        if (currentQuestion >= quizQuestions.length) {
+            showResults();
+        } else {
+            renderQuestion();
+        }
+    }
+
+    function showResults() {
+        quizContainer.style.display = 'none';
+        resultsContainer.style.display = 'block';
+
+        const total = quizQuestions.length;
+        document.getElementById('results-score').textContent = `${score} / ${total}`;
+
+        const passed = score >= 7;
+        const messageEl = document.getElementById('results-message');
+        messageEl.textContent = passed
+            ? "Great job! You're ready to navigate Canvas like a pro."
+            : "Nice try! Review the tips above and retake the quiz whenever you'd like.";
+
+        saveOrientationProgress(score, total);
+    }
+
+    function saveOrientationProgress(finalScore, total) {
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        let state = {};
+        if (saved) {
+            try {
+                state = JSON.parse(saved);
+            } catch (e) {}
+        }
+
+        const alreadyCompleted = state.orientationComplete === true;
+        state.orientationComplete = true;
+        state.orientationScore = finalScore;
+        state.orientationTotal = total;
+
+        if (!alreadyCompleted) {
+            state.coins = (state.coins || 15) + 20;
+        }
+
+        localStorage.setItem('6th_grade_quest_state', JSON.stringify(state));
+
+        const coinsLabel = document.getElementById('results-coins');
+        if (coinsLabel) {
+            coinsLabel.textContent = alreadyCompleted
+                ? 'Orientation was already completed earlier — no bonus coins this time.'
+                : '+20 🪙 bonus coins added to your account!';
+        }
+
+        const coinsCountEl = document.getElementById('coins-count');
+        if (coinsCountEl && typeof state.coins === 'number') {
+            coinsCountEl.textContent = state.coins;
+        }
+    }
+
+    function retakeQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        resultsContainer.style.display = 'none';
+        quizContainer.style.display = 'block';
+        renderQuestion();
+    }
+
+    nextBtn.addEventListener('click', goNext);
+    document.getElementById('retake-quiz-btn').addEventListener('click', retakeQuiz);
+
+    // Reflect any existing coin total in the header on load, consistent with other pages.
+    (function initCoinsDisplay() {
+        const saved = localStorage.getItem('6th_grade_quest_state');
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                const el = document.getElementById('coins-count');
+                if (el && typeof state.coins === 'number') {
+                    el.textContent = state.coins;
+                }
+            } catch (e) {}
+        }
+    })();
+
+    renderQuestion();
+</script>
+{% endblock %}
