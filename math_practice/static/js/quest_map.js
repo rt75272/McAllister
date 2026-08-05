@@ -678,6 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentActiveTopic = topic;
         modalGameTitle.textContent = topic.name;
         modalGameDesc.textContent = topic.desc;
+        stopSpaceShooterLoop();
         modalContentArea.innerHTML = '';
         gameModalOverlay.classList.remove('hidden');
 
@@ -864,6 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // GAME MODULE 2: GALAGA-STYLE SPACE SHOOTER
     // -------------------------------------------------------------
     let shooterAnimId = null;
+    let shooterSpawnTimer = null;
     function mountSpaceShooterGame() {
         modalContentArea.innerHTML = `
             <div class="game-screen">
@@ -940,7 +942,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        let spawnTimer = setInterval(spawnRock, 2200);
+        if (shooterSpawnTimer) {
+            clearInterval(shooterSpawnTimer);
+        }
+        shooterSpawnTimer = setInterval(spawnRock, 2200);
 
         // Click to shoot
         sCanv.addEventListener('click', () => {
@@ -1029,6 +1034,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             score = 0;
                             livesVal.textContent = lives;
                             scoreVal.textContent = `${score}/3`;
+                            if (shooterSpawnTimer) {
+                                clearInterval(shooterSpawnTimer);
+                                shooterSpawnTimer = null;
+                            }
                         }
                     }
                 }
@@ -1129,7 +1138,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (score >= 3) {
                         alert("Shields charged! Solar sector cleared! +10 coins!");
-                        clearInterval(spawnTimer);
+                        if (shooterSpawnTimer) {
+                            clearInterval(shooterSpawnTimer);
+                            shooterSpawnTimer = null;
+                        }
                         completeTopic();
                     }
                 } else {
@@ -1147,6 +1159,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (shooterAnimId) {
             cancelAnimationFrame(shooterAnimId);
             shooterAnimId = null;
+        }
+        if (shooterSpawnTimer) {
+            clearInterval(shooterSpawnTimer);
+            shooterSpawnTimer = null;
         }
     }
 

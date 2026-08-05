@@ -10,7 +10,7 @@
         /* Immersive Space Station Theme for the Planet Hub */
         body {
             background: #09090e;
-            color: #e0e0ed;
+            color: #eef2ff;
             font-family: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
             min-height: 100vh;
             line-height: 1.5;
@@ -39,7 +39,7 @@
         .back-btn {
             background: linear-gradient(to right, #1e293b, #334155);
             border: 2px solid #8b5a2b;
-            color: #e0e0ed;
+            color: #f8fbff;
             font-weight: 700;
             padding: 8px 16px;
             border-radius: 12px;
@@ -61,11 +61,27 @@
             width: 100%;
             height: 480px;
             --planet-photo: none;
-            background-color: #050508;
+            background-color: #020617;
+            background-image:
+                radial-gradient(circle at 12% 18%, rgba(255,255,255,0.95) 0 1px, transparent 1.2px),
+                radial-gradient(circle at 28% 72%, rgba(255,255,255,0.7) 0 0.9px, transparent 1.1px),
+                radial-gradient(circle at 46% 33%, rgba(191, 219, 254, 0.8) 0 1px, transparent 1.2px),
+                radial-gradient(circle at 67% 61%, rgba(255,255,255,0.75) 0 0.9px, transparent 1.1px),
+                radial-gradient(circle at 82% 24%, rgba(125, 211, 252, 0.75) 0 1px, transparent 1.2px),
+                radial-gradient(circle at 92% 78%, rgba(255,255,255,0.9) 0 1px, transparent 1.2px),
+                linear-gradient(180deg, #0b1120 0%, #040712 100%);
             border: 3px solid #334155;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .planet-photo,
+        .terrain-sky,
+        .terrain-backdrop,
+        .terrain-midground,
+        .terrain-foreground {
+            display: none;
         }
 
         .planet-photo {
@@ -278,7 +294,7 @@
             white-space: nowrap;
             font-size: 10px;
             font-weight: 700;
-            color: #abb2bf;
+            color: #e7eefc;
             background: rgba(15, 23, 42, 0.85);
             padding: 2px 6px;
             border-radius: 8px;
@@ -322,7 +338,33 @@
             padding: 24px;
             border-radius: 24px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-            color: #e0e0ed;
+            color: #f1f5ff;
+        }
+
+        /* Lighten key copy blocks for better contrast on dark map backgrounds. */
+        #planet-title-full,
+        #modal-station-title {
+            color: #f8fbff;
+        }
+
+        #planet-description,
+        #detail-desc,
+        #modal-body-content {
+            color: #dbe7ff;
+        }
+
+        #modal-body-content .text-slate-400 {
+            color: #dbe7ff !important;
+        }
+
+        #modal-body-content .text-slate-500 {
+            color: #c9d7f2 !important;
+        }
+
+        #detail-title,
+        #modal-station-type,
+        #planet-title-short {
+            color: #a5f3fc;
         }
 
         /* Highlight math terms using gentle soft pastels */
@@ -400,7 +442,7 @@
             <div class="terrain-backdrop"></div>
             <div class="terrain-midground"></div>
             <div class="terrain-foreground"></div>
-            <svg class="absolute inset-0 w-full h-full pointer-events-none">
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <path id="connector-line" d="" fill="none" stroke="#1e293b" stroke-width="4" stroke-dasharray="8 6"></path>
                 <path id="completed-line" d="" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="4 4" style="display: none;"></path>
             </svg>
@@ -450,7 +492,7 @@
                 unit_id: "planet_1_number_properties",
                 planet_name: "Prime Alpha",
                 activities: [
-                    { id: "p1_s1", type: "quick_facts", skill: "multiplication_0_to_10", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    { id: "p1_s1", title: "Prime Crater Sprint", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
                     {
                         id: "p1_s2",
                         type: "gamified_skill",
@@ -537,10 +579,94 @@
                             };
                         }
                     },
-                    { id: "p1_s6", type: "asteroid_shooter", question_topic: "number_properties", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    { id: "p1_s6", type: "asteroid_shooter", question_topic: "number_properties", round_target: 7, points_reward: 180, min_questions: 3, max_questions: 3 },
                     { id: "p1_s7", type: "tic_tac_toe_bot", question_topic: "number_properties", points_reward: 150, min_questions: 1, max_questions: 1 },
-                    { id: "p1_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    { id: "p1_s9", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p1_s8",
+                        title: "Factor Field Practice",
+                        type: "adaptive_practice",
+                        skill: "number_properties_review",
+                        points_reward: 100,
+                        min_questions: 4,
+                        max_questions: 6,
+                        question_generator: () => {
+                            const challengeType = pickRandom(['factors', 'multiples', 'prime']);
+                            if (challengeType === 'factors') {
+                                const base = pickRandom([18, 24, 30, 36, 42, 48]);
+                                const validFactors = [2, 3, 4, 5, 6, 7, 8].filter((candidate) => base % candidate === 0);
+                                const factor = pickRandom(validFactors);
+                                return {
+                                    scenario: 'Factor Field Practice',
+                                    task: `Enter a factor of ${base}.`,
+                                    answer: String(factor),
+                                    key: `factor_${base}_${factor}`,
+                                    hint: 'A factor divides the number with no remainder.'
+                                };
+                            }
+                            if (challengeType === 'prime') {
+                                const composite = pickRandom([24, 36, 40, 54, 70, 84]);
+                                const primeFactor = pickRandom([2, 3, 5, 7].filter((candidate) => composite % candidate === 0));
+                                return {
+                                    scenario: 'Factor Field Practice',
+                                    task: `Enter a prime factor of ${composite}.`,
+                                    answer: String(primeFactor),
+                                    key: `prime_${composite}_${primeFactor}`,
+                                    hint: 'Use a prime number that divides the composite evenly.'
+                                };
+                            }
+                            const multiplier = pickRandom([4, 5, 6, 7, 8, 9]);
+                            const product = multiplier * 6;
+                            return {
+                                scenario: 'Factor Field Practice',
+                                task: `What multiple of 6 equals ${product}?`,
+                                answer: String(product),
+                                key: `multiple_${multiplier}_${product}`,
+                                hint: 'Count by sixes until you reach the target.'
+                            };
+                        }
+                    },
+                    {
+                        id: "p1_s9",
+                        title: "Multiple Meteor Practice",
+                        type: "adaptive_practice",
+                        skill: "number_properties_review",
+                        points_reward: 100,
+                        min_questions: 4,
+                        max_questions: 6,
+                        question_generator: () => {
+                            const mode = pickRandom(['gcf', 'lcm', 'prime_factorization']);
+                            if (mode === 'gcf') {
+                                const base = randomInt(2, 8);
+                                const a = base * randomInt(2, 5);
+                                const b = base * randomInt(2, 5);
+                                return {
+                                    scenario: 'Multiple Meteor Practice',
+                                    task: `Find the greatest common factor of ${a} and ${b}.`,
+                                    answer: String(gcdOf(a, b)),
+                                    key: `gcf_${a}_${b}`,
+                                    hint: 'List the common factors and choose the greatest one.'
+                                };
+                            }
+                            if (mode === 'lcm') {
+                                const [a, b] = pickRandom([[3, 4], [3, 5], [4, 5], [4, 6], [5, 6], [6, 8]]);
+                                return {
+                                    scenario: 'Multiple Meteor Practice',
+                                    task: `Find the least common multiple of ${a} and ${b}.`,
+                                    answer: String(lcmOf(a, b)),
+                                    key: `lcm_${a}_${b}`,
+                                    hint: 'List multiples or use prime factors to find the first shared multiple.'
+                                };
+                            }
+                            const composite = pickRandom([18, 24, 30, 36, 40, 45, 48, 54, 60]);
+                            return {
+                                scenario: 'Multiple Meteor Practice',
+                                task: `Write the prime factorization of ${composite} using commas between factors.`,
+                                answer: primeFactorsOf(composite).join(', '),
+                                key: `pf_${composite}`,
+                                hint: 'Break the composite into prime factors from smallest to largest.'
+                            };
+                        }
+                    },
                     {
                         id: "p1_s10",
                         type: "student_creation",
@@ -1155,19 +1281,14 @@
             document.getElementById('planet-title-full').textContent = `Unit ${planetId}: ${planetName}`;
             document.getElementById('planet-emoji').textContent = profile.icon;
             document.getElementById('planet-description').textContent = profile.desc;
-            mapSurface.dataset.theme = profile.theme || 'cosmic';
-            if (profile.bgImage) {
-                mapSurface.classList.add('has-photo');
-                mapSurface.style.setProperty('--planet-photo', `url("${profile.bgImage}")`);
-            } else {
-                mapSurface.classList.remove('has-photo');
-                mapSurface.style.setProperty('--planet-photo', 'none');
-            }
+            mapSurface.dataset.theme = 'stars';
+            mapSurface.classList.remove('has-photo');
+            mapSurface.style.setProperty('--planet-photo', 'none');
             connectorLine.setAttribute('stroke', profile.pathColor || '#1e293b');
             completedLine.setAttribute('stroke', profile.completedPathColor || '#10b981');
 
             const usedCoords = pathCoords.slice(0, activeStations.length);
-            const dAttr = usedCoords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x}% ${c.y}%`).join(' ');
+            const dAttr = usedCoords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
             connectorLine.setAttribute('d', dAttr);
 
             const nodesContainer = document.getElementById('nodes-container');
@@ -1342,8 +1463,8 @@
                         type: 'adaptive_practice',
                         skill,
                         points_reward: 100,
-                        min_questions: 4,
-                        max_questions: 6,
+                        min_questions: unit.number === 6 && index === 5 ? 7 : 4,
+                        max_questions: unit.number === 6 && index === 5 ? 7 : 6,
                         question_generator: () => generateLaterUnitQuestion(unit.topic, skill)
                     })),
                     {
@@ -1696,18 +1817,44 @@
         }
 
         function loadAdaptivePractice(container, station, activity) {
-            const challenge = getFreshChallenge(activity);
             const points = activity.points_reward || 100;
+            const isUnit6Station6ScaleRecipe = planetId === 6 && station.id === 6 && activity.skill === 'scale_recipe';
+            const scaleRecipeSequence = [
+                { cups: 2, batches: 2 },
+                { cups: 2, batches: 3 },
+                { cups: 3, batches: 3 },
+                { cups: 3, batches: 4 },
+                { cups: 4, batches: 5 },
+                { cups: 5, batches: 6 },
+                { cups: 6, batches: 7 },
+            ];
+            const trainingStep = isUnit6Station6ScaleRecipe && activeStationRun ? activeStationRun.solved : 0;
+            const challenge = isUnit6Station6ScaleRecipe
+                ? (() => {
+                    const step = Math.min(trainingStep, scaleRecipeSequence.length - 1);
+                    const stage = scaleRecipeSequence[step];
+                    const answer = stage.cups * stage.batches;
+                    const difficultyLabel = ['Warmup', 'Easy', 'Building', 'Steady', 'Stretch', 'Challenge', 'Mastery'][step] || 'Practice';
+                    return makeChallenge(
+                        'Recipe Scale Lab',
+                        `(${difficultyLabel}) One batch needs ${stage.cups} cups of water. How many cups are needed for ${stage.batches} batches?`,
+                        answer,
+                        `scale_recipe_${step}`,
+                        'Multiply the cups per batch by the number of batches.'
+                    );
+                })()
+                : getFreshChallenge(activity);
             container.innerHTML = `
                 <p class="text-slate-400"><span class="math-label">${challenge.scenario}</span>: ${challenge.task}</p>
                 ${progressBanner(points)}
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                    ${isUnit6Station6ScaleRecipe ? `<p class="text-[11px] text-cyan-300 font-bold">Training path: the questions start easy and get harder each round.</p>` : ''}
                     <label class="block text-[11px] text-slate-400" for="adaptive-answer">Answer</label>
                     <div class="flex gap-2">
                         <input id="adaptive-answer" type="text" autocomplete="off" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-center text-white" placeholder="Type your answer">
                         <button id="adaptive-submit" class="btn-accessible px-4">Check</button>
                     </div>
-                    <p class="text-[10px] text-slate-500">Fresh values are generated every round.</p>
+                    <p class="text-[10px] text-slate-500">${isUnit6Station6ScaleRecipe ? 'Each correct answer moves you to the next level.' : 'Fresh values are generated every round.'}</p>
                 </div>
                 <p id="adaptive-feedback" class="text-xs font-bold text-center h-4"></p>
             `;
@@ -2247,23 +2394,39 @@
 
         function loadArcadePause(container, station, activity) {
             const points = activity.points_reward || 200;
-            const courseProfile = buildObstacleCourseProfile(activity);
+            const isUnit1Station1Runner = planetId === 1 && station.id === 1 && activity.theme === 'lunar_rover_jump';
+            const courseProfile = buildObstacleCourseProfile(activity, isUnit1Station1Runner ? 0 : null);
+            const levelPlan = isUnit1Station1Runner
+                ? [
+                    { name: 'Level 1 - Learner Lane', goalDistance: 180, speedMultiplier: 0.72, spawnGapBonus: 18 },
+                    { name: 'Level 2 - Prime Pace', goalDistance: 220, speedMultiplier: 0.84, spawnGapBonus: 10 },
+                    { name: 'Level 3 - Crater Challenge', goalDistance: 260, speedMultiplier: 0.98, spawnGapBonus: 2 },
+                ]
+                : [
+                    { name: 'Level 1 - Main Run', goalDistance: courseProfile.goalDistance, speedMultiplier: 1, spawnGapBonus: 0 },
+                ];
+            const totalLevels = levelPlan.length;
+            const totalGoalDistance = levelPlan.reduce((sum, level) => sum + level.goalDistance, 0);
+            const distanceGainFactor = isUnit1Station1Runner ? 0.14 : 0.18;
+
             container.innerHTML = `
-                <p class="text-slate-400">Run the shifting obstacle course, survive the sector, then clear the checkpoint math prompt.</p>
+                <p class="text-slate-400">${isUnit1Station1Runner ? 'Training run mode: start slower, clear 3 levels, then solve the checkpoint.' : 'Run the shifting obstacle course, survive the sector, then clear the checkpoint math prompt.'}</p>
                 ${progressBanner(points)}
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                     <div class="flex items-center justify-between gap-3 text-[11px] text-slate-300 font-mono">
                         <span>Course: <span class="math-term">${courseProfile.name}</span></span>
-                        <span>Target: <span class="math-term">${courseProfile.goalDistance}m</span></span>
+                        <span>Target: <span class="math-term">${totalGoalDistance}m</span></span>
                     </div>
                     <p class="text-[11px] text-slate-400">${courseProfile.description}</p>
                     <canvas id="obstacle-course-canvas" width="420" height="220"></canvas>
-                    <div class="flex items-center justify-between text-[11px] font-mono text-slate-300">
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-300">
                         <span id="course-distance">Distance: 0m</span>
+                        <span id="course-level">Level: 1/${totalLevels}</span>
                         <span id="course-phase">Phase: ${courseProfile.phaseNames[0]}</span>
                         <span id="course-status">Press Start</span>
                     </div>
-                    <button id="course-start" class="btn-accessible w-full">Start Course</button>
+                    <p id="course-best" class="text-[10px] text-slate-400 font-mono">Best this run: Level 1/${totalLevels}</p>
+                    <button id="course-start" class="btn-accessible w-full">${isUnit1Station1Runner ? 'Start Training Run' : 'Start Course'}</button>
                 </div>
                 <div id="arcade-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
                     <p id="arcade-prompt" class="text-center font-mono text-sm"></p>
@@ -2279,8 +2442,10 @@
             const ctx = canvas.getContext('2d');
             const startBtn = document.getElementById('course-start');
             const distanceLabel = document.getElementById('course-distance');
+            const levelLabel = document.getElementById('course-level');
             const phaseLabel = document.getElementById('course-phase');
             const statusLabel = document.getElementById('course-status');
+            const bestLabel = document.getElementById('course-best');
             const checkpoint = document.getElementById('arcade-checkpoint');
             const promptEl = document.getElementById('arcade-prompt');
             const feedback = document.getElementById('arcade-feedback');
@@ -2297,12 +2462,17 @@
 
             const state = {
                 distance: 0,
+                levelDistance: 0,
                 phaseIndex: 0,
+                levelIndex: 0,
+                bestLevelReached: 1,
                 speed: courseProfile.baseSpeed,
                 obstacles: [],
                 particles: [],
                 frame: 0,
                 spawnGap: courseProfile.spawnGap,
+                obstaclePatternIndex: 0,
+                levelFlag: null,
                 running: false,
                 finished: false,
                 animationId: null,
@@ -2311,14 +2481,36 @@
                 checkpointHint: '',
             };
 
+            function currentLevelConfig() {
+                return levelPlan[state.levelIndex] || levelPlan[levelPlan.length - 1];
+            }
+
+            function updateLevelHud() {
+                const levelCfg = currentLevelConfig();
+                distanceLabel.textContent = `Distance: ${Math.floor(state.levelDistance)}m / ${levelCfg.goalDistance}m`;
+                levelLabel.textContent = `Level: ${state.levelIndex + 1}/${totalLevels}`;
+                bestLabel.textContent = `Best this run: Level ${state.bestLevelReached}/${totalLevels}`;
+            }
+
+            function applySpeedAndSpawn() {
+                const levelCfg = currentLevelConfig();
+                state.speed = (courseProfile.baseSpeed * levelCfg.speedMultiplier) + (state.phaseIndex * courseProfile.speedStep);
+                state.spawnGap = Math.max(26, courseProfile.spawnGap + levelCfg.spawnGapBonus - (state.phaseIndex * 2));
+            }
+
             function resetCourse() {
                 state.distance = 0;
+                state.levelDistance = 0;
                 state.phaseIndex = 0;
-                state.speed = courseProfile.baseSpeed;
+                state.levelIndex = 0;
+                state.bestLevelReached = 1;
+                state.speed = courseProfile.baseSpeed * levelPlan[0].speedMultiplier;
                 state.obstacles = [];
                 state.particles = [];
                 state.frame = 0;
-                state.spawnGap = courseProfile.spawnGap;
+                state.spawnGap = Math.max(26, courseProfile.spawnGap + levelPlan[0].spawnGapBonus);
+                state.obstaclePatternIndex = 0;
+                state.levelFlag = null;
                 state.running = true;
                 state.finished = false;
                 state.awaitingMath = false;
@@ -2330,6 +2522,8 @@
                 checkpoint.classList.add('hidden');
                 feedback.textContent = '';
                 statusLabel.textContent = 'Running';
+                phaseLabel.textContent = `Phase: ${courseProfile.phaseNames[0]}`;
+                updateLevelHud();
                 startBtn.textContent = 'Restart Course';
             }
 
@@ -2342,28 +2536,38 @@
             }
 
             function updatePhase() {
+                const levelCfg = currentLevelConfig();
                 const nextPhase = Math.min(
                     courseProfile.phaseNames.length - 1,
-                    Math.floor((state.distance / courseProfile.goalDistance) * courseProfile.phaseNames.length)
+                    Math.floor((state.levelDistance / levelCfg.goalDistance) * courseProfile.phaseNames.length)
                 );
                 state.phaseIndex = nextPhase;
                 phaseLabel.textContent = `Phase: ${courseProfile.phaseNames[nextPhase]}`;
-                state.speed = courseProfile.baseSpeed + (nextPhase * courseProfile.speedStep);
+                applySpeedAndSpawn();
             }
 
             function spawnObstacle() {
-                const obstacleType = pickRandom(courseProfile.obstacleTypes);
-                const height = obstacleType === 'tall' ? randomInt(42, 64) : obstacleType === 'hover' ? randomInt(20, 32) : randomInt(26, 44);
-                const width = obstacleType === 'wide' ? randomInt(36, 58) : randomInt(18, 28);
+                const fixedPattern = ['short', 'hover', 'tall', 'short', 'wide', 'hover', 'tall', 'wide'];
+                const patternType = fixedPattern[state.obstaclePatternIndex % fixedPattern.length];
+                const obstacleType = isUnit1Station1Runner ? patternType : pickRandom(courseProfile.obstacleTypes);
+                const height = isUnit1Station1Runner
+                    ? (obstacleType === 'tall' ? 58 : obstacleType === 'hover' ? 28 : 36)
+                    : (obstacleType === 'tall' ? randomInt(42, 64) : obstacleType === 'hover' ? randomInt(20, 32) : randomInt(26, 44));
+                const width = isUnit1Station1Runner
+                    ? (obstacleType === 'wide' ? 52 : 24)
+                    : (obstacleType === 'wide' ? randomInt(36, 58) : randomInt(18, 28));
                 const yBase = obstacleType === 'hover' ? canvas.height - 110 : canvas.height - 26 - height;
+                const spawnOffset = isUnit1Station1Runner ? ((state.obstaclePatternIndex % 3) * 12) : randomInt(0, 40);
+                const bobStart = isUnit1Station1Runner ? ((state.obstaclePatternIndex % 6) * 0.6) : Math.random() * Math.PI * 2;
                 state.obstacles.push({
-                    x: canvas.width + randomInt(0, 40),
+                    x: canvas.width + spawnOffset,
                     y: yBase,
                     width,
                     height,
                     type: obstacleType,
-                    bob: Math.random() * Math.PI * 2,
+                    bob: bobStart,
                 });
+                state.obstaclePatternIndex += 1;
             }
 
             function addParticles() {
@@ -2378,9 +2582,11 @@
 
             function update() {
                 state.frame += 1;
-                state.distance += state.speed * 0.18;
-                distanceLabel.textContent = `Distance: ${Math.floor(state.distance)}m`;
+                const distanceGain = state.speed * distanceGainFactor;
+                state.distance += distanceGain;
+                state.levelDistance += distanceGain;
                 updatePhase();
+                updateLevelHud();
 
                 player.velocityY += courseProfile.gravity;
                 player.y += player.velocityY;
@@ -2403,6 +2609,21 @@
                 });
                 state.obstacles = state.obstacles.filter((obstacle) => obstacle.x + obstacle.width > -20);
 
+                const levelCfg = currentLevelConfig();
+                const remaining = levelCfg.goalDistance - state.levelDistance;
+                if (!state.levelFlag && remaining <= 38) {
+                    state.levelFlag = {
+                        x: canvas.width + 24,
+                        y: canvas.height - 72,
+                        width: 22,
+                        height: 48,
+                    };
+                    statusLabel.textContent = 'Flag ahead!';
+                }
+                if (state.levelFlag) {
+                    state.levelFlag.x -= state.speed;
+                }
+
                 addParticles();
                 state.particles.forEach((particle) => {
                     particle.x -= state.speed * 0.55;
@@ -2418,7 +2639,7 @@
             function finishRunSuccess() {
                 state.running = false;
                 state.finished = true;
-                statusLabel.textContent = 'Checkpoint unlocked';
+                statusLabel.textContent = isUnit1Station1Runner ? 'All levels clear - checkpoint unlocked' : 'Checkpoint unlocked';
                 checkpoint.classList.remove('hidden');
                 const challenge = buildArcadeCheckpoint(activity, courseProfile);
                 state.checkpointAnswer = challenge.answer;
@@ -2428,10 +2649,34 @@
                 document.getElementById('arcade-input').focus();
             }
 
+            function advanceLevel() {
+                if (state.levelIndex >= totalLevels - 1) {
+                    finishRunSuccess();
+                    return;
+                }
+
+                state.levelIndex += 1;
+                state.levelDistance = 0;
+                state.phaseIndex = 0;
+                state.obstacles = [];
+                state.particles = [];
+                state.obstaclePatternIndex = 0;
+                state.levelFlag = null;
+                state.bestLevelReached = Math.max(state.bestLevelReached, state.levelIndex + 1);
+                applySpeedAndSpawn();
+                updateLevelHud();
+                phaseLabel.textContent = `Phase: ${courseProfile.phaseNames[0]}`;
+                statusLabel.textContent = `${currentLevelConfig().name} started`;
+            }
+
             function failRun() {
                 state.running = false;
                 statusLabel.textContent = 'Course failed';
-                feedback.textContent = 'Obstacle hit. Restart the course and try a new pattern.';
+                if (isUnit1Station1Runner) {
+                    feedback.textContent = `Obstacle hit. You reached Level ${state.bestLevelReached}/${totalLevels}. Restart and try to push farther.`;
+                } else {
+                    feedback.textContent = 'Obstacle hit. Restart the course and try a new pattern.';
+                }
                 feedback.style.color = '#ef4444';
             }
 
@@ -2474,6 +2719,17 @@
                     }
                 });
 
+                if (state.levelFlag) {
+                    const flag = state.levelFlag;
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillRect(flag.x, flag.y, 3, flag.height);
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(flag.x + 3, flag.y, 11, 8);
+                    ctx.fillStyle = '#111827';
+                    ctx.fillRect(flag.x + 9, flag.y, 5, 4);
+                    ctx.fillRect(flag.x + 3, flag.y + 4, 5, 4);
+                }
+
                 ctx.fillStyle = courseProfile.playerColor;
                 ctx.fillRect(player.x, player.y, player.width, player.height);
                 ctx.fillStyle = '#e0f2fe';
@@ -2487,8 +2743,12 @@
                     const playerBox = { x: player.x, y: player.y, width: player.width, height: player.height };
                     if (state.obstacles.some((obstacle) => collides(playerBox, obstacle))) {
                         failRun();
-                    } else if (state.distance >= courseProfile.goalDistance) {
-                        finishRunSuccess();
+                    } else if (state.levelFlag && collides(playerBox, state.levelFlag)) {
+                        statusLabel.textContent = 'Flag reached!';
+                        advanceLevel();
+                    } else if (state.levelDistance >= currentLevelConfig().goalDistance) {
+                        statusLabel.textContent = 'Flag reached!';
+                        advanceLevel();
                     }
                 }
                 state.animationId = requestAnimationFrame(loop);
@@ -2534,7 +2794,7 @@
             };
         }
 
-        function buildObstacleCourseProfile(activity) {
+        function buildObstacleCourseProfile(activity, fixedVariantIndex = null) {
             const unitThemeProfiles = {
                 1: {
                     flappy_rocket: [
@@ -2814,6 +3074,9 @@
 
             const unitProfiles = unitThemeProfiles[planetId] || unitThemeProfiles.default;
             const themeProfiles = unitProfiles[activity.theme] || unitThemeProfiles.default[activity.theme] || unitThemeProfiles.default.flappy_rocket;
+            if (Number.isInteger(fixedVariantIndex) && themeProfiles[fixedVariantIndex]) {
+                return themeProfiles[fixedVariantIndex];
+            }
             return pickRandom(themeProfiles);
         }
 
@@ -2993,19 +3256,28 @@
         function loadAsteroidShooter(container, station, activity) {
             const points = activity.points_reward || 180;
             const topic = activity.question_topic || 'number_properties';
-            const roundTarget = activity.round_target || 6;
+            const isUnit1Station6 = planetId === 1 && station.id === 6;
+            const trainingRound = isUnit1Station6 && activeStationRun ? activeStationRun.solved : 0;
+            const roundTarget = isUnit1Station6 ? 7 + trainingRound : (activity.round_target || 6);
+            const spawnStart = isUnit1Station6 ? Math.max(40, 58 - (trainingRound * 4)) : 46;
+            const spawnFloor = isUnit1Station6 ? Math.max(22, 30 - (trainingRound * 2)) : 24;
+            const spawnDecay = isUnit1Station6 ? 1 + (trainingRound * 0.25) : 2;
+            const initialLives = isUnit1Station6 ? Math.max(3, 4 - Math.min(trainingRound, 1)) : 3;
+            const shipSpeed = isUnit1Station6 ? 6.0 + (trainingRound * 0.2) : 5.5;
+            const maxLives = isUnit1Station6 ? 6 : 3;
             container.innerHTML = `
-                <p class="text-slate-400">Blast falling space rocks! Clear the round, then answer a math checkpoint to charge an upgraded boost shot.</p>
+                <p class="text-slate-400">${isUnit1Station6 ? 'Training run: the rocks start slowly and the field gets busier as you clear more.' : 'Blast falling space rocks! Clear the round, then answer a math checkpoint to charge an upgraded boost shot.'}</p>
                 ${progressBanner(points)}
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                     <div class="flex items-center justify-between text-[11px] font-mono text-slate-300">
                         <span id="shooter-score">Rocks Cleared: 0/${roundTarget}</span>
-                        <span id="shooter-lives">Shields: 3</span>
+                        <span id="shooter-lives">Shields: ${initialLives}</span>
                         <span id="shooter-status">Press Start</span>
                     </div>
                     <canvas id="shooter-canvas" width="420" height="240"></canvas>
-                    <p class="text-[10px] text-slate-500 text-center">Arrow keys / A-D to move &middot; Space or click to fire</p>
-                    <button id="shooter-start" class="btn-accessible w-full">Start Blasting</button>
+                    <p class="text-[10px] text-slate-500 text-center">${isUnit1Station6 ? 'Use this run to practice the pattern. It starts gentle, then speeds up a little each checkpoint.' : 'Arrow keys / A-D to move &middot; Space or click to fire'}</p>
+                    <button id="shooter-start" class="btn-accessible w-full">${isUnit1Station6 ? 'Start Training Blasts' : 'Start Blasting'}</button>
+                    <button id="shooter-reload" class="btn-accessible w-full hidden">Reload Shields</button>
                 </div>
                 <div id="shooter-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
                     <p id="shooter-prompt" class="text-center font-mono text-sm"></p>
@@ -3026,14 +3298,15 @@
             const checkpoint = document.getElementById('shooter-checkpoint');
             const promptEl = document.getElementById('shooter-prompt');
             const feedback = document.getElementById('shooter-feedback');
+            const reloadBtn = document.getElementById('shooter-reload');
 
             const startBoosted = !!activity._boostActive;
             activity._boostActive = false;
 
-            const ship = { x: canvas.width / 2, width: 26, height: 16, speed: 5.5 };
+            const ship = { x: canvas.width / 2, width: 26, height: 16, speed: shipSpeed };
             const state = {
                 rocksCleared: 0,
-                lives: 3,
+                lives: initialLives,
                 rocks: [],
                 lasers: [],
                 boosted: startBoosted,
@@ -3049,7 +3322,7 @@
 
             function resetRound() {
                 state.rocksCleared = 0;
-                state.lives = 3;
+                state.lives = initialLives;
                 state.rocks = [];
                 state.lasers = [];
                 state.frame = 0;
@@ -3058,19 +3331,21 @@
                 state.awaitingMath = false;
                 ship.x = canvas.width / 2;
                 checkpoint.classList.add('hidden');
+                reloadBtn.classList.add('hidden');
                 feedback.textContent = '';
-                statusLabel.textContent = state.boosted ? 'Blasting (Boost Shot Online!)' : 'Blasting';
-                startBtn.textContent = 'Restart Round';
+                statusLabel.textContent = state.boosted ? 'Blasting (Boost Shot Online!)' : (isUnit1Station6 ? 'Training Blasts' : 'Blasting');
+                startBtn.textContent = isUnit1Station6 ? 'Restart Training Run' : 'Restart Round';
                 scoreLabel.textContent = `Rocks Cleared: 0/${roundTarget}`;
-                livesLabel.textContent = 'Shields: 3';
+                livesLabel.textContent = `Shields: ${initialLives}`;
             }
 
-            function spawnRock() {
+            function spawnRock(kind = 'rock') {
                 state.rocks.push({
                     x: randomInt(24, canvas.width - 24),
                     y: -18,
-                    radius: randomInt(12, 20),
-                    speed: 1.4 + Math.random() * 1.6,
+                    radius: kind === 'life' ? randomInt(11, 14) : randomInt(12, 20),
+                    speed: kind === 'life' ? 1.1 + Math.random() * 0.6 : 1.4 + Math.random() * 1.6,
+                    kind,
                 });
             }
 
@@ -3112,8 +3387,11 @@
                 if (state.keys.left) ship.x = Math.max(16, ship.x - ship.speed);
                 if (state.keys.right) ship.x = Math.min(canvas.width - 16, ship.x + ship.speed);
 
-                if (state.frame % Math.max(24, 46 - state.rocksCleared * 2) === 0) {
+                if (state.frame % Math.max(spawnFloor, Math.floor(spawnStart - (state.rocksCleared * spawnDecay))) === 0) {
                     spawnRock();
+                }
+                if (isUnit1Station6 && state.frame % 180 === 0 && state.lives < maxLives) {
+                    spawnRock('life');
                 }
 
                 state.lasers.forEach((laser) => { laser.y -= 7; });
@@ -3127,7 +3405,13 @@
                         if (collides(rock, state.lasers[li])) {
                             state.rocks.splice(ri, 1);
                             state.lasers.splice(li, 1);
-                            state.rocksCleared += 1;
+                            if (rock.kind === 'life') {
+                                state.lives = Math.min(maxLives, state.lives + 1);
+                                feedback.textContent = '+1 shield!';
+                                feedback.style.color = '#10b981';
+                            } else {
+                                state.rocksCleared += 1;
+                            }
                             hit = true;
                             break;
                         }
@@ -3145,8 +3429,11 @@
                 if (state.lives <= 0) {
                     state.running = false;
                     statusLabel.textContent = 'Shields down!';
-                    feedback.textContent = 'Your shields were destroyed. Restart the round and try again!';
+                    feedback.textContent = isUnit1Station6 ? `You reached ${state.rocksCleared}/${roundTarget} rocks. Restart and try to go farther.` : 'Your shields were destroyed. Restart the round and try again!';
                     feedback.style.color = '#ef4444';
+                    if (isUnit1Station6) {
+                        reloadBtn.classList.remove('hidden');
+                    }
                     return;
                 }
 
@@ -3156,7 +3443,18 @@
                     state.awaitingMath = true;
                     statusLabel.textContent = 'Checkpoint reached!';
                     checkpoint.classList.remove('hidden');
-                    const challenge = buildShooterCheckpoint(topic);
+                    const challenge = isUnit1Station6
+                        ? (() => {
+                            const base = [18, 24, 30, 36][Math.min(trainingRound, 3)];
+                            const factorPool = [2, 3, 4, 6].filter((candidate) => base % candidate === 0);
+                            const factor = factorPool[Math.min(trainingRound, factorPool.length - 1)];
+                            return {
+                                prompt: `Checkpoint: enter a factor of ${base}.`,
+                                answer: String(factor),
+                                hint: `Choose a number that divides ${base} evenly.`
+                            };
+                        })()
+                        : buildShooterCheckpoint(topic);
                     state.checkpointAnswer = challenge.answer;
                     state.checkpointHint = challenge.hint;
                     promptEl.textContent = challenge.prompt;
@@ -3177,12 +3475,22 @@
                 }
 
                 state.rocks.forEach((rock) => {
-                    ctx.fillStyle = '#78716c';
+                    ctx.fillStyle = rock.kind === 'life' ? '#22c55e' : '#78716c';
                     ctx.beginPath();
                     ctx.arc(rock.x, rock.y, rock.radius, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.strokeStyle = '#44403c';
                     ctx.stroke();
+                    if (rock.kind === 'life') {
+                        ctx.strokeStyle = '#dcfce7';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(rock.x - 4, rock.y);
+                        ctx.lineTo(rock.x + 4, rock.y);
+                        ctx.moveTo(rock.x, rock.y - 4);
+                        ctx.lineTo(rock.x, rock.y + 4);
+                        ctx.stroke();
+                    }
                 });
 
                 state.lasers.forEach((laser) => {
@@ -3219,6 +3527,18 @@
             window.addEventListener('keydown', handleKeydown);
             window.addEventListener('keyup', handleKeyup);
             startBtn.addEventListener('click', resetRound);
+            reloadBtn.addEventListener('click', () => {
+                if (!isUnit1Station6 || state.running) return;
+                state.lives = 2;
+                state.running = true;
+                state.paused = false;
+                reloadBtn.classList.add('hidden');
+                feedback.textContent = 'Shields reloaded. Keep going!';
+                feedback.style.color = '#10b981';
+                statusLabel.textContent = 'Reloaded';
+                livesLabel.textContent = `Shields: ${state.lives}`;
+                startLoop();
+            });
 
             const submitShooter = () => {
                 const raw = document.getElementById('shooter-input').value.trim();
@@ -3253,16 +3573,28 @@
         }
 
         // ---------------------------------------------------------------
-        // MINI-GAME: TIC-TAC-TOE VS SMART BOT (quick match + wrap-up question)
+        // MINI-GAME: TIC-TAC-TOE VS SMART BOT.
+        // Unit 1 Station 7 upgrades to a best-of-3 match with a PEMDAS reminder panel.
         // ---------------------------------------------------------------
         function loadTicTacToeBot(container, station, activity) {
             const points = activity.points_reward || 150;
             const topic = activity.question_topic || 'number_properties';
+            const isUnit1Station7 = planetId === 1 && station.id === 7;
+            const winsNeeded = isUnit1Station7 ? 2 : 1;
+            const maxRounds = isUnit1Station7 ? 3 : 1;
             container.innerHTML = `
-                <p class="text-slate-400">Quick match: you are <span class="math-term">X</span>, the smart bot is <span class="math-term">O</span>. Win, draw, or learn from a loss, then clear the wrap-up question.</p>
+                <p class="text-slate-400">${isUnit1Station7 ? 'Best-of-3 challenge' : 'Quick match'}: you are <span class="math-term">X</span>, the smart bot is <span class="math-term">O</span>. ${isUnit1Station7 ? 'First to 2 wins, then clear the wrap-up question.' : 'Win, draw, or learn from a loss, then clear the wrap-up question.'}</p>
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div id="ttt-score" class="text-center text-[11px] font-mono text-slate-300"></div>
                     <div id="ttt-board" class="grid grid-cols-3 gap-2 max-w-[220px] mx-auto"></div>
                     <p id="ttt-status" class="text-center text-xs font-bold text-slate-300">Your move! Pick a square.</p>
+                    ${isUnit1Station7 ? `
+                        <div class="rounded-xl border border-cyan-500/35 bg-slate-900/70 p-3">
+                            <p class="text-[11px] font-black tracking-wide text-cyan-300">PEMDAS REMINDER</p>
+                            <p class="text-[11px] text-slate-300 mt-1">Parentheses, Exponents, Multiply/Divide, Add/Subtract.</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Use this order on checkpoint questions before you submit.</p>
+                        </div>
+                    ` : ''}
                 </div>
                 <div id="ttt-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
                     <p id="ttt-prompt" class="text-center font-mono text-sm"></p>
@@ -3275,13 +3607,23 @@
             `;
 
             let board = Array(9).fill(null);
-            let gameOver = false;
+            let roundOver = false;
+            let matchOver = false;
+            let roundsPlayed = 0;
+            let playerWins = 0;
+            let botWins = 0;
             let checkpointAnswer = null;
             let checkpointHint = '';
             const boardEl = document.getElementById('ttt-board');
             const statusEl = document.getElementById('ttt-status');
+            const scoreEl = document.getElementById('ttt-score');
             const checkpoint = document.getElementById('ttt-checkpoint');
             const feedback = document.getElementById('ttt-feedback');
+
+            function updateScoreboard() {
+                if (!scoreEl) return;
+                scoreEl.textContent = `Score - You: ${playerWins} | Bot: ${botWins} | Round ${Math.min(roundsPlayed + 1, maxRounds)}/${maxRounds}`;
+            }
 
             function renderBoard() {
                 boardEl.innerHTML = '';
@@ -3291,14 +3633,15 @@
                     cellBtn.className = 'aspect-square bg-slate-900 border border-slate-700 rounded-lg text-xl font-black flex items-center justify-center';
                     cellBtn.textContent = cell || '';
                     cellBtn.style.color = cell === 'X' ? '#38bdf8' : '#f472b6';
-                    cellBtn.disabled = !!cell || gameOver;
+                    cellBtn.disabled = !!cell || roundOver || matchOver;
                     cellBtn.addEventListener('click', () => handleStudentMove(idx));
                     boardEl.appendChild(cellBtn);
                 });
             }
 
-            function endGame(message) {
-                gameOver = true;
+            function openCheckpoint(message) {
+                matchOver = true;
+                roundOver = true;
                 statusEl.textContent = message;
                 renderBoard();
                 checkpoint.classList.remove('hidden');
@@ -3310,38 +3653,85 @@
                 document.getElementById('ttt-input').focus();
             }
 
-            function finishOrContinue(winner) {
-                if (winner === 'X') { endGame('You win! Great strategy.'); return; }
-                if (winner === 'O') { endGame('The bot wins this time. Nice try!'); return; }
-                if (winner === 'draw') { endGame("It's a draw! Solid defense."); return; }
+            function startNextRound() {
+                board = Array(9).fill(null);
+                roundOver = false;
                 statusEl.textContent = 'Your move! Pick a square.';
+                updateScoreboard();
+                renderBoard();
+            }
+
+            function resolveRound(winner) {
+                roundOver = true;
+                roundsPlayed += 1;
+
+                if (winner === 'X') playerWins += 1;
+                if (winner === 'O') botWins += 1;
+
+                if (!isUnit1Station7) {
+                    if (winner === 'X') { openCheckpoint('You win! Great strategy.'); return; }
+                    if (winner === 'O') { openCheckpoint('The bot wins this time. Nice try!'); return; }
+                    openCheckpoint("It's a draw! Solid defense.");
+                    return;
+                }
+
+                const playerClinched = playerWins >= winsNeeded;
+                const botClinched = botWins >= winsNeeded;
+                const roundsComplete = roundsPlayed >= maxRounds;
+
+                if (playerClinched || botClinched || roundsComplete) {
+                    updateScoreboard();
+                    if (playerWins > botWins) {
+                        openCheckpoint('You won the best-of-3 match! Now clear the checkpoint.');
+                    } else if (botWins > playerWins) {
+                        openCheckpoint('Bot won this best-of-3 match. Clear the checkpoint to finish the station.');
+                    } else {
+                        openCheckpoint('Best-of-3 ended tied. Clear the checkpoint to finish the station.');
+                    }
+                    return;
+                }
+
+                updateScoreboard();
+                if (winner === 'draw') {
+                    statusEl.textContent = 'Round draw. Next round starting...';
+                } else {
+                    statusEl.textContent = `${winner === 'X' ? 'You' : 'Bot'} took Round ${roundsPlayed}. Next round starting...`;
+                }
+                renderBoard();
+                setTimeout(startNextRound, 700);
             }
 
             function handleStudentMove(idx) {
-                if (gameOver || board[idx]) return;
+                if (matchOver || roundOver || board[idx]) return;
                 board[idx] = 'X';
                 let winner = ticTacToeWinner(board);
                 if (winner) {
                     renderBoard();
-                    finishOrContinue(winner);
+                    resolveRound(winner);
                     return;
                 }
                 statusEl.textContent = 'Bot is thinking...';
                 renderBoard();
                 setTimeout(() => {
+                    if (matchOver || roundOver) return;
                     const botIdx = pickBotMove(board);
                     if (botIdx !== undefined && botIdx !== null) board[botIdx] = 'O';
                     winner = ticTacToeWinner(board);
                     renderBoard();
-                    finishOrContinue(winner);
+                    if (winner) {
+                        resolveRound(winner);
+                    } else {
+                        statusEl.textContent = 'Your move! Pick a square.';
+                    }
                 }, 400);
             }
 
+            updateScoreboard();
             renderBoard();
 
             const submitTtt = () => {
                 const raw = document.getElementById('ttt-input').value.trim();
-                if (!gameOver) return;
+                if (!matchOver) return;
                 if (raw !== '' && raw.replace(/\s+/g, '') === String(checkpointAnswer).replace(/\s+/g, '')) {
                     resolveCorrectAttempt(container, station, activity, points, feedback, 'Correct!', loadTicTacToeBot);
                 } else {

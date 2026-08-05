@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Character Viewer</title>
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        #viewer {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #controls {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+        }
+
+        #load-glasses-btn {
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.82);
+            color: #f8fafc;
+            font: 600 14px/1.2 sans-serif;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        #load-glasses-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button id="load-glasses-btn" type="button">Load Sunglasses</button>
+    </div>
+    <div id="viewer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        const container = document.getElementById('viewer');
+        const loadGlassesButton = document.getElementById('load-glasses-btn');
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+        );
+        camera.position.set(0, 1.5, 4);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+        scene.add(ambientLight);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(3, 5, 4);
+        scene.add(keyLight);
+
+        const rimLight = new THREE.DirectionalLight(0x88ccff, 0.8);
+        rimLight.position.set(-3, 2, -4);
+        scene.add(rimLight);
+
+        let character = null;
+        let glasses = null;
+        let headAnchor = null;
+
+        function findHeadNode(root) {
+            let match = null;
+            root.traverse((node) => {
+                if (match || !node.name) return;
+                if (/(head|neck|spine2|spine_03)/i.test(node.name)) {
+                    match = node;
+                }
+            });
+            return match;
+        }
+
+        function createFallbackHeadAnchor(root) {
+            const anchor = new THREE.Group();
+            anchor.name = 'FallbackHeadAnchor';
+            anchor.position.set(0, 1.55, 0.12);
+            root.add(anchor);
+            return anchor;
+        }
+
+        function ensureHeadAnchor(root) {
+            const namedHeadNode = findHeadNode(root);
+            if (namedHeadNode) return namedHeadNode;
+            return createFallbackHeadAnchor(root);
+        }
+
+        function centerAccessoryOnAnchor(model) {
+            const box = new THREE.Box3().setFromObject(model);
+            const center = new THREE.Vector3();
+            const size = new THREE.Vector3();
+            box.getCenter(center);
+            box.getSize(size);
+
+            model.position.sub(center);
+            const scale = 0.42 / (size.x || 1);
+            model.scale.setScalar(scale);
+            model.position.set(0, 0, 0.18);
+        }
+
+        function centerAndScaleModel(model) {
+            const box = new THREE.Box3().setFromObject(model);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+
+            box.getSize(size);
+            box.getCenter(center);
+
+            model.position.sub(center);
+
+            const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+            const scale = 2 / maxDimension;
+            model.scale.setScalar(scale);
+
+            const adjustedBox = new THREE.Box3().setFromObject(model);
+            model.position.y -= adjustedBox.min.y;
+        }
+
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+            './character.glb',
+            (gltf) => {
+                character = gltf.scene;
+                centerAndScaleModel(character);
+                headAnchor = ensureHeadAnchor(character);
+                scene.add(character);
+            },
+            undefined,
+            (error) => {
+                console.error('Failed to load character.glb:', error);
+            }
+        );
+
+        function loadGlassesModel() {
+            if (!character || !headAnchor || glasses) return;
+
+            loadGlassesButton.disabled = true;
+            loadGlassesButton.textContent = 'Loading Sunglasses...';
+
+            loader.load(
+                './glasses.glb',
+                (gltf) => {
+                    glasses = gltf.scene;
+                    centerAccessoryOnAnchor(glasses);
+                    headAnchor.add(glasses);
+                    loadGlassesButton.textContent = 'Sunglasses Attached';
+                },
+                undefined,
+                (error) => {
+                    console.error('Failed to load glasses.glb:', error);
+                    loadGlassesButton.disabled = false;
+                    loadGlassesButton.textContent = 'Load Sunglasses';
+                }
+            );
+        }
+
+        loadGlassesButton.addEventListener('click', loadGlassesModel);
+
+        function animate(time) {
+            requestAnimationFrame(animate);
+
+            if (character) {
+                character.rotation.y = time * 0.0006;
+                character.position.y = Math.sin(time * 0.0015) * 0.05;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate(0);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

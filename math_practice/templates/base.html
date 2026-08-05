@@ -20,110 +20,15 @@
 
     <!-- Persistent Office Hours Widget Styles -->
     <style>
-        #office-hours-widget {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 1002;
-            font-family: Arial, sans-serif;
-            text-align: right;
-        }
-
-        #office-hours-toggle {
-            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 999px;
-            font-size: 0.85em;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-            white-space: nowrap;
-        }
-
-        #office-hours-toggle:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-        }
-
-        #office-hours-panel {
-            display: none;
-            margin-top: 10px;
-            width: 260px;
-            background: #ffffff;
-            color: #1e293b;
-            border-radius: 14px;
-            padding: 16px 18px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.35);
-            text-align: left;
-        }
-
-        #office-hours-panel.show {
-            display: block;
-        }
-
-        #office-hours-panel h4 {
-            margin: 0 0 8px;
-            font-size: 1em;
-            color: #0f172a;
-        }
-
-        #office-hours-panel p {
-            margin: 0 0 10px;
-            font-size: 0.85em;
-            line-height: 1.4;
-        }
-
-        .office-hours-link {
-            display: inline-block;
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            color: #1d4ed8;
-            font-weight: 600;
-            font-size: 0.82em;
-            text-decoration: none;
-        }
-
-        .office-hours-link:hover {
-            background: #dbeafe;
-        }
-
-        #office-hours-close {
-            display: block;
-            width: 100%;
-            background: #f1f5f9;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.78em;
-            color: #334155;
+        .calculator-toggle,
+        #chatbot-toggle {
+            display: none !important;
         }
     </style>
 
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
-    <!-- Persistent Open Office Hours notice (shown on every page) -->
-    <div id="office-hours-widget">
-        <button type="button" id="office-hours-toggle" aria-expanded="false" aria-controls="office-hours-panel">
-            🕚 Office Hours
-        </button>
-        <div id="office-hours-panel" role="dialog" aria-label="Open Office Hours schedule">
-            <h4>📅 Open Office Hours</h4>
-            <p>Every <strong>Friday at 11:00 AM</strong>. Drop in with any math questions!</p>
-            <!-- TODO: Replace href with this term's live video conference room link. -->
-            <a id="office-hours-link" class="office-hours-link" href="#office-hours-video-link-placeholder">
-                🎥 Video Conference Room (link coming soon)
-            </a>
-            <button type="button" id="office-hours-close">Close</button>
-        </div>
-    </div>
-
     <!-- Page Content -->
     {% block content %}{% endblock %}
     
@@ -138,33 +43,6 @@
 
     <!-- Chatbot JS -->
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
-
-    <!-- Office Hours widget toggle -->
-    <script>
-        (function () {
-            const toggleBtn = document.getElementById('office-hours-toggle');
-            const panel = document.getElementById('office-hours-panel');
-            const closeBtn = document.getElementById('office-hours-close');
-            const widget = document.getElementById('office-hours-widget');
-            if (!toggleBtn || !panel || !closeBtn || !widget) return;
-
-            function setOpen(isOpen) {
-                panel.classList.toggle('show', isOpen);
-                toggleBtn.setAttribute('aria-expanded', String(isOpen));
-            }
-
-            toggleBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                setOpen(!panel.classList.contains('show'));
-            });
-            closeBtn.addEventListener('click', () => setOpen(false));
-            document.addEventListener('click', (event) => {
-                if (!widget.contains(event.target)) {
-                    setOpen(false);
-                }
-            });
-        })();
-    </script>
 
     {% block extra_scripts %}{% endblock %}
 </body>

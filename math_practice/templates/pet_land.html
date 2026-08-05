@@ -8,12 +8,12 @@
         body {
             background: radial-gradient(circle at top, #0f172a 0%, #020617 58%, #000 100%);
             color: #e2e8f0;
-            font-family: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
+            font-family: 'Trebuchet MS', 'Verdana', sans-serif;
             min-height: 100vh;
         }
 
         .pet-land-shell {
-            max-width: 1100px;
+            max-width: 1180px;
             margin: 0 auto;
             padding: 24px;
         }
@@ -24,6 +24,13 @@
             border-radius: 24px;
             padding: 20px;
             box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .pet-hero-panel {
+            background:
+                radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 34%),
+                radial-gradient(circle at top right, rgba(244, 114, 182, 0.14), transparent 30%),
+                rgba(15, 23, 42, 0.92);
         }
 
         .back-btn {
@@ -44,6 +51,32 @@
             border: 1px solid #334155;
             border-radius: 18px;
             padding: 14px;
+        }
+
+        .hud-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 8px 12px;
+            border: 1px solid rgba(103, 232, 249, 0.28);
+            background: rgba(15, 23, 42, 0.72);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .overview-stat {
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(2, 6, 23, 0.94));
+            padding: 14px;
+        }
+
+        .overview-stat-value {
+            font-size: 28px;
+            font-weight: 900;
+            color: #f8fafc;
+            line-height: 1;
         }
 
         .btn-accessible {
@@ -101,14 +134,223 @@
             font-size: 40px;
         }
 
-        .companion-preview { position: relative; width: 156px; height: 156px; margin: 0 auto; display: grid; place-items: center; overflow: hidden; border: 2px solid #67e8f9; border-radius: 12px; background: radial-gradient(circle at 35% 28%, #334155, #0f172a 70%); }
-        .sprite-base, .sprite-layer { position: absolute; line-height: 1; pointer-events: none; }
-        .sprite-base { font-size: 78px; z-index: 1; }
-        .sprite-layer { font-size: 46px; z-index: 2; }
-        .sprite-layer[data-slot="hat"] { top: 12px; }
-        .sprite-layer[data-slot="outfit"] { bottom: 10px; }
-        .sprite-layer[data-slot="accessory"] { right: 12px; bottom: 28px; }
-        .rarity-tag, .milestone-tag { display: inline-block; border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+        .companion-preview {
+            position: relative;
+            width: 100%;
+            min-height: 330px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 2px solid rgba(103, 232, 249, 0.88);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 30% 15%, rgba(56, 189, 248, 0.18), transparent 24%),
+                radial-gradient(circle at 75% 20%, rgba(244, 114, 182, 0.18), transparent 22%),
+                linear-gradient(180deg, #111827 0%, #020617 70%, #010409 100%);
+            isolation: isolate;
+        }
+
+        .hangar-canvas,
+        .hangar-fallback,
+        .hangar-overlay,
+        .hangar-caption,
+        .hangar-preview-note,
+        .hangar-scene-badge,
+        .hangar-preview-badge {
+            position: absolute;
+        }
+
+        .hangar-canvas {
+            inset: 0;
+            z-index: 1;
+        }
+
+        .hangar-fallback {
+            inset: 0;
+            z-index: 1;
+            display: grid;
+            place-items: center;
+            padding: 42px 18px 84px;
+        }
+
+        .hangar-fallback[hidden] {
+            display: none;
+        }
+
+        .fallback-stage {
+            position: relative;
+            width: min(100%, 420px);
+            height: 210px;
+        }
+
+        .fallback-beam {
+            position: absolute;
+            left: 14%;
+            right: 14%;
+            bottom: 34px;
+            height: 8px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.16), rgba(250, 204, 21, 0.9), rgba(244, 114, 182, 0.18));
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .hangar-fallback[data-scene-mode="travel"] .fallback-beam {
+            opacity: 1;
+            animation: fallbackBeamPulse 1.3s linear infinite;
+        }
+
+        .fallback-platform {
+            position: absolute;
+            left: 12%;
+            right: 12%;
+            bottom: 18px;
+            height: 54px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.24) 70%);
+            box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.18), 0 0 42px rgba(56, 189, 248, 0.12);
+        }
+
+        .fallback-actor {
+            position: absolute;
+            transform-style: preserve-3d;
+        }
+
+        .fallback-actor {
+            left: 28%;
+            bottom: 62px;
+            width: 150px;
+            height: 150px;
+            margin-left: -75px;
+        }
+
+        .fallback-shell {
+            position: absolute;
+            inset: 0;
+        }
+
+        .fallback-actor .fallback-shell {
+            animation: fallbackIdleFloat 3.3s ease-in-out infinite;
+        }
+
+        .hangar-fallback[data-scene-mode="travel"] .fallback-actor .fallback-shell {
+            animation: fallbackTravelHop 2.6s ease-in-out infinite;
+        }
+
+        .fallback-base,
+        .fallback-layer {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 1;
+            text-shadow: 0 10px 24px rgba(15, 23, 42, 0.55);
+        }
+
+        .fallback-actor .fallback-base {
+            font-size: 100px;
+        }
+
+        .fallback-layer {
+            font-size: 48px;
+        }
+
+        .fallback-layer[data-slot="hat"] { top: 20%; }
+        .fallback-layer[data-slot="outfit"] { top: 66%; }
+        .fallback-layer[data-slot="accessory"] { left: 74%; top: 58%; }
+        .fallback-layer[data-slot="trail"] { left: 20%; top: 68%; }
+        .fallback-layer[data-slot="aura"] {
+            font-size: 128px;
+            opacity: 0.72;
+            z-index: 0;
+        }
+
+        .fallback-layer.is-preview {
+            opacity: 0.42;
+            filter: grayscale(0.25);
+        }
+
+        .hangar-canvas canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .hangar-overlay {
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.16) 0 1px, transparent 2px),
+                radial-gradient(circle at 72% 16%, rgba(255, 255, 255, 0.14) 0 1px, transparent 2px),
+                radial-gradient(circle at 84% 70%, rgba(255, 255, 255, 0.14) 0 1px, transparent 2px),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 22%, transparent 70%, rgba(2, 6, 23, 0.16));
+        }
+
+        .hangar-caption {
+            left: 18px;
+            right: 18px;
+            top: 16px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .hangar-preview-note {
+            left: 18px;
+            right: 18px;
+            bottom: 16px;
+            font-size: 12px;
+            color: #cbd5e1;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .hangar-scene-badge,
+        .hangar-preview-badge {
+            z-index: 3;
+            pointer-events: none;
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 11px;
+            font-weight: 800;
+            backdrop-filter: blur(8px);
+        }
+
+        .hangar-scene-badge {
+            left: 18px;
+            bottom: 50px;
+            background: rgba(8, 47, 73, 0.58);
+            border: 1px solid rgba(103, 232, 249, 0.4);
+            color: #cffafe;
+        }
+
+        .hangar-preview-badge {
+            right: 18px;
+            bottom: 50px;
+            background: rgba(88, 28, 135, 0.48);
+            border: 1px solid rgba(216, 180, 254, 0.4);
+            color: #f5d0fe;
+        }
+
+        .scene-pill,
+        .tier-pill,
+        .shop-pill,
+        .rarity-tag,
+        .milestone-tag {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+        }
+
+        .scene-pill { background: rgba(15, 118, 110, 0.3); color: #99f6e4; }
+        .tier-pill { background: rgba(59, 130, 246, 0.18); color: #bfdbfe; }
+        .shop-pill { background: rgba(250, 204, 21, 0.14); color: #fde68a; }
         .rarity-common { background: #334155; color: #e2e8f0; }
         .rarity-uncommon { background: #065f46; color: #a7f3d0; }
         .rarity-rare { background: #1e3a8a; color: #bfdbfe; }
@@ -116,6 +358,148 @@
         .milestone-tag { background: #3f3f46; color: #e4e4e7; }
         .gear-card-locked { border-color: #52525b; opacity: .72; }
         .btn-accessible:disabled { cursor: not-allowed; opacity: .6; transform: none; }
+
+        .btn-accessible.is-selected {
+            background: linear-gradient(90deg, #0f766e, #0ea5e9);
+            border-color: #67e8f9;
+        }
+
+        .btn-secondary {
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid rgba(103, 232, 249, 0.36);
+            color: #dbeafe;
+            font-weight: 700;
+            padding: 9px 12px;
+            border-radius: 12px;
+        }
+
+        .hangar-controls {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .tier-track {
+            display: grid;
+            gap: 10px;
+        }
+
+        .tier-track-card {
+            border-radius: 18px;
+            border: 1px solid rgba(71, 85, 105, 0.82);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 12px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .tier-track-card.is-active {
+            border-color: rgba(103, 232, 249, 0.82);
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.12);
+        }
+
+        .tier-track-card.is-locked {
+            opacity: 0.72;
+        }
+
+        .route-track {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            padding-top: 16px;
+        }
+
+        .route-line,
+        .route-progress {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 32px;
+            height: 4px;
+            border-radius: 999px;
+        }
+
+        .route-line {
+            background: rgba(51, 65, 85, 0.92);
+        }
+
+        .route-progress {
+            right: auto;
+            background: linear-gradient(90deg, #22d3ee, #facc15, #fb7185);
+        }
+
+        .route-node {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .route-node-dot {
+            width: 26px;
+            height: 26px;
+            margin: 0 auto 8px;
+            border-radius: 999px;
+            border: 2px solid rgba(148, 163, 184, 0.72);
+            background: rgba(15, 23, 42, 0.98);
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+        }
+
+        .route-node.is-cleared .route-node-dot {
+            border-color: #67e8f9;
+            background: linear-gradient(180deg, #0ea5e9, #1d4ed8);
+            color: #eff6ff;
+        }
+
+        .route-node.is-current .route-node-dot {
+            border-color: #fde68a;
+            box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.12);
+        }
+
+        .catalog-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .shop-card-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .shop-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @keyframes fallbackIdleFloat {
+            0%, 100% { transform: translateY(0) rotateZ(-1deg); }
+            50% { transform: translateY(-8px) rotateZ(1deg); }
+        }
+
+        @keyframes fallbackTravelHop {
+            0%, 100% { transform: translate(0, 0) rotateZ(0deg); }
+            25% { transform: translate(10px, -10px) rotateZ(3deg); }
+            50% { transform: translate(24px, -2px) rotateZ(0deg); }
+            75% { transform: translate(12px, 8px) rotateZ(-2deg); }
+        }
+
+        @keyframes fallbackBeamPulse {
+            0% { filter: brightness(0.95); transform: scaleX(0.7); }
+            50% { filter: brightness(1.2); transform: scaleX(1); }
+            100% { filter: brightness(0.95); transform: scaleX(0.7); }
+        }
+
+        @media (max-width: 900px) {
+            .pet-land-shell { padding: 18px; }
+            .hangar-controls,
+            .shop-actions { grid-template-columns: 1fr; }
+        }
     </style>
 {% endblock %}
 
@@ -123,33 +507,87 @@
 <div class="pet-land-shell space-y-6">
     <div class="flex items-center justify-between gap-4">
         <a href="{{ url_for('quest_map') }}" class="back-btn">🚀 Return to Space Flight</a>
-        <div class="pet-panel text-sm font-bold">
-            🪙 Coins: <span id="pet-land-coins">15</span>
+        <div class="flex flex-wrap justify-end gap-2">
+            <div class="hud-chip">🪙 Coins: <span id="pet-land-coins">15</span></div>
+            <div class="hud-chip">🏁 Current Tier: <span id="current-tier-label">Immediate Wins</span></div>
+            <div class="hud-chip">🎒 Unlocks: <span id="owned-unlock-count">0</span></div>
         </div>
     </div>
 
-    <div class="pet-panel space-y-4">
+    <div class="pet-panel pet-hero-panel space-y-4">
         <div class="flex items-center gap-4 border-b border-slate-700 pb-4">
             <span class="text-5xl">🐾</span>
             <div>
                 <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Special Destination</span>
                 <h1 class="text-3xl font-black text-slate-100">Pet Land & Character Port</h1>
-                <p class="text-sm text-slate-400">Build a companion or explorer loadout with layered gear earned through 6th-grade math milestones.</p>
+                <p class="text-sm text-slate-400">Turn Pet Planet into a loop of quick wins, milestone unlocks, and animated avatar upgrades that travel with your map progress.</p>
             </div>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-4">
-            <div class="pet-card space-y-2">
-                <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Active Explorer</span>
-                <div id="equipped-character-summary" class="text-sm text-slate-300"></div>
+        <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-4">
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="pet-card space-y-2">
+                    <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Active Explorer</span>
+                    <div id="equipped-character-summary" class="text-sm text-slate-300"></div>
+                </div>
+                <div class="pet-card space-y-2">
+                    <span class="text-[10px] uppercase tracking-widest text-pink-400 font-black block">Active Sidekick</span>
+                    <div id="equipped-pet-summary" class="text-sm text-slate-300"></div>
+                </div>
+                <div class="pet-card space-y-3">
+                    <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Loop Snapshot</span>
+                    <div class="overview-stat">
+                        <div class="text-xs uppercase tracking-widest text-slate-400">Completed Units</div>
+                        <div id="completed-unit-count" class="overview-stat-value">0</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="text-xs uppercase tracking-widest text-slate-400">Cosmetic Progress Score</div>
+                        <div id="progress-score" class="overview-stat-value">15</div>
+                    </div>
+                </div>
             </div>
-            <div class="pet-card space-y-2">
-                <span class="text-[10px] uppercase tracking-widest text-pink-400 font-black block">Active Sidekick</span>
-                <div id="equipped-pet-summary" class="text-sm text-slate-300"></div>
+
+            <div class="pet-card space-y-4">
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Progress Loop</span>
+                    <h2 class="text-lg font-black text-slate-100 mt-1">Tiered Reward Route</h2>
+                </div>
+                <div id="progression-status" class="text-sm text-slate-300"></div>
+                <div id="tier-track" class="tier-track"></div>
+                <div id="route-track" class="route-track"></div>
             </div>
-            <div class="pet-card space-y-2">
-                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Layered Loadout</span>
-                <div id="companion-preview" class="companion-preview" aria-label="Active companion customization preview"></div>
+        </div>
+    </div>
+
+    <div class="pet-panel space-y-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Hangar</span>
+                <h2 class="text-xl font-black text-slate-100">Animated Avatar Wardrobe</h2>
+            </div>
+            <div class="text-xs text-slate-400">Preview locked gear, rotate the explorer, and swap between idle and traversal states before heading back to the map.</div>
+        </div>
+        <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-4">
+            <div class="pet-card">
+                <div id="companion-preview" class="companion-preview" aria-label="Animated hangar preview"></div>
+            </div>
+            <div class="pet-card space-y-4">
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Scene State</span>
+                    <div id="hangar-scene-copy" class="text-sm text-slate-300 mt-2"></div>
+                </div>
+                <div class="hangar-controls">
+                    <button type="button" class="btn-accessible text-xs" data-scene-mode="idle">Idle Animation</button>
+                    <button type="button" class="btn-accessible text-xs" data-scene-mode="travel">Traversal Animation</button>
+                </div>
+                <div class="hangar-controls">
+                    <button type="button" class="btn-secondary text-xs" id="rotate-left-btn">Rotate Left</button>
+                    <button type="button" class="btn-secondary text-xs" id="rotate-right-btn">Rotate Right</button>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Wardrobe Preview</span>
+                    <div id="preview-locker-status" class="text-sm text-slate-300 mt-2">Pick any gear card below to try it on in the hangar, even before it is unlocked.</div>
+                </div>
             </div>
         </div>
     </div>
@@ -160,9 +598,9 @@
                 <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Character Bay</span>
                 <h2 class="text-xl font-black text-slate-100">Choose Your Explorer</h2>
             </div>
-            <div class="text-xs text-slate-400">Unlock new pre-generated characters or equip one you already own.</div>
+            <div class="text-xs text-slate-400">Three starter explorers are free, then premium characters escalate into milestone and mastery goals.</div>
         </div>
-        <div id="character-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <div id="character-shop-grid" class="catalog-grid md:grid-cols-2"></div>
         <p id="character-land-feedback" class="text-sm font-bold h-5"></p>
     </div>
 
@@ -172,9 +610,9 @@
                 <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Companion Outfitters</span>
                 <h2 class="text-xl font-black text-slate-100">Collect and Equip Gear</h2>
             </div>
-            <div class="text-xs text-slate-400">Every item has a rarity rate and a completed-unit milestone.</div>
+            <div class="text-xs text-slate-400">Tier 1 items land in the 1 to 3 coin range, mid-game rewards cost 5 to 15, and mastery cosmetics sit at 20 plus.</div>
         </div>
-        <div id="merch-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <div id="merch-shop-grid" class="catalog-grid md:grid-cols-2"></div>
         <p id="merch-land-feedback" class="text-sm font-bold h-5"></p>
     </div>
 
@@ -184,9 +622,9 @@
                 <span class="text-[10px] uppercase tracking-widest text-yellow-400 font-black block">Adoption Port</span>
                 <h2 class="text-xl font-black text-slate-100">Choose Your Pet</h2>
             </div>
-            <div class="text-xs text-slate-400">Adopt new pets or equip one you already own.</div>
+            <div class="text-xs text-slate-400">Low-cost sidekicks unlock quickly, while rare pets stay aspirational and match the long-term loop.</div>
         </div>
-        <div id="pet-shop-grid" class="grid md:grid-cols-2 gap-4"></div>
+        <div id="pet-shop-grid" class="catalog-grid md:grid-cols-2"></div>
         <p id="pet-land-feedback" class="text-sm font-bold h-5"></p>
     </div>
 </div>
@@ -198,33 +636,70 @@
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
+        const tierDefinitions = [
+            {
+                id: 'immediate',
+                label: 'Immediate Wins',
+                range: '1 to 3 coins',
+                description: 'Every learner can buy something fun almost immediately.',
+                threshold: 1,
+                accent: 'text-cyan-300'
+            },
+            {
+                id: 'milestone',
+                label: 'Mid-Game Milestones',
+                range: '5 to 15 coins',
+                description: 'These ask for a little commitment and some unit progress.',
+                threshold: 8,
+                accent: 'text-emerald-300'
+            },
+            {
+                id: 'mastery',
+                label: 'Endgame Flex',
+                range: '20+ coins',
+                description: 'Premium cosmetics signal mastery and long-term play.',
+                threshold: 20,
+                accent: 'text-amber-300'
+            }
+        ];
+
         const characterCatalog = [
-            { id: 'nova-cadet', name: 'Nova Cadet', emoji: '🧑‍🚀', style: 'Starter suit with comet boots.', cost: 0 },
-            { id: 'ion-pilot', name: 'Ion Pilot', emoji: '👩‍🚀', style: 'Teal visor pilot built for speed lanes.', cost: 120 },
-            { id: 'stellar-ninja', name: 'Stellar Ninja', emoji: '🥷', style: 'Shadow cloak for tricky asteroid paths.', cost: 175 },
-            { id: 'galaxy-engineer', name: 'Galaxy Engineer', emoji: '🛠️', style: 'Puzzle-solving crew chief with a utility belt.', cost: 160 }
+            { id: 'nova-cadet', name: 'Nova Cadet', emoji: '🧑‍🚀', style: 'Balanced starter suit with comet boots.', cost: 0, tier: 'starter' },
+            { id: 'rover-scout', name: 'Rover Scout', emoji: '🧑‍🔧', style: 'A dependable mission runner with gadget pockets.', cost: 0, tier: 'starter' },
+            { id: 'alien-explorer', name: 'Alien Explorer', emoji: '👽', style: 'A curious visitor with a soft hover step.', cost: 0, tier: 'starter' },
+            { id: 'ion-pilot', name: 'Ion Pilot', emoji: '👩‍🚀', style: 'Teal visor pilot built for speed lanes.', cost: 8, tier: 'milestone' },
+            { id: 'galaxy-engineer', name: 'Galaxy Engineer', emoji: '🛠️', style: 'Puzzle-solving crew chief with a utility belt.', cost: 12, tier: 'milestone' },
+            { id: 'stellar-ninja', name: 'Stellar Ninja', emoji: '🥷', style: 'Shadow-cloak specialist for expert routes.', cost: 22, tier: 'mastery' }
         ];
 
         const gearCatalog = [
-            { id: 'navigator-hoodie', name: 'Navigator Hoodie', emoji: '🧥', slot: 'outfit', target: 'character', rarity: 'Common', dropRate: 60, cost: 45, milestoneUnit: 1 },
-            { id: 'factor-bandana', name: 'Factor Bandana', emoji: '🧣', slot: 'accessory', target: 'pet', rarity: 'Common', dropRate: 60, cost: 40, milestoneUnit: 1 },
-            { id: 'fraction-wings', name: 'Fraction Wings', emoji: '🪽', slot: 'accessory', target: 'pet', rarity: 'Uncommon', dropRate: 25, cost: 75, milestoneUnit: 2 },
-            { id: 'rational-visor', name: 'Rational Visor', emoji: '🥽', slot: 'hat', target: 'pet', rarity: 'Rare', dropRate: 10, cost: 120, milestoneUnit: 3 },
-            { id: 'expression-cape', name: 'Expression Cape', emoji: '🦸', slot: 'outfit', target: 'character', rarity: 'Rare', dropRate: 10, cost: 135, milestoneUnit: 4 },
-            { id: 'equation-crown', name: 'Equation Crown', emoji: '👑', slot: 'hat', target: 'pet', rarity: 'Legendary', dropRate: 5, cost: 220, milestoneUnit: 5 }
+            { id: 'starlight-glow', name: 'Starlight Glow', emoji: '✨', slot: 'aura', target: 'character', rarity: 'Common', dropRate: 90, cost: 1, milestoneUnit: 0, tier: 'immediate', description: 'A simple colorful aura for instant feedback.' },
+            { id: 'sun-spex', name: 'Sun Spex', emoji: '🕶️', slot: 'hat', target: 'character', rarity: 'Common', dropRate: 85, cost: 2, milestoneUnit: 0, tier: 'immediate', description: 'Classic shades for a fast first unlock.' },
+            { id: 'rookie-cap', name: 'Rookie Cap', emoji: '🧢', slot: 'hat', target: 'pet', rarity: 'Common', dropRate: 80, cost: 3, milestoneUnit: 0, tier: 'immediate', description: 'A basic cap for early point earners.' },
+            { id: 'pocket-jetpack', name: 'Pocket Jetpack', emoji: '🎒', slot: 'accessory', target: 'character', rarity: 'Uncommon', dropRate: 30, cost: 8, milestoneUnit: 2, tier: 'milestone', description: 'Adds motion and makes travel mode feel earned.' },
+            { id: 'orbit-helmet', name: 'Orbit Helmet', emoji: '⛑️', slot: 'hat', target: 'character', rarity: 'Uncommon', dropRate: 26, cost: 10, milestoneUnit: 3, tier: 'milestone', description: 'Mid-game headgear unlocked by steady progress.' },
+            { id: 'particle-trail', name: 'Particle Trail', emoji: '💫', slot: 'trail', target: 'pet', rarity: 'Rare', dropRate: 18, cost: 12, milestoneUnit: 4, tier: 'milestone', description: 'An animated streak that follows your sidekick.' },
+            { id: 'cosmic-crown', name: 'Cosmic Crown', emoji: '👑', slot: 'hat', target: 'character', rarity: 'Legendary', dropRate: 6, cost: 25, milestoneUnit: 5, tier: 'mastery', description: 'A long-term flex item for high-point learners.' },
+            { id: 'holo-companion', name: 'Holo Companion', emoji: '🪐', slot: 'aura', target: 'pet', rarity: 'Legendary', dropRate: 4, cost: 30, milestoneUnit: 6, tier: 'mastery', description: 'Projects a holographic buddy around your pet.' }
         ];
 
         const petCatalog = [
-            { id: 'mochi-mooncat', name: 'Mochi Mooncat', emoji: '🐱', talent: 'Purrs near factor clues.', cost: 90 },
-            { id: 'orbit-otter', name: 'Orbit Otter', emoji: '🦦', talent: 'Carries extra merch clips.', cost: 110 },
-            { id: 'pixel-pup', name: 'Pixel Pup', emoji: '🐶', talent: 'Wags at correct answers.', cost: 100 },
-            { id: 'nebula-axolotl', name: 'Nebula Axolotl', emoji: '🦎', talent: 'Glows during checkpoint alerts.', cost: 135 }
+            { id: 'pixel-pup', name: 'Pixel Pup', emoji: '🐶', talent: 'Wags at correct answers.', cost: 3, tier: 'immediate' },
+            { id: 'mochi-mooncat', name: 'Mochi Mooncat', emoji: '🐱', talent: 'Purrs near factor clues.', cost: 6, tier: 'milestone' },
+            { id: 'orbit-otter', name: 'Orbit Otter', emoji: '🦦', talent: 'Carries extra merch clips.', cost: 12, tier: 'milestone' },
+            { id: 'nebula-axolotl', name: 'Nebula Axolotl', emoji: '🦎', talent: 'Glows during checkpoint alerts.', cost: 22, tier: 'mastery' }
         ];
+
+        const hangarModelCatalog = {
+            sharedBody: '/static/models/pet_land/characters/pink-alien-body.glb'
+        };
 
         let coins = 15;
         let studentProfile = {
-            ownedCharacters: ['nova-cadet'],
+            ownedCharacters: ['nova-cadet', 'rover-scout', 'alien-explorer'],
             equippedCharacter: 'nova-cadet',
             ownedMerch: [],
             equippedGear: {},
@@ -232,20 +707,79 @@
             equippedPet: null,
         };
         let floatTimer = null;
-        let petFloatState = null;
         let completedStations = [];
+        let hangarSceneMode = 'idle';
+        let hangarRotation = 0;
+        let previewGearId = null;
+        let hangarRuntime = null;
+        const hangarModelCache = new Map();
+
+        function activateFallbackMode(runtime) {
+            if (!runtime || runtime.mode === 'fallback') return;
+            runtime.mode = 'fallback';
+            if (runtime.animationHandle) {
+                window.cancelAnimationFrame(runtime.animationHandle);
+                runtime.animationHandle = null;
+            }
+            if (runtime.canvasHost) {
+                runtime.canvasHost.style.opacity = '0';
+            }
+            renderFallbackPreview(getCharacterById(studentProfile.equippedCharacter));
+        }
+
+        function unique(items) {
+            return Array.from(new Set(items));
+        }
+
+        function getStarterCharacterIds() {
+            return characterCatalog.filter((character) => character.cost === 0).map((character) => character.id);
+        }
+
+        function getGearEquipKey(item) {
+            return `${item.target}:${item.slot}`;
+        }
+
+        function normalizeProfile(rawProfile = {}) {
+            const starterCharacterIds = getStarterCharacterIds();
+            const normalized = {
+                ownedCharacters: unique([...(Array.isArray(rawProfile.ownedCharacters) ? rawProfile.ownedCharacters : []), ...starterCharacterIds]),
+                equippedCharacter: rawProfile.equippedCharacter || starterCharacterIds[0],
+                ownedMerch: unique(Array.isArray(rawProfile.ownedMerch) ? rawProfile.ownedMerch : []),
+                equippedGear: {},
+                ownedPets: unique(Array.isArray(rawProfile.ownedPets) ? rawProfile.ownedPets : []),
+                equippedPet: rawProfile.equippedPet || null,
+            };
+
+            const rawEquippedGear = rawProfile.equippedGear && typeof rawProfile.equippedGear === 'object' ? rawProfile.equippedGear : {};
+            Object.entries(rawEquippedGear).forEach(([key, id]) => {
+                const item = gearCatalog.find((gear) => gear.id === id);
+                if (!item) return;
+                const normalizedKey = key.includes(':') ? key : getGearEquipKey(item);
+                normalized.equippedGear[normalizedKey] = id;
+            });
+
+            if (!normalized.ownedCharacters.includes(normalized.equippedCharacter)) {
+                normalized.equippedCharacter = starterCharacterIds[0];
+            }
+
+            if (normalized.equippedPet && !normalized.ownedPets.includes(normalized.equippedPet)) {
+                normalized.equippedPet = null;
+            }
+
+            return normalized;
+        }
 
         function loadState() {
             const saved = localStorage.getItem('6th_grade_quest_state');
             if (!saved) return;
             try {
                 const parsed = JSON.parse(saved);
-                coins = parsed.coins || 15;
+                coins = typeof parsed.coins === 'number' ? parsed.coins : 15;
                 completedStations = Array.isArray(parsed.completedStations) ? parsed.completedStations : [];
-                studentProfile = {
+                studentProfile = normalizeProfile({
                     ...studentProfile,
                     ...(parsed.studentProfile || {})
-                };
+                });
             } catch (e) {}
         }
 
@@ -260,7 +794,7 @@
             parsed.coins = coins;
             parsed.studentProfile = {
                 ...(parsed.studentProfile || {}),
-                ...studentProfile,
+                ...normalizeProfile(studentProfile),
             };
             localStorage.setItem('6th_grade_quest_state', JSON.stringify(parsed));
         }
@@ -274,31 +808,710 @@
         }
 
         function isUnitCompleted(unit) {
-            const scopedStations = Array.from({ length: 10 }, (_, index) => `${unit}:${index + 1}`);
-            if (scopedStations.every((station) => completedStations.includes(station))) return true;
-            return unit === 1 && Array.from({ length: 10 }, (_, index) => String(index + 1)).every((station) => completedStations.includes(station));
+            if (!unit) return true;
+            const requiredStations = ['1', '2', '3'];
+            if (requiredStations.every((station) => completedStations.includes(`${unit}:${station}`))) return true;
+            return unit === 1 && requiredStations.every((station) => completedStations.includes(station));
         }
 
         function getEquippedGear(target) {
-            return Object.values(studentProfile.equippedGear || {}).map((id) => gearCatalog.find((item) => item.id === id)).filter((item) => item && item.target === target);
+            return Object.entries(studentProfile.equippedGear || {})
+                .filter(([key]) => key.startsWith(`${target}:`))
+                .map(([, id]) => gearCatalog.find((item) => item.id === id))
+                .filter((item) => Boolean(item));
         }
 
-        function renderCompanionPreview(activeCharacter, activePet) {
-            const target = activePet ? 'pet' : 'character';
-            const base = activePet || activeCharacter;
-            const layers = getEquippedGear(target).map((item) => `<span class="sprite-layer" data-slot="${item.slot}" title="${item.name}">${item.emoji}</span>`).join('');
-            document.getElementById('companion-preview').innerHTML = `<span class="sprite-base">${base.emoji}</span>${layers}`;
+        function getCompletedUnitCount() {
+            return Array.from({ length: 10 }, (_, index) => index + 1).filter((unit) => isUnitCompleted(unit)).length;
+        }
+
+        function getTotalSpendValue() {
+            const ownedCharactersValue = studentProfile.ownedCharacters
+                .map((id) => getCharacterById(id))
+                .reduce((sum, character) => sum + (character?.cost || 0), 0);
+            const ownedPetsValue = studentProfile.ownedPets
+                .map((id) => getPetById(id))
+                .reduce((sum, pet) => sum + (pet?.cost || 0), 0);
+            const ownedGearValue = studentProfile.ownedMerch
+                .map((id) => gearCatalog.find((item) => item.id === id))
+                .reduce((sum, item) => sum + (item?.cost || 0), 0);
+            return ownedCharactersValue + ownedPetsValue + ownedGearValue;
+        }
+
+        function getProgressScore() {
+            return coins + getTotalSpendValue();
+        }
+
+        function getCurrentTier() {
+            const progressScore = getProgressScore();
+            if (progressScore >= 20) return tierDefinitions[2];
+            if (progressScore >= 8) return tierDefinitions[1];
+            return tierDefinitions[0];
+        }
+
+        function getOwnedUnlockCount() {
+            const nonStarterCharacters = studentProfile.ownedCharacters.filter((id) => (getCharacterById(id)?.cost || 0) > 0).length;
+            return nonStarterCharacters + studentProfile.ownedMerch.length + studentProfile.ownedPets.length;
+        }
+
+        function isGearUnlocked(item) {
+            return item.milestoneUnit === 0 || isUnitCompleted(item.milestoneUnit);
+        }
+
+        function getTierItemCounts() {
+            return tierDefinitions.map((tier) => {
+                const items = gearCatalog.filter((item) => item.tier === tier.id);
+                const unlocked = items.filter((item) => studentProfile.ownedMerch.includes(item.id)).length;
+                return { ...tier, total: items.length, unlocked };
+            });
+        }
+
+        function getActiveGearForTarget(target) {
+            const equipped = getEquippedGear(target).map((item) => ({ ...item, isPreview: false }));
+            const previewItem = gearCatalog.find((item) => item.id === previewGearId && item.target === target);
+            if (previewItem && !equipped.some((item) => item.id === previewItem.id)) {
+                equipped.push({ ...previewItem, isPreview: true });
+            }
+            return equipped;
+        }
+
+        function buildFallbackLayers(target) {
+            return getActiveGearForTarget(target)
+                .map((item) => `<span class="fallback-layer ${item.isPreview ? 'is-preview' : ''}" data-slot="${item.slot}" title="${item.name}">${item.emoji}</span>`)
+                .join('');
+        }
+
+        function renderFallbackPreview(activeCharacter) {
+            const fallback = document.getElementById('hangar-fallback');
+            if (!fallback) return;
+            fallback.hidden = false;
+            fallback.dataset.sceneMode = hangarSceneMode;
+            fallback.innerHTML = `
+                <div class="fallback-stage">
+                    <div class="fallback-beam"></div>
+                    <div class="fallback-platform"></div>
+                    <div class="fallback-actor" style="transform: rotateY(${hangarRotation}deg);">
+                        <div class="fallback-shell">
+                            <span class="fallback-base">👾</span>
+                            <span class="fallback-layer" data-slot="hat" title="${activeCharacter.name}">${activeCharacter.emoji}</span>
+                            ${buildFallbackLayers('character')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function colorFromId(id, seed = 0) {
+            const source = `${id}:${seed}`;
+            let hash = 0;
+            for (let index = 0; index < source.length; index += 1) {
+                hash = source.charCodeAt(index) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash) % 360;
+            return new THREE.Color(`hsl(${hue}, 72%, 58%)`);
+        }
+
+        function createMaterial(color, emissive, opacity = 1) {
+            return new THREE.MeshStandardMaterial({
+                color,
+                emissive,
+                emissiveIntensity: 0.35,
+                metalness: 0.22,
+                roughness: 0.45,
+                transparent: opacity < 1,
+                opacity,
+            });
+        }
+
+        function createGlowSprite(colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 160;
+            canvas.height = 160;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(80, 80, 10, 80, 80, 70);
+            gradient.addColorStop(0, `rgba(${colorHex.r}, ${colorHex.g}, ${colorHex.b}, 0.85)`);
+            gradient.addColorStop(0.45, `rgba(${colorHex.r}, ${colorHex.g}, ${colorHex.b}, 0.38)`);
+            gradient.addColorStop(1, `rgba(${colorHex.r}, ${colorHex.g}, ${colorHex.b}, 0)`);
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 160, 160);
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(2.8, 2.8, 1);
+            return sprite;
+        }
+
+        function createEmojiSprite(emoji, size = 196) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const context = canvas.getContext('2d');
+            context.clearRect(0, 0, size, size);
+            context.font = `${Math.floor(size * 0.56)}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(emoji, size / 2, size / 2 + size * 0.03);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(1.1, 1.1, 1);
+            return sprite;
+        }
+
+        function loadHangarModel(path) {
+            if (!path || !window.THREE || !THREE.GLTFLoader) {
+                return Promise.resolve(null);
+            }
+            if (hangarModelCache.has(path)) {
+                return hangarModelCache.get(path);
+            }
+
+            const loader = new THREE.GLTFLoader();
+            const pending = new Promise((resolve) => {
+                loader.load(
+                    path,
+                    (gltf) => resolve(gltf?.scene || null),
+                    undefined,
+                    () => resolve(null)
+                );
+            });
+            hangarModelCache.set(path, pending);
+            return pending;
+        }
+
+        function normalizeLoadedModel(root, targetHeight = 2.45) {
+            const box = new THREE.Box3().setFromObject(root);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            box.getSize(size);
+            box.getCenter(center);
+            if (!size.y) return root;
+
+            root.position.sub(center);
+            const scale = targetHeight / size.y;
+            root.scale.setScalar(scale);
+
+            const normalizedBox = new THREE.Box3().setFromObject(root);
+            root.position.y -= normalizedBox.min.y;
+            return root;
+        }
+
+        function buildCharacterBadge(character) {
+            const badgeGroup = new THREE.Group();
+            const badgePlate = new THREE.Mesh(
+                new THREE.CircleGeometry(0.28, 24),
+                new THREE.MeshStandardMaterial({
+                    color: 0xf8fafc,
+                    emissive: 0x7dd3fc,
+                    emissiveIntensity: 0.3,
+                    metalness: 0.2,
+                    roughness: 0.24,
+                })
+            );
+            badgeGroup.add(badgePlate);
+
+            const badgeSprite = createEmojiSprite(character.emoji);
+            badgeSprite.position.z = 0.08;
+            badgeSprite.scale.set(0.42, 0.42, 1);
+            badgeGroup.add(badgeSprite);
+            return badgeGroup;
+        }
+
+        function decorateLoadedAlienBody(root, character) {
+            const badge = buildCharacterBadge(character);
+            badge.position.set(0, 1.55, 0.42);
+            root.add(badge);
+            return root;
+        }
+
+        function createStarField() {
+            const geometry = new THREE.BufferGeometry();
+            const count = 180;
+            const positions = new Float32Array(count * 3);
+            for (let index = 0; index < count; index += 1) {
+                positions[index * 3] = (Math.random() - 0.5) * 26;
+                positions[index * 3 + 1] = Math.random() * 9 + 1;
+                positions[index * 3 + 2] = (Math.random() - 0.5) * 20 - 5;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ color: 0xe0f2fe, size: 0.06, transparent: true, opacity: 0.8 });
+            return new THREE.Points(geometry, material);
+        }
+
+        function createTrailLine() {
+            const points = [
+                new THREE.Vector3(-1.4, 0.1, -0.1),
+                new THREE.Vector3(-0.6, 0.16, -0.04),
+                new THREE.Vector3(0.25, 0.08, 0),
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.8 });
+            return new THREE.Line(geometry, material);
+        }
+
+        function buildHumanoid(character) {
+            const group = new THREE.Group();
+            const bodyColor = new THREE.Color(0xf472b6);
+            const accentColor = new THREE.Color(0xdb2777);
+            const glowColor = new THREE.Color(0xf9a8d4);
+
+            function createLimb(material) {
+                const limb = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.84, 10), material);
+                const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), material);
+                shoulderCap.position.y = 0.42;
+                limb.add(shoulderCap);
+                const gloveCap = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), material);
+                gloveCap.position.y = -0.42;
+                limb.add(gloveCap);
+                return limb;
+            }
+
+            const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.56, 1.48, 12), createMaterial(bodyColor, accentColor));
+            torso.position.y = 0.78;
+            torso.scale.set(1, 1.05, 0.94);
+            group.add(torso);
+
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.44, 18, 18), createMaterial(new THREE.Color(0xfbcfe8), accentColor));
+            head.position.y = 1.8;
+            head.scale.set(1.08, 1, 1.02);
+            group.add(head);
+
+            const eyeLeft = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 10), createMaterial(new THREE.Color(0x1f2937), glowColor));
+            eyeLeft.position.set(-0.12, 1.84, 0.38);
+            group.add(eyeLeft);
+
+            const eyeRight = eyeLeft.clone();
+            eyeRight.position.x = 0.12;
+            group.add(eyeRight);
+
+            const badge = buildCharacterBadge(character);
+            badge.position.set(0, 1.74, 0.43);
+            group.add(badge);
+
+            const antennaLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.38, 8), createMaterial(accentColor, glowColor));
+            antennaLeft.position.set(-0.18, 2.14, 0.02);
+            antennaLeft.rotation.z = -0.32;
+            group.add(antennaLeft);
+
+            const antennaLeftTip = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 10), createMaterial(glowColor, accentColor));
+            antennaLeftTip.position.set(-0.25, 2.31, 0.04);
+            group.add(antennaLeftTip);
+
+            const antennaRight = antennaLeft.clone();
+            antennaRight.position.x = 0.18;
+            antennaRight.rotation.z = 0.32;
+            group.add(antennaRight);
+
+            const antennaRightTip = antennaLeftTip.clone();
+            antennaRightTip.position.x = 0.25;
+            group.add(antennaRightTip);
+
+            const belt = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.05, 10, 24), createMaterial(new THREE.Color(0xfef08a), accentColor));
+            belt.rotation.x = Math.PI / 2;
+            belt.position.set(0, 0.58, 0);
+            group.add(belt);
+
+            const leftArm = createLimb(createMaterial(bodyColor.clone().offsetHSL(0.01, 0.02, 0.04), accentColor));
+            leftArm.position.set(-0.62, 0.84, 0.02);
+            leftArm.rotation.z = Math.PI / 4;
+            group.add(leftArm);
+
+            const rightArm = leftArm.clone();
+            rightArm.position.x = 0.62;
+            rightArm.rotation.z = -Math.PI / 4;
+            group.add(rightArm);
+
+            const leftLeg = createLimb(createMaterial(bodyColor.clone().offsetHSL(0.02, 0.01, -0.06), accentColor));
+            leftLeg.scale.set(0.92, 0.96, 0.92);
+            leftLeg.position.set(-0.22, -0.24, 0);
+            group.add(leftLeg);
+
+            const rightLeg = leftLeg.clone();
+            rightLeg.position.x = 0.22;
+            group.add(rightLeg);
+
+            const auraShell = new THREE.Mesh(
+                new THREE.SphereGeometry(0.82, 18, 18),
+                new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.08 })
+            );
+            auraShell.position.set(0, 0.98, -0.2);
+            auraShell.scale.set(1.22, 1.4, 1.08);
+            group.add(auraShell);
+
+            group.userData = {
+                bobPhase: Math.random() * Math.PI,
+                swingSpeed: 1,
+                baseY: 0,
+            };
+            return group;
+        }
+
+        function applyGearMeshes(rootGroup, items, target) {
+            rootGroup.children
+                .filter((child) => child.userData && child.userData.gearMesh)
+                .forEach((child) => rootGroup.remove(child));
+
+            items.forEach((item, index) => {
+                const baseColor = colorFromId(item.id, index + 7);
+                const emissive = colorFromId(item.id, index + 13);
+                const opacity = item.isPreview ? 0.42 : 0.92;
+                let mesh = null;
+
+                if (item.slot === 'hat') {
+                    mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.22, 14), createMaterial(baseColor, emissive, opacity));
+                    mesh.position.set(target === 'pet' ? 0.44 : 0, target === 'pet' ? 1.28 : 2.18, target === 'pet' ? 0.14 : 0);
+                    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.04, 14), createMaterial(baseColor.clone().offsetHSL(0, 0, 0.06), emissive, opacity));
+                    brim.position.y = -0.1;
+                    mesh.add(brim);
+                } else if (item.slot === 'accessory') {
+                    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.58, 0.22), createMaterial(baseColor, emissive, opacity));
+                    mesh.position.set(0.46, 0.9, -0.34);
+                    mesh.rotation.x = -0.2;
+                } else if (item.slot === 'aura') {
+                    const colorObj = { r: Math.floor(baseColor.r * 255), g: Math.floor(baseColor.g * 255), b: Math.floor(baseColor.b * 255) };
+                    mesh = createGlowSprite(colorObj);
+                    mesh.position.set(target === 'pet' ? -0.08 : 0, target === 'pet' ? 0.92 : 1.12, 0);
+                    mesh.material.opacity = item.isPreview ? 0.32 : 0.7;
+                } else if (item.slot === 'trail') {
+                    mesh = createTrailLine();
+                    mesh.position.set(-0.1, 0.42, -0.22);
+                    mesh.material.opacity = item.isPreview ? 0.28 : 0.82;
+                } else {
+                    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.86, 0.18), createMaterial(baseColor, emissive, opacity));
+                    mesh.position.set(0, 0.92, 0.38);
+                }
+
+                mesh.userData.gearMesh = true;
+                rootGroup.add(mesh);
+            });
+        }
+
+        function ensureHangarRuntime() {
+            const preview = document.getElementById('companion-preview');
+            if (!preview || hangarRuntime) return hangarRuntime;
+
+            preview.innerHTML = `
+                <div class="hangar-canvas" aria-hidden="true"></div>
+                <div id="hangar-fallback" class="hangar-fallback" hidden></div>
+                <div class="hangar-overlay"></div>
+                <div class="hangar-caption">
+                    <div>
+                        <span id="hangar-scene-pill" class="scene-pill">Idle Animation</span>
+                        <div id="hangar-active-pair" class="text-sm font-black text-slate-100 mt-2"></div>
+                    </div>
+                    <div class="text-right text-xs text-slate-400">Three.js hangar preview with live inventory layering.</div>
+                </div>
+                <div id="hangar-scene-badge" class="hangar-scene-badge">Idle drift online</div>
+                <div id="hangar-preview-badge" class="hangar-preview-badge" hidden>Preview queued</div>
+                <div id="hangar-preview-note" class="hangar-preview-note"></div>
+            `;
+
+            const canvasHost = preview.querySelector('.hangar-canvas');
+            const fallback = preview.querySelector('#hangar-fallback');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020617, 0.075);
+
+            const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+            camera.position.set(0, 2.7, 8.8);
+            camera.lookAt(0, 0.6, 0);
+
+            let renderer = null;
+            try {
+                const probeCanvas = document.createElement('canvas');
+                const probeContext = probeCanvas.getContext('webgl') || probeCanvas.getContext('experimental-webgl');
+                if (!probeContext) {
+                    hangarRuntime = { preview, canvasHost, fallback, mode: 'fallback' };
+                    return hangarRuntime;
+                }
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                canvasHost.appendChild(renderer.domElement);
+            } catch (error) {
+                console.warn('Pet Land hangar falling back to DOM preview:', error);
+                hangarRuntime = { preview, canvasHost, fallback, mode: 'fallback' };
+                return hangarRuntime;
+            }
+
+            const ambientLight = new THREE.AmbientLight(0x8ec5ff, 1.2);
+            scene.add(ambientLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.25);
+            keyLight.position.set(4, 8, 6);
+            scene.add(keyLight);
+
+            const rimLight = new THREE.PointLight(0xf472b6, 1.4, 20, 2);
+            rimLight.position.set(-5, 4, -3);
+            scene.add(rimLight);
+
+            const fillLight = new THREE.PointLight(0x22d3ee, 1.25, 20, 2);
+            fillLight.position.set(4, 2, 4);
+            scene.add(fillLight);
+
+            const platform = new THREE.Mesh(
+                new THREE.CylinderGeometry(3.3, 3.7, 0.34, 36),
+                new THREE.MeshStandardMaterial({ color: 0x082f49, emissive: 0x0891b2, emissiveIntensity: 0.22, metalness: 0.3, roughness: 0.5 })
+            );
+            platform.position.y = -1.18;
+            scene.add(platform);
+
+            const ring = new THREE.Mesh(
+                new THREE.TorusGeometry(3.15, 0.06, 12, 60),
+                new THREE.MeshStandardMaterial({ color: 0x67e8f9, emissive: 0x22d3ee, emissiveIntensity: 0.7 })
+            );
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = -0.98;
+            scene.add(ring);
+
+            const nebula = new THREE.Mesh(
+                new THREE.SphereGeometry(7.2, 18, 18),
+                new THREE.MeshBasicMaterial({ color: 0x1d4ed8, transparent: true, opacity: 0.08, side: THREE.BackSide })
+            );
+            nebula.position.z = -5;
+            scene.add(nebula);
+
+            const travelLine = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 4.8, 18),
+                new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xf59e0b, emissiveIntensity: 0.55, transparent: true, opacity: 0.18 })
+            );
+            travelLine.rotation.z = Math.PI / 2;
+            travelLine.position.set(0.7, -0.12, -0.5);
+            scene.add(travelLine);
+
+            const starField = createStarField();
+            scene.add(starField);
+
+            const avatarAnchor = new THREE.Group();
+            avatarAnchor.position.set(0, -0.78, 0.45);
+            scene.add(avatarAnchor);
+
+            hangarRuntime = {
+                preview,
+                fallback,
+                mode: 'webgl',
+                scene,
+                camera,
+                renderer,
+                canvasHost,
+                starField,
+                platform,
+                ring,
+                nebula,
+                travelLine,
+                avatarAnchor,
+                characterRoot: null,
+                animationHandle: null,
+                resizeObserver: null,
+                lastFrame: performance.now(),
+                frameCount: 0,
+                healthChecked: false,
+                characterMountToken: 0,
+            };
+
+            function resize() {
+                const width = canvasHost.clientWidth || preview.clientWidth || 100;
+                const height = canvasHost.clientHeight || preview.clientHeight || 330;
+                renderer.setSize(width, height, false);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+
+            function animate(now) {
+                if (!hangarRuntime) return;
+                const elapsed = now * 0.001;
+                const delta = Math.min((now - hangarRuntime.lastFrame) / 1000, 0.05);
+                hangarRuntime.lastFrame = now;
+                hangarRuntime.frameCount += 1;
+
+                starField.rotation.y = elapsed * 0.03;
+                ring.material.emissiveIntensity = 0.45 + Math.sin(elapsed * 1.4) * 0.2;
+                nebula.rotation.y = elapsed * 0.02;
+
+                if (hangarRuntime.characterRoot) {
+                    const bobOffset = hangarSceneMode === 'travel' ? Math.sin(elapsed * 5.2) * 0.22 : Math.sin(elapsed * 2.2) * 0.12;
+                    hangarRuntime.characterRoot.position.y = bobOffset;
+                    hangarRuntime.characterRoot.position.x = hangarSceneMode === 'travel' ? Math.sin(elapsed * 2.6) * 0.48 : 0;
+                    hangarRuntime.characterRoot.rotation.z = hangarSceneMode === 'travel' ? Math.sin(elapsed * 4.1) * 0.08 : Math.sin(elapsed * 1.8) * 0.03;
+                }
+
+                avatarAnchor.rotation.y += ((THREE.MathUtils.degToRad(hangarRotation) - avatarAnchor.rotation.y) * Math.min(delta * 7, 1));
+                travelLine.material.opacity = hangarSceneMode === 'travel' ? 0.48 + Math.sin(elapsed * 8.4) * 0.16 : 0.12;
+                travelLine.scale.x = hangarSceneMode === 'travel' ? 1.08 + Math.sin(elapsed * 6.6) * 0.08 : 0.94;
+
+                renderer.render(scene, camera);
+
+                if (!hangarRuntime.healthChecked && hangarRuntime.frameCount >= 3) {
+                    hangarRuntime.healthChecked = true;
+                    try {
+                        const gl = renderer.getContext();
+                        const samplePoints = [
+                            [Math.floor(renderer.domElement.width * 0.28), Math.floor(renderer.domElement.height * 0.45)],
+                            [Math.floor(renderer.domElement.width * 0.38), Math.floor(renderer.domElement.height * 0.55)],
+                            [Math.floor(renderer.domElement.width * 0.52), Math.floor(renderer.domElement.height * 0.42)],
+                        ];
+                        const pixel = new Uint8Array(4);
+                        const hasVisiblePixels = samplePoints.some(([x, y]) => {
+                            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+                            return pixel[3] > 0 || pixel[0] + pixel[1] + pixel[2] > 12;
+                        });
+                        if (!hasVisiblePixels) {
+                            activateFallbackMode(hangarRuntime);
+                            return;
+                        }
+                    } catch (error) {
+                        activateFallbackMode(hangarRuntime);
+                        return;
+                    }
+                }
+
+                hangarRuntime.animationHandle = window.requestAnimationFrame(animate);
+            }
+
+            if (typeof ResizeObserver !== 'undefined') {
+                hangarRuntime.resizeObserver = new ResizeObserver(resize);
+                hangarRuntime.resizeObserver.observe(preview);
+            } else {
+                window.addEventListener('resize', resize);
+            }
+
+            resize();
+            hangarRuntime.animationHandle = window.requestAnimationFrame(animate);
+            return hangarRuntime;
+        }
+
+        function mountCharacterModel(activeCharacter) {
+            const runtime = ensureHangarRuntime();
+            if (!runtime) return;
+            if (runtime.mode !== 'webgl') return;
+            runtime.characterMountToken += 1;
+            const mountToken = runtime.characterMountToken;
+            if (runtime.characterRoot) {
+                runtime.avatarAnchor.remove(runtime.characterRoot);
+            }
+            runtime.characterRoot = buildHumanoid(activeCharacter);
+            runtime.avatarAnchor.add(runtime.characterRoot);
+
+            loadHangarModel(hangarModelCatalog.sharedBody).then((loadedScene) => {
+                if (!loadedScene || !hangarRuntime || hangarRuntime.mode !== 'webgl' || mountToken !== hangarRuntime.characterMountToken) {
+                    return;
+                }
+
+                const modelRoot = loadedScene.clone(true);
+                normalizeLoadedModel(modelRoot, 2.45);
+                decorateLoadedAlienBody(modelRoot, activeCharacter);
+
+                if (hangarRuntime.characterRoot) {
+                    hangarRuntime.avatarAnchor.remove(hangarRuntime.characterRoot);
+                }
+                hangarRuntime.characterRoot = modelRoot;
+                hangarRuntime.avatarAnchor.add(modelRoot);
+                applyGearMeshes(hangarRuntime.characterRoot, getActiveGearForTarget('character'), 'character');
+            });
+        }
+
+        function renderCompanionPreview(activeCharacter) {
+            const runtime = ensureHangarRuntime();
+            if (!runtime) return;
+
+            const sceneCopy = hangarSceneMode === 'travel'
+                ? 'Traversal mode is active. The selected explorer pulses forward on the route beam.'
+                : 'Idle mode is active. The avatar hovers in place so new unlocks read clearly before launch.';
+            const previewItem = gearCatalog.find((item) => item.id === previewGearId) || null;
+
+            runtime.preview.dataset.sceneMode = hangarSceneMode;
+            if (runtime.canvasHost) {
+                runtime.canvasHost.style.display = 'none';
+            }
+            renderFallbackPreview(activeCharacter);
+
+            document.getElementById('hangar-scene-pill').textContent = hangarSceneMode === 'travel' ? 'Traversal Animation' : 'Idle Animation';
+            document.getElementById('hangar-active-pair').textContent = activeCharacter.name;
+            document.getElementById('hangar-scene-badge').textContent = hangarSceneMode === 'travel' ? 'Route beam engaged' : 'Idle drift online';
+
+            const previewBadge = document.getElementById('hangar-preview-badge');
+            previewBadge.hidden = !previewItem;
+            if (previewItem) {
+                previewBadge.textContent = `Previewing ${previewItem.name}`;
+            }
+
+            document.getElementById('hangar-preview-note').textContent = previewItem
+                ? `Previewing ${previewItem.name}. Unlock for ${previewItem.cost} coins${previewItem.milestoneUnit ? ` after Unit ${previewItem.milestoneUnit}` : ''}.`
+                : sceneCopy;
+            document.getElementById('hangar-scene-copy').textContent = sceneCopy;
+            document.getElementById('preview-locker-status').textContent = previewItem
+                ? `Previewing ${previewItem.name} on the ${previewItem.target === 'pet' ? 'sidekick' : 'explorer'}. ${isGearUnlocked(previewItem) ? `Buy it for ${previewItem.cost} coins when ready.` : `Finish Unit ${previewItem.milestoneUnit} to unlock it.`}`
+                : 'Pick any gear card below to try it on in the hangar, even before it is unlocked.';
+            document.querySelectorAll('[data-scene-mode]').forEach((button) => {
+                button.classList.toggle('is-selected', button.getAttribute('data-scene-mode') === hangarSceneMode);
+            });
+        }
+
+        function renderProgression() {
+            const currentTier = getCurrentTier();
+            const completedUnits = getCompletedUnitCount();
+            const progressScore = getProgressScore();
+            const tierTrack = document.getElementById('tier-track');
+            const routeTrack = document.getElementById('route-track');
+
+            document.getElementById('current-tier-label').textContent = currentTier.label;
+            document.getElementById('completed-unit-count').textContent = completedUnits;
+            document.getElementById('progress-score').textContent = progressScore;
+            document.getElementById('owned-unlock-count').textContent = getOwnedUnlockCount();
+            document.getElementById('progression-status').innerHTML = `You have <span class="font-black text-slate-100">${coins} live coins</span>, <span class="font-black text-slate-100">${completedUnits} completed units</span>, and a cosmetic progress score of <span class="font-black text-slate-100">${progressScore}</span>. That currently places you in <span class="font-black ${currentTier.accent}">${currentTier.label}</span>.`;
+
+            tierTrack.innerHTML = getTierItemCounts().map((tier) => {
+                const isActive = currentTier.id === tier.id;
+                const isCleared = progressScore >= tier.threshold;
+                return `
+                    <div class="tier-track-card ${isActive ? 'is-active' : ''} ${isCleared ? '' : 'is-locked'}">
+                        <div class="shop-card-topline">
+                            <span class="tier-pill">${tier.label}</span>
+                            <span class="text-xs text-slate-400">${tier.range}</span>
+                        </div>
+                        <div class="text-sm text-slate-300 mt-2">${tier.description}</div>
+                        <div class="text-xs text-slate-500 mt-3">Unlocked gear: ${tier.unlocked} / ${tier.total}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const routeStops = [
+                { emoji: '🚀', label: 'Launch', threshold: 0 },
+                { emoji: '🎁', label: 'Quick Reward', threshold: 1 },
+                { emoji: '🧭', label: 'Milestone', threshold: 8 },
+                { emoji: '👑', label: 'Mastery', threshold: 20 }
+            ];
+            const cappedProgress = Math.max(0, Math.min(progressScore, 20));
+            const progressPercent = `${(cappedProgress / 20) * 100}%`;
+
+            routeTrack.innerHTML = `
+                <div class="route-line"></div>
+                <div class="route-progress" style="width: ${progressPercent};"></div>
+                ${routeStops.map((stop) => {
+                    const cleared = progressScore >= stop.threshold;
+                    const isCurrent = stop.threshold === currentTier.threshold || (stop.threshold === 0 && currentTier.id === 'immediate');
+                    return `
+                        <div class="route-node ${cleared ? 'is-cleared' : ''} ${isCurrent ? 'is-current' : ''}">
+                            <div class="route-node-dot">${stop.emoji}</div>
+                            <div class="text-[11px] font-bold text-slate-300">${stop.label}</div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
         }
 
         function updateHUD() {
             document.getElementById('pet-land-coins').textContent = coins;
             const activeCharacter = getCharacterById(studentProfile.equippedCharacter);
             const activePet = getPetById(studentProfile.equippedPet);
-            document.getElementById('equipped-character-summary').innerHTML = `<span class="text-2xl mr-2">${activeCharacter.emoji}</span><span class="math-term">${activeCharacter.name}</span><div class="text-xs text-slate-400 mt-1">${activeCharacter.style}</div><div class="text-xs text-slate-500 mt-1">Merch owned: ${studentProfile.ownedMerch.length}</div>`;
+            const characterGearCount = getEquippedGear('character').length;
+            const petGearCount = getEquippedGear('pet').length;
+            document.getElementById('equipped-character-summary').innerHTML = `<span class="text-2xl mr-2">${activeCharacter.emoji}</span><span class="math-term">${activeCharacter.name}</span><div class="text-xs text-slate-400 mt-1">${activeCharacter.style}</div><div class="text-xs text-slate-500 mt-1">Explorer gear equipped: ${characterGearCount}</div>`;
             document.getElementById('equipped-pet-summary').innerHTML = activePet
-                ? `<span class="text-2xl mr-2">${activePet.emoji}</span><span class="math-term">${activePet.name}</span><div class="text-xs text-slate-400 mt-1">${activePet.talent}</div>`
+                ? `<span class="text-2xl mr-2">${activePet.emoji}</span><span class="math-term">${activePet.name}</span><div class="text-xs text-slate-400 mt-1">${activePet.talent}</div><div class="text-xs text-slate-500 mt-1">Sidekick gear equipped: ${petGearCount}</div>`
                 : 'No pet equipped yet. Adopt one below.';
-            renderCompanionPreview(activeCharacter, activePet);
+            renderCompanionPreview(activeCharacter);
+            renderProgression();
             const floatBody = document.getElementById('pet-float-body');
             if (floatBody) floatBody.textContent = activePet ? activePet.emoji : activeCharacter.emoji;
         }
@@ -311,12 +1524,15 @@
                 const equipped = studentProfile.equippedCharacter === character.id;
                 return `
                     <div class="pet-card space-y-3">
+                        <div class="shop-card-topline">
+                            <span class="shop-pill">${character.cost === 0 ? 'Starter Choice' : character.tier === 'mastery' ? 'Mastery Unlock' : 'Milestone Unlock'}</span>
+                            <div class="text-yellow-400 font-black text-sm">${character.cost === 0 ? 'Free' : owned ? 'Owned' : `${character.cost} coins`}</div>
+                        </div>
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <div class="text-lg font-black text-slate-100">${character.emoji} ${character.name}</div>
                                 <div class="text-xs text-slate-400 mt-1">${character.style}</div>
                             </div>
-                            <div class="text-yellow-400 font-black text-sm">${character.cost === 0 ? 'Starter' : owned ? 'Owned' : `${character.cost} coins`}</div>
                         </div>
                         <button data-character-id="${character.id}" class="btn-accessible w-full text-xs">${equipped ? 'Equipped Character' : owned ? 'Equip Character' : 'Unlock Character'}</button>
                     </div>
@@ -353,19 +1569,29 @@
             const feedback = document.getElementById('merch-land-feedback');
             grid.innerHTML = gearCatalog.map((item) => {
                 const owned = studentProfile.ownedMerch.includes(item.id);
-                const equipped = studentProfile.equippedGear?.[item.slot] === item.id;
-                const unlocked = isUnitCompleted(item.milestoneUnit);
+                const equipped = studentProfile.equippedGear?.[getGearEquipKey(item)] === item.id;
+                const unlocked = isGearUnlocked(item);
                 return `
                     <div class="pet-card space-y-3 ${unlocked ? '' : 'gear-card-locked'}">
+                        <div class="shop-card-topline">
+                            <div class="flex gap-2 flex-wrap">
+                                <span class="tier-pill">${tierDefinitions.find((tier) => tier.id === item.tier)?.label || 'Reward'}</span>
+                                <span class="rarity-tag rarity-${item.rarity.toLowerCase()}">${item.rarity} ${item.dropRate}%</span>
+                            </div>
+                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Owned' : `${item.cost} coins`}</div>
+                        </div>
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <div class="text-lg font-black text-slate-100">${item.emoji} ${item.name}</div>
                                 <div class="text-xs text-slate-400 mt-1">${item.target === 'pet' ? 'Companion' : 'Explorer'} ${item.slot}</div>
-                                <div class="mt-2"><span class="rarity-tag rarity-${item.rarity.toLowerCase()}">${item.rarity} ${item.dropRate}%</span> <span class="milestone-tag">Unit ${item.milestoneUnit} complete</span></div>
+                                <div class="text-xs text-slate-500 mt-2">${item.description}</div>
+                                <div class="mt-2">${item.milestoneUnit ? `<span class="milestone-tag">Unit ${item.milestoneUnit} complete</span>` : '<span class="milestone-tag">Available now</span>'}</div>
                             </div>
-                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Owned' : `${item.cost} coins`}</div>
                         </div>
-                        <button data-merch-id="${item.id}" class="btn-accessible w-full text-xs" ${unlocked ? '' : 'disabled'}>${!unlocked ? `Locked: finish Unit ${item.milestoneUnit}` : equipped ? 'Unequip Gear' : owned ? 'Equip Gear' : 'Buy Gear'}</button>
+                        <div class="shop-actions">
+                            <button data-merch-id="${item.id}" class="btn-accessible w-full text-xs" ${unlocked ? '' : 'disabled'}>${!unlocked ? `Locked: finish Unit ${item.milestoneUnit}` : equipped ? 'Unequip Gear' : owned ? 'Equip Gear' : 'Buy Gear'}</button>
+                            <button data-preview-merch-id="${item.id}" class="btn-secondary w-full text-xs">${previewGearId === item.id ? 'Clear Preview' : 'Preview Gear'}</button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -375,7 +1601,7 @@
                     const id = button.getAttribute('data-merch-id');
                     const item = gearCatalog.find((gear) => gear.id === id);
                     if (!item) return;
-                    if (!isUnitCompleted(item.milestoneUnit)) {
+                    if (!isGearUnlocked(item)) {
                         feedback.textContent = `Finish every station in Unit ${item.milestoneUnit} to unlock this gear.`;
                         feedback.style.color = '#fbbf24';
                         return;
@@ -389,17 +1615,31 @@
                         coins -= item.cost;
                         studentProfile.ownedMerch.push(id);
                     }
-                    if (studentProfile.equippedGear[item.slot] === id) {
-                        delete studentProfile.equippedGear[item.slot];
+                    const gearKey = getGearEquipKey(item);
+                    if (studentProfile.equippedGear[gearKey] === id) {
+                        delete studentProfile.equippedGear[gearKey];
                     } else {
-                        studentProfile.equippedGear[item.slot] = id;
+                        studentProfile.equippedGear[gearKey] = id;
                     }
                     saveState();
                     updateHUD();
                     renderMerchShop();
-                    feedback.textContent = studentProfile.equippedGear[item.slot] === id ? `${item.name} is now layered onto your ${item.target === 'pet' ? 'companion' : 'explorer'}.` : `${item.name} returned to your locker.`;
+                    feedback.textContent = studentProfile.equippedGear[gearKey] === id ? `${item.name} is now layered onto your ${item.target === 'pet' ? 'companion' : 'explorer'}.` : `${item.name} returned to your locker.`;
                     feedback.style.color = '#10b981';
                     pulsePetBubble(`${item.emoji} ${item.name} updated the active loadout.`);
+                });
+            });
+
+            grid.querySelectorAll('[data-preview-merch-id]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-preview-merch-id');
+                    previewGearId = previewGearId === id ? null : id;
+                    updateHUD();
+                    renderMerchShop();
+                    const item = gearCatalog.find((gear) => gear.id === id);
+                    if (item && previewGearId === id) {
+                        pulsePetBubble(`${item.emoji} ${item.name} is in the hangar preview.`);
+                    }
                 });
             });
         }
@@ -412,12 +1652,15 @@
                 const equipped = studentProfile.equippedPet === pet.id;
                 return `
                     <div class="pet-card space-y-3">
+                        <div class="shop-card-topline">
+                            <span class="shop-pill">${pet.tier === 'mastery' ? 'Rare Adoption' : pet.tier === 'milestone' ? 'Mid-Game Adoption' : 'Fast Unlock'}</span>
+                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Adopted' : `${pet.cost} coins`}</div>
+                        </div>
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <div class="text-lg font-black text-slate-100">${pet.emoji} ${pet.name}</div>
                                 <div class="text-xs text-slate-400 mt-1">${pet.talent}</div>
                             </div>
-                            <div class="text-yellow-400 font-black text-sm">${owned ? 'Adopted' : `${pet.cost} coins`}</div>
                         </div>
                         <button data-pet-id="${pet.id}" class="btn-accessible w-full text-xs">${equipped ? 'Equipped Pet' : owned ? 'Equip Pet' : 'Adopt Pet'}</button>
                     </div>
@@ -453,6 +1696,30 @@
             const bubble = document.getElementById('pet-float-bubble');
             if (!bubble) return;
             bubble.textContent = text;
+        }
+
+        function bindHangarControls() {
+            document.querySelectorAll('[data-scene-mode]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    hangarSceneMode = button.getAttribute('data-scene-mode') || 'idle';
+                    updateHUD();
+                });
+            });
+
+            const rotateLeft = document.getElementById('rotate-left-btn');
+            const rotateRight = document.getElementById('rotate-right-btn');
+            if (rotateLeft) {
+                rotateLeft.addEventListener('click', () => {
+                    hangarRotation -= 18;
+                    updateHUD();
+                });
+            }
+            if (rotateRight) {
+                rotateRight.addEventListener('click', () => {
+                    hangarRotation += 18;
+                    updateHUD();
+                });
+            }
         }
 
         function setupPetFloatDrag() {
@@ -536,11 +1803,13 @@
         });
 
         function init() {
+            studentProfile = normalizeProfile(studentProfile);
             loadState();
             updateHUD();
             renderCharacterShop();
             renderMerchShop();
             renderPetShop();
+            bindHangarControls();
             initPetFloat();
             setupPetFloatDrag();
         }

@@ -482,13 +482,21 @@
                 const planetMesh = new THREE.Mesh(planetGeo, planetMat);
 
                 if (data.blackHole) {
-                    const accretionDisk = new THREE.Mesh(
-                        new THREE.TorusGeometry(data.size * 1.6, data.size * 0.42, 12, 48),
-                        new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.86 })
-                    );
-                    accretionDisk.rotation.x = Math.PI / 2;
-                    planetMesh.add(accretionDisk);
-                    const portalGlow = new THREE.PointLight(0xf97316, 2.2, 12);
+                    // A transparent, cool-toned texture lets the portal fade naturally into
+                    // the starfield without the previous orange accretion treatment.
+                    const portalTexture = new THREE.TextureLoader().load("{{ url_for('static', filename='img/black_hole_portal.svg') }}");
+                    portalTexture.encoding = THREE.sRGBEncoding;
+                    const portalHalo = new THREE.Sprite(new THREE.SpriteMaterial({
+                        map: portalTexture,
+                        transparent: true,
+                        depthWrite: false,
+                        opacity: 0.96
+                    }));
+                    portalHalo.scale.set(data.size * 4.7, data.size * 4.7, 1);
+                    planetMesh.add(portalHalo);
+                    planetMat.color.set(0x010208);
+                    planetMat.roughness = 1;
+                    const portalGlow = new THREE.PointLight(0x60a5fa, 1.35, 12);
                     planetMesh.add(portalGlow);
                 }
                 
