@@ -11,7 +11,7 @@
 <body>
     <!-- Navigation back to home -->
     <div class="nav-header">
-        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn">🏠 Home</a>
         <h2 class="game-title">Math Memory</h2>
     </div>
     

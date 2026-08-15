@@ -47,6 +47,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
             backdrop-filter: blur(10px);
             padding: 16px;
+            color: #eaf2ff;
         }
 
         .home-btn {
@@ -139,7 +140,40 @@
 
         /* Control board overlay */
         .controls-panel {
-            max-width: 240px;
+            max-width: 208px;
+            padding: 11px 12px;
+        }
+
+        .controls-panel h4 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #93c5fd;
+        }
+
+        .controls-panel .console-lines {
+            font-size: 9px;
+            line-height: 1.35;
+            color: #f1f5ff;
+            font-weight: 500;
+        }
+
+        .controls-panel .console-key {
+            font-weight: 600;
+            color: #e2e8f0;
+            background: #0f172a;
+            padding: 0 3px;
+            border-radius: 4px;
+        }
+
+        .controls-panel .console-note {
+            font-size: 8px;
+            color: #d6e4f5;
+        }
+
+        .controls-panel .console-action {
+            color: #ffffff;
+            font-weight: 700;
         }
 
         /* Grade 6 Math tracker */
@@ -147,6 +181,29 @@
             display: flex;
             align-items: center;
             gap: 16px;
+        }
+
+        .hud-subtitle {
+            color: #d8e7ff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .stats-hud .wood-hud-panel {
+            color: #f8fbff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+        }
+
+        #coins-display-hud {
+            color: #fde68a;
+        }
+
+        #coins-display-hud #coins-count {
+            color: #fff7c2;
+        }
+
+        .status-panel {
+            color: #f1f5ff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
         }
     </style>
 {% endblock %}
@@ -172,7 +229,7 @@
             <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-indigo-400 tracking-tight" style="font-family: 'Lexend', sans-serif;">
                 🪐 Cosmic Orbit Navigation
             </h1>
-            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-0.5">3D Space Flight Math Quest</p>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-0.5 hud-subtitle">3D Space Flight Math Quest</p>
         </div>
 
         <div class="hud-element stats-hud">
@@ -187,21 +244,24 @@
     <!-- Bottom Instructions and Flight Controls Map -->
     <div class="flex items-end justify-between w-full h-fit pointer-events-none mt-auto">
         <!-- Controls Guide -->
-        <div class="hud-element wood-hud-panel controls-panel text-xs text-slate-300 space-y-2">
-            <h4 class="font-extrabold text-indigo-400 tracking-wider flex items-center gap-1">🚀 FLIGHT CONSOLE</h4>
-            <div class="space-y-1.5 font-mono text-[10px] leading-relaxed">
-                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">W</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▲</span>: Accelerate Ship</p>
-                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">S</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▼</span>: Brake / Reverse</p>
-                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">A</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">◀</span>: Steer Left</p>
-                <p><span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">D</span> / <span class="font-bold text-white bg-slate-950 px-1 py-0.5 rounded">▶</span>: Steer Right</p>
+        <div class="hud-element wood-hud-panel controls-panel text-slate-300 space-y-2">
+            <h4 class="flex items-center gap-1">🚀 FLIGHT CONSOLE</h4>
+            <div class="space-y-1.5 font-mono console-lines">
+                <p><span class="console-key">W</span> / <span class="console-key">▲</span>: <span class="console-action">Accelerate Ship</span></p>
+                <p><span class="console-key">S</span> / <span class="console-key">▼</span>: <span class="console-action">Brake / Reverse</span></p>
+                <p><span class="console-key">A</span> / <span class="console-key">◀</span>: <span class="console-action">Steer Left</span></p>
+                <p><span class="console-key">D</span> / <span class="console-key">▶</span>: <span class="console-action">Steer Right</span></p>
+                <p><span class="console-key">Space</span>: <span class="console-action">Rise</span></p>
+                <p><span class="console-key">Shift</span>: <span class="console-action">Descend</span></p>
+                <p><span class="console-key">R</span>: <span class="console-action">Reset Flight</span></p>
             </div>
-            <div class="border-t border-slate-800/80 pt-1.5 text-[9px] text-slate-400">
+            <div class="border-t border-slate-800/80 pt-1.5 console-note">
                 Fly your ship close to any planet, or left-click on it to descend and land!
             </div>
         </div>
 
         <!-- Pilot status display -->
-        <div class="hud-element wood-hud-panel text-xs text-slate-300 font-mono flex flex-col gap-1 min-w-[200px] text-right">
+        <div class="hud-element wood-hud-panel status-panel text-xs text-slate-300 font-mono flex flex-col gap-1 min-w-[200px] text-right">
             <div>SHIP STATUS: <span class="text-emerald-400 font-bold">ONLINE</span></div>
             <div>GRAVITY ASSIST: <span class="text-indigo-400 font-bold">STANDBY</span></div>
             <div>THRUSTER SPEED: <span id="speed-meter" class="text-cyan-400 font-bold">0.0 km/s</span></div>
@@ -254,18 +314,48 @@
             { id: 9, name: "Safari Park (Surface Area & Volume)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
             { id: 10, name: "The Mothership (Statistical Graphs)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" },
             { id: 11, name: "Pet Land & Character Port", color: 0x22c55e, size: 1.9, radius: 53, speed: 0.024, icon: "🐾", specialRoute: "/pet-land", asteroidRing: true },
-            { id: 12, name: "Black Hole: Solar System Portal", unitLabel: "OPEN EXPLORATION", color: 0x000000, size: 2.7, radius: 61, speed: 0.018, icon: "🕳️", specialRoute: "/solar-system", blackHole: true }
+            {
+                id: 12,
+                name: "Baking Club Deserts Planet",
+                unitLabel: "SPECIAL PLANET",
+                color: 0xf97316,
+                size: 1.3,
+                radius: 60,
+                speed: 0.021,
+                icon: "🍰",
+                specialRoute: "/baking-club-planet",
+                orbitingSymbols: [
+                    { text: "🧁", count: 5, orbitRadius: 2.2, orbitSpeed: 0.018, yOffset: 0.5, scale: 0.95 }
+                ]
+            },
+            { id: 13, name: "Game Planet", unitLabel: "SPECIAL PLANET", color: 0xf43f5e, size: 1.45, radius: 66, speed: 0.02, icon: "🕹️", specialRoute: "/game-planet" },
+            {
+                id: 14,
+                name: "ELA Planet",
+                unitLabel: "SPECIAL PLANET",
+                color: 0x0ea5e9,
+                size: 1.35,
+                radius: 72,
+                speed: 0.019,
+                icon: "✍️",
+                specialRoute: "/ela-planet",
+                orbitingSymbols: [
+                    { text: "ELA", count: 4, orbitRadius: 2.4, orbitSpeed: 0.015, yOffset: 0.75, scale: 0.78 }
+                ]
+            },
+            { id: 15, name: "Earth Science Planet", unitLabel: "SPECIAL PLANET", color: 0x16a34a, size: 1.4, radius: 78, speed: 0.017, icon: "🌍", specialRoute: "/earth-science-planet" },
+            { id: 16, name: "Black Hole: Solar System Portal", unitLabel: "OPEN EXPLORATION", color: 0x000000, size: 2.7, radius: 86, speed: 0.016, icon: "🕳️", specialRoute: "/solar-system", blackHole: true }
         ];
 
         const planetsData = allPlanetsData;
 
         const spaceJunkData = [
-            { id: 'junk-a', label: 'Satellite Scrap', color: 0x94a3b8, radius: 63, speed: 0.022, size: 0.55 },
-            { id: 'junk-b', label: 'Crate Cluster', color: 0xf59e0b, radius: 69, speed: 0.019, size: 0.62 },
-            { id: 'junk-c', label: 'Probe Wreck', color: 0x22d3ee, radius: 75, speed: 0.017, size: 0.5 },
-            { id: 'junk-d', label: 'Signal Debris', color: 0xf472b6, radius: 82, speed: 0.015, size: 0.58 },
-            { id: 'junk-e', label: 'Cargo Canister', color: 0x84cc16, radius: 88, speed: 0.014, size: 0.64 },
-            { id: 'junk-f', label: 'Astro Toolbox', color: 0xa78bfa, radius: 95, speed: 0.012, size: 0.56 }
+            { id: 'junk-a', label: 'Satellite Scrap', color: 0x94a3b8, radius: 88, speed: 0.018, size: 0.55 },
+            { id: 'junk-b', label: 'Crate Cluster', color: 0xf59e0b, radius: 95, speed: 0.016, size: 0.62 },
+            { id: 'junk-c', label: 'Probe Wreck', color: 0x22d3ee, radius: 102, speed: 0.014, size: 0.5 },
+            { id: 'junk-d', label: 'Signal Debris', color: 0xf472b6, radius: 109, speed: 0.013, size: 0.58 },
+            { id: 'junk-e', label: 'Cargo Canister', color: 0x84cc16, radius: 116, speed: 0.012, size: 0.64 },
+            { id: 'junk-f', label: 'Astro Toolbox', color: 0xa78bfa, radius: 123, speed: 0.011, size: 0.56 }
         ];
 
         const junkQuizBank = {
@@ -309,6 +399,36 @@
             return planet && planet.specialRoute ? planet.specialRoute : `/quest-map/planet/${planetId}`;
         }
 
+        function createSymbolSprite(text, scale = 1) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const isWord = text.length > 2;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = isWord ? '900 46px Arial' : '72px Arial';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+            ctx.shadowBlur = 8;
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false
+            }));
+            const base = isWord ? 1.45 : 1.1;
+            sprite.scale.set(base * scale, base * scale, 1);
+            return sprite;
+        }
+
         // Three.js and Flight Engine
         let scene, camera, renderer, raycaster, mouse;
         let ship;
@@ -319,6 +439,9 @@
         
         let shipVelocity = new THREE.Vector3();
         let shipRotationY = 0;
+        const forwardAxis = new THREE.Vector3(0, 0, -1);
+        const backwardAxis = new THREE.Vector3(0, 0, 1);
+        const upAxis = new THREE.Vector3(0, 1, 0);
         const maxSpeed = 0.25;
         const acceleration = 0.005;
         const drag = 0.98;
@@ -332,6 +455,14 @@
         let highestUnitVisited = 1;
         let recentJunkQuizIds = [];
         let lastJunkQuizCategory = null;
+
+        function resetShipFlightState() {
+            if (!ship) return;
+            ship.position.set(0, 0, 6);
+            ship.rotation.set(0, 0, 0);
+            shipVelocity.set(0, 0, 0);
+            shipRotationY = 0;
+        }
 
         // Initialize points tally from localStorage
         function loadCoins() {
@@ -461,7 +592,7 @@
             scene.add(starField);
 
             // 6. Draw Orbit Paths and spawn Low-poly Planets
-            planetsData.forEach((data) => {
+            planetsData.forEach((data, index) => {
                 // Orbit line helper
                 const orbitGeo = new THREE.RingGeometry(data.radius - 0.05, data.radius + 0.05, 64);
                 const orbitMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide });
@@ -501,7 +632,7 @@
                 }
                 
                 // Starting angles distributed
-                const startingAngle = (data.id * Math.PI * 2) / 10;
+                const startingAngle = (index * Math.PI * 2) / planetsData.length;
                 planetMesh.position.set(
                     Math.cos(startingAngle) * data.radius,
                     0,
@@ -513,6 +644,7 @@
                 let moonMesh = null;
                 let moonOrbitRadius = data.size + 1.3;
                 const asteroidMeshes = [];
+                const symbolOrbiters = [];
                 if (data.moon) {
                     const moonGeo = new THREE.IcosahedronGeometry(data.size * 0.25, 1);
                     const moonMat = new THREE.MeshStandardMaterial({
@@ -547,6 +679,23 @@
                         });
                     }
                 }
+
+                if (data.orbitingSymbols && data.orbitingSymbols.length > 0) {
+                    data.orbitingSymbols.forEach((group) => {
+                        const count = Math.max(1, group.count || 1);
+                        for (let symbolIndex = 0; symbolIndex < count; symbolIndex += 1) {
+                            const symbolSprite = createSymbolSprite(group.text, group.scale || 1);
+                            scene.add(symbolSprite);
+                            symbolOrbiters.push({
+                                mesh: symbolSprite,
+                                angle: (symbolIndex * Math.PI * 2) / count,
+                                orbitRadius: group.orbitRadius || (data.size + 1.8),
+                                yOffset: group.yOffset || 0.5,
+                                orbitSpeed: group.orbitSpeed || 0.012
+                            });
+                        }
+                    });
+                }
                 
                 planets.push({
                     mesh: planetMesh,
@@ -555,7 +704,8 @@
                     moonMesh: moonMesh,
                     moonAngle: Math.random() * Math.PI * 2,
                     moonOrbitRadius: moonOrbitRadius,
-                    asteroidMeshes: asteroidMeshes
+                    asteroidMeshes: asteroidMeshes,
+                    symbolOrbiters: symbolOrbiters
                 });
             });
 
@@ -623,7 +773,16 @@
             camera.position.set(0, 4, 15);
 
             // Event Listeners
-            window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keydown', (e) => {
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                    e.preventDefault();
+                }
+                keys[e.key.toLowerCase()] = true;
+
+                if (e.key.toLowerCase() === 'r') {
+                    resetShipFlightState();
+                }
+            });
             window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
             window.addEventListener('resize', onWindowResize);
             window.addEventListener('click', onDocumentClick);
@@ -780,6 +939,17 @@
                         asteroid.mesh.rotation.y += asteroid.spinY;
                     });
                 }
+
+                if (p.symbolOrbiters && p.symbolOrbiters.length > 0) {
+                    p.symbolOrbiters.forEach((orbiter, index) => {
+                        orbiter.angle += orbiter.orbitSpeed + (index * 0.00045);
+                        orbiter.mesh.position.set(
+                            planetX + Math.cos(orbiter.angle) * orbiter.orbitRadius,
+                            orbiter.yOffset,
+                            planetZ + Math.sin(orbiter.angle) * orbiter.orbitRadius
+                        );
+                    });
+                }
             });
 
             // 1b. Drift the outer-ring space junk
@@ -807,12 +977,16 @@
 
             // Calculating acceleration vector
             if (goForward) {
-                const forwardVec = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
+                const forwardVec = forwardAxis.clone().applyAxisAngle(upAxis, shipRotationY);
                 shipVelocity.addScaledVector(forwardVec, acceleration);
             } else if (goBackward) {
-                const backwardVec = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
+                const backwardVec = backwardAxis.clone().applyAxisAngle(upAxis, shipRotationY);
                 shipVelocity.addScaledVector(backwardVec, acceleration * 0.5);
             }
+
+            // Vertical thrust to mirror Solar Flight controls.
+            if (keys[' ']) shipVelocity.y += acceleration;
+            if (keys.shift) shipVelocity.y -= acceleration;
 
             // Apply friction drag deceleration
             shipVelocity.multiplyScalar(drag);
@@ -824,6 +998,7 @@
 
             // Apply calculated vectors to player coordinates
             ship.position.add(shipVelocity);
+            ship.position.y = THREE.MathUtils.clamp(ship.position.y, -28, 35);
 
             // Speed HUD read-out
             const currentKms = (shipVelocity.length() * 100).toFixed(1);

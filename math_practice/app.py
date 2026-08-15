@@ -281,15 +281,44 @@ def ela_games():
     """ELA games selection page."""
     return render_template('ela_games.html')
 
+
+@app.route('/ela-planet', methods=['GET'])
+def ela_planet():
+    """ELA Planet destination with direct links to ELA games."""
+    return render_template('ela_planet.html')
+
 @app.route('/baking-club', methods=['GET'])
 def baking_club():
     """Baking Club page."""
+    return render_template('baking_club.html')
+
+
+@app.route('/baking-club-planet', methods=['GET'])
+def baking_club_planet():
+    """Baking Club Planet destination."""
     return render_template('baking_club.html')
 
 @app.route('/grand-finale', methods=['GET'])
 def grand_finale():
     """6th Grade Math Grand Finale celebration slideshow."""
     return render_template('grand_finale.html')
+
+
+@app.route('/grand-finale-planet', methods=['GET'])
+def grand_finale_planet():
+    """Grand Finale Planet destination."""
+    return render_template('grand_finale.html')
+
+
+@app.route('/game-planet', methods=['GET'])
+def game_planet():
+    """Arcade-themed Game Planet destination."""
+    return render_template('game_planet.html')
+
+@app.route('/earth-science-planet', methods=['GET'])
+def earth_science_planet():
+    """Earth Science Planet with 10 content stations."""
+    return render_template('earth_science_planet.html')
 
 @app.route('/context-clues', methods=['GET'])
 def context_clues():
@@ -320,6 +349,36 @@ def math_race():
 def math_memory():
     """Math Memory game page."""
     return render_template('math_memory.html')
+
+
+@app.route('/snake-arcade', methods=['GET'])
+def snake_arcade():
+    """Standalone Snake arcade game page."""
+    return render_template('snake_arcade.html')
+
+
+@app.route('/tetris', methods=['GET'])
+def tetris_game():
+    """Tetris game page."""
+    return render_template('tetris.html')
+
+
+@app.route('/pong-arcade', methods=['GET'])
+def pong_arcade():
+    """Standalone Pong arcade game page."""
+    return render_template('pong_arcade.html')
+
+
+@app.route('/dino-arcade', methods=['GET'])
+def dino_arcade():
+    """Standalone Dino runner arcade game page."""
+    return render_template('dino_arcade.html')
+
+
+@app.route('/pinball-arcade', methods=['GET'])
+def pinball_arcade():
+    """Standalone Pinball arcade game page."""
+    return render_template('pinball_arcade.html')
 
 @app.route('/decimal-master', methods=['GET'])
 def decimal_master():
@@ -621,6 +680,11 @@ def pet_land():
 def solar_system():
     """Freely explorable solar-system enrichment map."""
     return render_template('solar_flight.html')
+
+@app.route('/solar-system-study')
+def solar_system_study():
+    """Solar-system study page with planet facts and visuals."""
+    return render_template('solar_system.html')
 
 @app.route('/percentage_quest')
 def percentage_quest():

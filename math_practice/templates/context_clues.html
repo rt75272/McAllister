@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="nav-header">
-        <a href="{{ url_for('home') }}" class="home-btn">🏠 Home</a>
+        <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn">🏠 Home</a>
         <h1 class="game-title">🔍 Context Clues</h1>
     </div>
 
@@ -73,7 +73,7 @@
                 <div class="achievement" data-achievement="clueMaster">🧠 Clue Master (25)</div>
 
                 <button id="resetBtn" class="reset-btn">🔄 Reset Game</button>
-                <a href="{{ url_for('ela_games') }}" class="back-btn">← Back to ELA Games</a>
+                <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="back-btn">← Back</a>
             </div>
         </div>
     </div>

@@ -62,5 +62,59 @@ function followShip() {
 	camera.lookAt(lookTarget);
 }
 followShip();
+</script><script>
+// Add a return black hole to fly into and warp back to the unit solar system map.
+const unitPortalAnchor = new THREE.Object3D();
+unitPortalAnchor.userData = { portalToUnitMap: true };
+
+const unitPortalCore = new THREE.Mesh(
+	new THREE.SphereGeometry(2.8, 32, 24),
+	new THREE.MeshBasicMaterial({ color: 0x02040a })
+);
+unitPortalAnchor.add(unitPortalCore);
+
+const unitPortalRing = new THREE.Mesh(
+	new THREE.TorusGeometry(3.5, 0.35, 20, 80),
+	new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.9 })
+);
+unitPortalRing.rotation.x = Math.PI / 2;
+unitPortalAnchor.add(unitPortalRing);
+
+const unitPortalGlow = new THREE.PointLight(0x60a5fa, 1.6, 24);
+unitPortalAnchor.add(unitPortalGlow);
+
+unitPortalAnchor.position.set(-58, 1.2, -52);
+scene.add(unitPortalAnchor);
+clickables.push(unitPortalCore);
+
+let unitPortalTriggered = false;
+function warpToUnitMap() {
+	if (unitPortalTriggered) return;
+	unitPortalTriggered = true;
+	window.location.href = "{{ url_for('quest_map') }}";
+}
+
+renderer.domElement.addEventListener('click', (event) => {
+	const rect = renderer.domElement.getBoundingClientRect();
+	const click = new THREE.Vector2(
+		(event.clientX - rect.left) / rect.width * 2 - 1,
+		-((event.clientY - rect.top) / rect.height * 2 - 1)
+	);
+	ray.setFromCamera(click, camera);
+	const hit = ray.intersectObject(unitPortalCore)[0];
+	if (hit) {
+		warpToUnitMap();
+	}
+});
+
+function monitorUnitPortal() {
+	requestAnimationFrame(monitorUnitPortal);
+	unitPortalAnchor.rotation.y += 0.01;
+	unitPortalRing.rotation.z += 0.015;
+	const distanceToPortal = rig.position.distanceTo(unitPortalAnchor.position);
+	if (distanceToPortal < 5.8) {
+		warpToUnitMap();
+	}
+}
+monitorUnitPortal();
 </script>{% endblock %}
-*** End Patch

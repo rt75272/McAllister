@@ -133,26 +133,13 @@ export default function PlanetHub({ planet, studentSession, onLaunchStation, onR
         <div className="absolute inset-0 p-8 sm:p-12">
           
           {/* Constellation Connector Vectors */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+          <svg className="absolute inset-0 w-full h-full pointer-events-none hidden">
             <path
               d={`M ${pathCoordinates.map(p => `${p.x}%,${p.y}%`).join(' L ')}`}
               fill="none"
-              stroke="#1e293b"
-              strokeWidth="4"
-              strokeDasharray="8 6"
-              className="opacity-50"
+              stroke="none"
+              strokeWidth="0"
             />
-            {/* Illuminated paths for completed segments */}
-            {completedStations.length > 1 && (
-              <path
-                d={`M ${pathCoordinates.slice(0, completedStations.length).map(p => `${p.x}%,${p.y}%`).join(' L ')}`}
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="4"
-                strokeDasharray="4 4"
-                className="opacity-80 animate-pulse"
-              />
-            )}
           </svg>
 
           {/* Interactive Nodes */}

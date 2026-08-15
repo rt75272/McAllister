@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Arcade - Mrs. McAllister's Learning Center</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at 15% 10%, #22d3ee 0, transparent 40%), radial-gradient(circle at 80% 20%, #f472b6 0, transparent 45%), #020617;
+            color: #e2e8f0;
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+        }
+        .shell {
+            width: min(92vw, 820px);
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #475569;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.45);
+        }
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        .top h1 { margin: 0; color: #f9a8d4; font-size: clamp(1.2rem, 2.8vw, 1.8rem); }
+        .back-btn {
+            text-decoration: none;
+            color: #f8fafc;
+            background: linear-gradient(120deg, #0ea5e9, #6366f1);
+            border: 1px solid #7dd3fc;
+            border-radius: 10px;
+            font-weight: 700;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        .board-wrap { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; }
+        #board {
+            width: 520px;
+            max-width: 60vw;
+            aspect-ratio: 13 / 8;
+            background: #020617;
+            border: 2px solid #334155;
+            border-radius: 8px;
+        }
+        .side {
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+        .label { color: #67e8f9; font-weight: 700; }
+        .btn {
+            margin-top: 8px;
+            width: 100%;
+            background: #312e81;
+            border: 1px solid #818cf8;
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .status { margin-top: 8px; color: #fef08a; min-height: 1.2em; }
+        @media (max-width: 700px) {
+            .board-wrap { grid-template-columns: 1fr; }
+            #board { width: 100%; max-width: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <div class="top">
+        <h1>Pong Arena</h1>
+        <a class="back-btn" href="{{ request.args.get('return_to') or url_for('game_planet') }}">Back</a>
+    </div>
+    <div class="board-wrap">
+        <canvas id="board" width="650" height="400" aria-label="Pong board"></canvas>
+        <div class="side">
+            <div><span class="label">You:</span> <span id="left-score">0</span></div>
+            <div><span class="label">CPU:</span> <span id="right-score">0</span></div>
+            <div style="margin-top:8px"><span class="label">Controls</span><br>W/S or Up/Down to move</div>
+            <button id="restart" class="btn">Restart Match</button>
+            <div id="status" class="status">First to 7 wins.</div>
+        </div>
+    </div>
+</div>
+<script>
+(() => {
+    const canvas = document.getElementById('board');
+    const ctx = canvas.getContext('2d');
+    const leftScoreEl = document.getElementById('left-score');
+    const rightScoreEl = document.getElementById('right-score');
+    const statusEl = document.getElementById('status');
+
+    const paddleH = 86, paddleW = 12;
+    const left = { x: 20, y: canvas.height / 2 - paddleH / 2, speed: 6 };
+    const right = { x: canvas.width - 32, y: canvas.height / 2 - paddleH / 2, speed: 5.3 };
+    let ball, keys, leftScore, rightScore, running;
+
+    function resetBall(direction = 1) {
+        const angle = (Math.random() * 0.8 - 0.4);
+        ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: direction * (4.8 + Math.random() * 1.2),
+            vy: 4 * angle,
+            r: 8
+        };
+    }
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function resetMatch() {
+        leftScore = 0;
+        rightScore = 0;
+        keys = {};
+        running = true;
+        left.y = canvas.height / 2 - paddleH / 2;
+        right.y = canvas.height / 2 - paddleH / 2;
+        resetBall(Math.random() < 0.5 ? -1 : 1);
+        updateHud();
+        statusEl.textContent = 'First to 7 wins.';
+    }
+
+    function updateHud() {
+        leftScoreEl.textContent = String(leftScore);
+        rightScoreEl.textContent = String(rightScore);
+    }
+
+    function drawCenterLine() {
+        ctx.strokeStyle = '#334155';
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function draw() {
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawCenterLine();
+
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(left.x, left.y, paddleW, paddleH);
+        ctx.fillStyle = '#f472b6';
+        ctx.fillRect(right.x, right.y, paddleW, paddleH);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function step() {
+        if (!running) {
+            draw();
+            requestAnimationFrame(step);
+            return;
+        }
+
+        if (keys['KeyW'] || keys['ArrowUp']) left.y -= left.speed;
+        if (keys['KeyS'] || keys['ArrowDown']) left.y += left.speed;
+        left.y = clamp(left.y, 0, canvas.height - paddleH);
+
+        const rightCenter = right.y + paddleH / 2;
+        if (ball.y < rightCenter - 10) right.y -= right.speed;
+        if (ball.y > rightCenter + 10) right.y += right.speed;
+        right.y = clamp(right.y, 0, canvas.height - paddleH);
+
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        if (ball.y - ball.r <= 0 || ball.y + ball.r >= canvas.height) {
+            ball.vy *= -1;
+        }
+
+        if (ball.x - ball.r <= left.x + paddleW && ball.y >= left.y && ball.y <= left.y + paddleH && ball.vx < 0) {
+            const impact = (ball.y - (left.y + paddleH / 2)) / (paddleH / 2);
+            ball.vx = Math.abs(ball.vx) + 0.2;
+            ball.vy += impact * 1.5;
+        }
+
+        if (ball.x + ball.r >= right.x && ball.y >= right.y && ball.y <= right.y + paddleH && ball.vx > 0) {
+            const impact = (ball.y - (right.y + paddleH / 2)) / (paddleH / 2);
+            ball.vx = -Math.abs(ball.vx) - 0.2;
+            ball.vy += impact * 1.5;
+        }
+
+        if (ball.x < -20) {
+            rightScore += 1;
+            updateHud();
+            if (rightScore >= 7) {
+                running = false;
+                statusEl.textContent = 'CPU wins. Press Restart.';
+            } else {
+                resetBall(1);
+            }
+        }
+        if (ball.x > canvas.width + 20) {
+            leftScore += 1;
+            updateHud();
+            if (leftScore >= 7) {
+                running = false;
+                statusEl.textContent = 'You win! Press Restart.';
+            } else {
+                resetBall(-1);
+            }
+        }
+
+        draw();
+        requestAnimationFrame(step);
+    }
+
+    document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+    document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+    document.getElementById('restart').addEventListener('click', resetMatch);
+
+    resetMatch();
+    step();
+})();
+</script>
+</body>
+</html>

@@ -274,7 +274,7 @@
 <div class="main-container">
     <!-- Header -->
     <div class="nav-header">
-        <a href="{{ url_for('math_games') }}" class="home-btn">
+        <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn">
             🚀 Back to Games
         </a>
         <h1 class="game-title">🔐 The Vault Password Solver</h1>

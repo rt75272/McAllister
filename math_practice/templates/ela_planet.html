@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}ELA Planet - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --space-ink: #06162a;
+        --nebula-blue: #0f3d8c;
+        --nebula-teal: #0ea5a2;
+        --star-gold: #facc15;
+        --card-glass: rgba(10, 27, 52, 0.75);
+        --text-main: #ecfeff;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at 10% 10%, rgba(15, 61, 140, 0.35), transparent 40%),
+            radial-gradient(circle at 90% 20%, rgba(14, 165, 162, 0.25), transparent 35%),
+            radial-gradient(circle at 50% 90%, rgba(250, 204, 21, 0.2), transparent 30%),
+            linear-gradient(160deg, #030712 0%, var(--space-ink) 45%, #031c38 100%);
+        color: var(--text-main);
+        font-family: "Trebuchet MS", "Verdana", sans-serif;
+        overflow-x: hidden;
+    }
+
+    .starfield {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.9) 1px, transparent 2px),
+            radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.75) 1px, transparent 2px),
+            radial-gradient(circle at 35% 70%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+            radial-gradient(circle at 85% 80%, rgba(255, 255, 255, 0.85) 1px, transparent 2px);
+        background-size: 240px 240px, 320px 320px, 280px 280px, 360px 360px;
+        animation: drift 24s linear infinite;
+        opacity: 0.7;
+    }
+
+    @keyframes drift {
+        from { transform: translateY(0); }
+        to { transform: translateY(-30px); }
+    }
+
+    .page-shell {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.25rem;
+    }
+
+    .top-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .portal-link {
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #06203d;
+        background: linear-gradient(120deg, #67e8f9, #fef08a);
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        box-shadow: 0 8px 20px rgba(14, 165, 162, 0.25);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .portal-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(14, 165, 162, 0.35);
+    }
+
+    .hero {
+        background: linear-gradient(145deg, rgba(6, 22, 42, 0.92), rgba(8, 58, 109, 0.82));
+        border: 1px solid rgba(103, 232, 249, 0.35);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.35);
+        margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+        margin: 0;
+        font-size: clamp(1.7rem, 3vw, 2.5rem);
+        color: #fef08a;
+        text-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+    }
+
+    .hero p {
+        margin-top: 0.65rem;
+        font-size: 1.03rem;
+        line-height: 1.5;
+    }
+
+    .glass-station-panel {
+        background: rgba(10, 27, 52, 0.82);
+        border: 3px solid #8b5a2b;
+        border-radius: 18px;
+        padding: 14px;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.36);
+        margin-bottom: 1rem;
+    }
+
+    .constellation-map {
+        position: relative;
+        width: 100%;
+        height: 380px;
+        border: 2px solid #334155;
+        border-radius: 14px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 18% 26%, rgba(255,255,255,0.7) 0 1px, transparent 1.2px),
+            radial-gradient(circle at 60% 72%, rgba(255,255,255,0.6) 0 1px, transparent 1.2px),
+            radial-gradient(circle at 80% 34%, rgba(191,219,254,0.68) 0 1px, transparent 1.2px),
+            linear-gradient(180deg, #020617 0%, #071127 100%);
+    }
+
+    .constellation-map svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    #ela-nodes {
+        position: absolute;
+        inset: 0;
+    }
+
+    .ela-node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ela-orb {
+        width: 52px;
+        height: 52px;
+        border-radius: 999px;
+        border: 2px solid rgba(125, 211, 252, 0.9);
+        background: radial-gradient(circle at 30% 30%, #38bdf8, #1e40af);
+        color: #f8fbff;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.45);
+    }
+
+    .ela-tag {
+        font-size: 11px;
+        font-weight: 800;
+        color: #dbeafe;
+        background: rgba(15, 23, 42, 0.88);
+        border: 1px solid rgba(71, 85, 105, 0.85);
+        border-radius: 999px;
+        padding: 1px 8px;
+    }
+
+    .detail-banner {
+        margin-top: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(51, 65, 85, 0.9);
+        border-radius: 12px;
+        padding: 10px 12px;
+        min-height: 72px;
+    }
+
+    .detail-banner h4 {
+        margin: 0;
+        color: #67e8f9;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .detail-banner p {
+        margin: 6px 0 0;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+
+    .game-card {
+        background: var(--card-glass);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 1rem;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        backdrop-filter: blur(4px);
+    }
+
+    .game-card h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #bae6fd;
+    }
+
+    .game-card p {
+        margin: 0;
+        color: #dbeafe;
+        line-height: 1.45;
+        flex-grow: 1;
+    }
+
+    .launch-btn {
+        text-decoration: none;
+        text-align: center;
+        font-weight: 800;
+        color: #082f49;
+        background: linear-gradient(120deg, #67e8f9, #86efac);
+        border-radius: 0.75rem;
+        padding: 0.6rem 0.9rem;
+        transition: transform 0.2s ease;
+    }
+
+    .launch-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .black-hole-portal {
+        margin-top: 1rem;
+        background: radial-gradient(circle at 50% 45%, #0f172a 5%, #1e1b4b 40%, #020617 78%);
+        border: 1px solid rgba(196, 181, 253, 0.5);
+        border-radius: 1rem;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .black-hole-portal h3 {
+        margin: 0;
+        color: #ddd6fe;
+    }
+
+    .black-hole-portal p {
+        color: #c4b5fd;
+        margin: 0.45rem 0 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+        .page-shell {
+            padding: 0.9rem;
+        }
+
+        .hero {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="starfield"></div>
+<div class="page-shell">
+    <nav class="top-nav">
+        <a href="{{ url_for('home') }}" class="portal-link">🏠 Home Base</a>
+        <a href="{{ url_for('ela_games') }}" class="portal-link">📚 ELA Catalog</a>
+    </nav>
+
+    <section class="hero">
+        <h1>🌌 ELA Planet Command Center</h1>
+        <p>
+            Orbit through language missions. Launch straight into grammar, sentence editing, and vocabulary games,
+            then warp back here to pick your next challenge.
+        </p>
+    </section>
+
+    <section class="glass-station-panel">
+        <h3 class="station-topic" style="margin: 0 0 10px 0; color: #93c5fd;">Unit Constellation Pathway</h3>
+        <div class="constellation-map" aria-label="ELA mission map">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="display: none;">
+                <path d="M 14 66 L 32 45 L 56 58 L 78 36" fill="none" stroke="none" stroke-width="0"></path>
+            </svg>
+            <div id="ela-nodes"></div>
+        </div>
+        <div id="ela-detail" class="detail-banner">
+            <h4>Mission Coordinate Computer</h4>
+            <p>Hover over a station orb to preview each ELA mission. Click an orb to launch that game.</p>
+        </div>
+    </section>
+
+    <section class="game-grid">
+        <article class="game-card">
+            <h2>🕵️ Verb Detective</h2>
+            <p>Track action and linking verbs hidden in each sentence.</p>
+            <a class="launch-btn" href="{{ url_for('verb_detective', return_to=url_for('ela_planet')) }}">Launch Mission</a>
+        </article>
+
+        <article class="game-card">
+            <h2>✏️ Sentence Fixer</h2>
+            <p>Repair capitalization and punctuation with precision.</p>
+            <a class="launch-btn" href="{{ url_for('sentence_fixer', return_to=url_for('ela_planet')) }}">Launch Mission</a>
+        </article>
+
+        <article class="game-card">
+            <h2>🧩 Word Match</h2>
+            <p>Match synonyms and antonyms under time pressure.</p>
+            <a class="launch-btn" href="{{ url_for('word_match', return_to=url_for('ela_planet')) }}">Launch Mission</a>
+        </article>
+
+        <article class="game-card">
+            <h2>🔍 Context Clues</h2>
+            <p>Decode unfamiliar words using clues from nearby text.</p>
+            <a class="launch-btn" href="{{ url_for('context_clues', return_to=url_for('ela_planet')) }}">Launch Mission</a>
+        </article>
+    </section>
+
+    <section class="black-hole-portal">
+        <h3>🌀 Black Hole Return Portal</h3>
+        <p>Jump back to the main solar system to continue your cross-curricular expedition.</p>
+        <a class="portal-link" href="{{ url_for('solar_system') }}">Enter Black Hole</a>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const elaStations = [
+        {
+            name: 'Verb Detective',
+            emoji: '🕵️',
+            desc: 'Track action and linking verbs hidden in each sentence.',
+            url: "{{ url_for('verb_detective', return_to=url_for('ela_planet')) }}",
+            x: 14,
+            y: 66
+        },
+        {
+            name: 'Sentence Fixer',
+            emoji: '✏️',
+            desc: 'Repair capitalization and punctuation with precision.',
+            url: "{{ url_for('sentence_fixer', return_to=url_for('ela_planet')) }}",
+            x: 32,
+            y: 45
+        },
+        {
+            name: 'Word Match',
+            emoji: '🧩',
+            desc: 'Match synonyms and antonyms under time pressure.',
+            url: "{{ url_for('word_match', return_to=url_for('ela_planet')) }}",
+            x: 56,
+            y: 58
+        },
+        {
+            name: 'Context Clues',
+            emoji: '🔍',
+            desc: 'Decode unfamiliar words using clues from nearby text.',
+            url: "{{ url_for('context_clues', return_to=url_for('ela_planet')) }}",
+            x: 78,
+            y: 36
+        }
+    ];
+
+    const nodesContainer = document.getElementById('ela-nodes');
+    const detail = document.getElementById('ela-detail');
+
+    nodesContainer.innerHTML = elaStations.map((station, index) => `
+        <div class="ela-node" style="left: ${station.x}%; top: ${station.y}%;" data-index="${index}">
+            <button class="ela-orb" type="button" aria-label="Launch ${station.name}">${station.emoji}</button>
+            <span class="ela-tag">Station ${index + 1}</span>
+        </div>
+    `).join('');
+
+    nodesContainer.querySelectorAll('.ela-node').forEach((node) => {
+        const station = elaStations[Number(node.dataset.index)];
+        const button = node.querySelector('.ela-orb');
+        node.addEventListener('mouseenter', () => {
+            detail.innerHTML = `<h4>${station.name}</h4><p>${station.desc}</p>`;
+        });
+        node.addEventListener('mouseleave', () => {
+            detail.innerHTML = '<h4>Mission Coordinate Computer</h4><p>Hover over a station orb to preview each ELA mission. Click an orb to launch that game.</p>';
+        });
+        button.addEventListener('click', () => {
+            window.location.href = station.url;
+        });
+    });
+</script>
+{% endblock %}

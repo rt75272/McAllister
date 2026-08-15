@@ -212,6 +212,7 @@
             <p>Get ready for exciting games that will help you master reading, writing, vocabulary, and grammar through interactive and engaging activities.</p>
             <div class="hero-links">
                 <a href="{{ url_for('about') }}">About</a>
+                <a href="{{ url_for('ela_planet') }}">Visit ELA Planet</a>
             </div>
         </div>
 
@@ -223,25 +224,25 @@
             </p>
             
             <div class="activity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5em; margin-top: 1.5em;">
-                <a href="{{ url_for('verb_detective') }}" class="activity-card verb-detective-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <a href="{{ url_for('verb_detective', return_to=url_for('ela_games')) }}" class="activity-card verb-detective-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🕵️ Verb Detective</h3>
                     <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Discover the action words! Identify verbs in sentences and learn about action verbs and state-of-being verbs.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Parts of Speech</div>
                 </a>
 
-                <a href="{{ url_for('word_match') }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <a href="{{ url_for('word_match', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🧩 Word Match</h3>
                     <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Practice synonyms and antonyms by matching each target word with its best partner.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Vocabulary</div>
                 </a>
 
-                <a href="{{ url_for('sentence_fixer') }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #8e44ad 0%, #e056fd 100%);">
+                <a href="{{ url_for('sentence_fixer', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #8e44ad 0%, #e056fd 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">✏️ Sentence Fixer</h3>
                     <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Fix capitalization and punctuation by choosing the best-written sentence from the choices.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Writing Mechanics</div>
                 </a>
 
-                <a href="{{ url_for('context_clues') }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);">
+                <a href="{{ url_for('context_clues', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🔍 Context Clues</h3>
                     <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Use clues in the sentence to figure out the meaning of tricky words.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Reading Skills</div>

@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Game Planet - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Trebuchet MS", "Verdana", sans-serif;
+        background:
+            radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.18), transparent 35%),
+            radial-gradient(circle at 85% 20%, rgba(244, 63, 94, 0.2), transparent 38%),
+            linear-gradient(165deg, #0b1024, #111827 55%, #1f2937 100%);
+        color: #e5e7eb;
+    }
+
+    .planet-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 16px;
+    }
+
+    .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .topbar h1 {
+        margin: 0;
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        color: #fef08a;
+    }
+
+    .topbar p {
+        margin: 4px 0 0;
+        color: #cbd5e1;
+        font-size: 0.92rem;
+    }
+
+    .back-btn {
+        text-decoration: none;
+        color: #f8fafc;
+        background: linear-gradient(120deg, #0ea5e9, #6366f1);
+        border: 1px solid #7dd3fc;
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 10px 14px;
+        white-space: nowrap;
+    }
+
+    .world-wrap {
+        border: 2px solid #334155;
+        border-radius: 16px;
+        background: rgba(2, 6, 23, 0.65);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+        padding: 10px;
+    }
+
+    #game-planet-canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 12px;
+        background: #1f2937;
+        image-rendering: pixelated;
+        cursor: crosshair;
+    }
+
+    .hud {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .hud-card {
+        flex: 1;
+        min-width: 220px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid #475569;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 0.86rem;
+    }
+
+    .hud-title {
+        color: #67e8f9;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .kbd {
+        display: inline-block;
+        border: 1px solid #64748b;
+        border-radius: 6px;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-weight: 700;
+        padding: 1px 6px;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 700px) {
+        .topbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .back-btn {
+            align-self: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planet-shell">
+    <div class="topbar">
+        <div>
+            <h1>🕹️ Game Planet</h1>
+            <p>Walk the arcade paths, approach a cabinet, then press Enter to launch a side mission.</p>
+        </div>
+        <a class="back-btn" href="{{ url_for('solar_system') }}">🚀 Back to Solar System</a>
+    </div>
+
+    <div class="world-wrap">
+        <canvas id="game-planet-canvas" width="980" height="560" aria-label="Top-down game planet explorer"></canvas>
+        <div class="hud">
+            <div class="hud-card">
+                <div class="hud-title">Controls</div>
+                Move: <span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span> or arrow keys<br>
+                Interact: <span class="kbd">Enter</span><br>
+                Mouse: click a cabinet to launch directly
+            </div>
+            <div class="hud-card">
+                <div class="hud-title">Arcade Console</div>
+                <div id="cabinet-status">Walk near a cabinet to interact.</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(() => {
+    const canvas = document.getElementById('game-planet-canvas');
+    const ctx = canvas.getContext('2d');
+    const statusEl = document.getElementById('cabinet-status');
+
+    const cabinets = [
+        { name: 'Dino Dash', x: 190, y: 145, w: 88, h: 68, color: '#22d3ee', route: "{{ url_for('dino_arcade', return_to=url_for('game_planet')) }}" },
+        { name: 'Math Snake', x: 680, y: 145, w: 88, h: 68, color: '#34d399', route: "{{ url_for('snake_arcade', return_to=url_for('game_planet')) }}" },
+        { name: 'Pinball Lab', x: 190, y: 350, w: 88, h: 68, color: '#f59e0b', route: "{{ url_for('pinball_arcade', return_to=url_for('game_planet')) }}" },
+        { name: 'Pong Arena', x: 680, y: 350, w: 88, h: 68, color: '#f472b6', route: "{{ url_for('pong_arcade', return_to=url_for('game_planet')) }}" },
+        { name: 'Tetris Core', x: 435, y: 240, w: 110, h: 80, color: '#a78bfa', route: "{{ url_for('tetris_game', return_to=url_for('game_planet')) }}" }
+    ];
+
+    const trees = [
+        { x: 120, y: 80 }, { x: 330, y: 85 }, { x: 560, y: 86 }, { x: 830, y: 92 },
+        { x: 105, y: 460 }, { x: 325, y: 475 }, { x: 595, y: 470 }, { x: 845, y: 460 },
+        { x: 70, y: 275 }, { x: 900, y: 275 }
+    ];
+
+    const player = { x: 490, y: 280, w: 28, h: 28, speed: 2.4 };
+    const keys = {};
+    let nearbyCabinet = null;
+
+    function isDown(codeList) {
+        return codeList.some((code) => keys[code]);
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function drawPath() {
+        ctx.fillStyle = '#6b7280';
+        ctx.fillRect(430, 70, 120, 420);
+        ctx.fillRect(120, 235, 740, 90);
+
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([9, 8]);
+        ctx.beginPath();
+        ctx.moveTo(490, 70);
+        ctx.lineTo(490, 490);
+        ctx.moveTo(120, 280);
+        ctx.lineTo(860, 280);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    function drawGround() {
+        ctx.fillStyle = '#14532d';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < 220; i += 1) {
+            const x = (i * 53) % canvas.width;
+            const y = (i * 97) % canvas.height;
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(134, 239, 172, 0.08)' : 'rgba(16, 185, 129, 0.08)';
+            ctx.fillRect(x, y, 16, 16);
+        }
+    }
+
+    function drawTree(tree) {
+        ctx.fillStyle = '#166534';
+        ctx.beginPath();
+        ctx.arc(tree.x, tree.y, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#854d0e';
+        ctx.fillRect(tree.x - 3, tree.y + 12, 6, 14);
+    }
+
+    function drawCabinet(cabinet) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(cabinet.x, cabinet.y, cabinet.w, cabinet.h);
+
+        ctx.strokeStyle = cabinet.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(cabinet.x, cabinet.y, cabinet.w, cabinet.h);
+
+        ctx.fillStyle = cabinet.color;
+        ctx.fillRect(cabinet.x + 8, cabinet.y + 10, cabinet.w - 16, 12);
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '700 11px Trebuchet MS';
+        ctx.textAlign = 'center';
+        ctx.fillText(cabinet.name, cabinet.x + cabinet.w / 2, cabinet.y + cabinet.h - 12);
+
+        if (nearbyCabinet === cabinet) {
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '700 12px Trebuchet MS';
+            ctx.fillText('Press Enter', cabinet.x + cabinet.w / 2, cabinet.y - 10);
+        }
+    }
+
+    function drawPlayer() {
+        ctx.fillStyle = '#0ea5e9';
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(player.x + 7, player.y + 6, 4, 4);
+        ctx.fillRect(player.x + 17, player.y + 6, 4, 4);
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(player.x + 8, player.y + 17, 12, 3);
+    }
+
+    function updatePlayer() {
+        let dx = 0;
+        let dy = 0;
+
+        if (isDown(['ArrowLeft', 'KeyA'])) dx -= player.speed;
+        if (isDown(['ArrowRight', 'KeyD'])) dx += player.speed;
+        if (isDown(['ArrowUp', 'KeyW'])) dy -= player.speed;
+        if (isDown(['ArrowDown', 'KeyS'])) dy += player.speed;
+
+        player.x = clamp(player.x + dx, 0, canvas.width - player.w);
+        player.y = clamp(player.y + dy, 0, canvas.height - player.h);
+    }
+
+    function centerOf(entity) {
+        return { x: entity.x + entity.w / 2, y: entity.y + entity.h / 2 };
+    }
+
+    function detectNearbyCabinet() {
+        const p = centerOf(player);
+        nearbyCabinet = null;
+
+        for (const cabinet of cabinets) {
+            const c = centerOf(cabinet);
+            const distance = Math.hypot(p.x - c.x, p.y - c.y);
+            if (distance < 88) {
+                nearbyCabinet = cabinet;
+                break;
+            }
+        }
+
+        if (nearbyCabinet) {
+            statusEl.textContent = `${nearbyCabinet.name} ready. Press Enter to launch.`;
+        } else {
+            statusEl.textContent = 'Walk near a cabinet to interact.';
+        }
+    }
+
+    function launchCabinet(cabinet) {
+        if (!cabinet) return;
+        window.location.href = cabinet.route;
+    }
+
+    function draw() {
+        drawGround();
+        drawPath();
+        trees.forEach(drawTree);
+        cabinets.forEach(drawCabinet);
+        drawPlayer();
+    }
+
+    function loop() {
+        updatePlayer();
+        detectNearbyCabinet();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('keydown', (event) => {
+        keys[event.code] = true;
+        if (event.code === 'Enter') {
+            launchCabinet(nearbyCabinet);
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        keys[event.code] = false;
+    });
+
+    canvas.addEventListener('click', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
+        const clicked = cabinets.find((cabinet) => (
+            x >= cabinet.x && x <= cabinet.x + cabinet.w &&
+            y >= cabinet.y && y <= cabinet.y + cabinet.h
+        ));
+
+        if (clicked) {
+            launchCabinet(clicked);
+        }
+    });
+
+    loop();
+})();
+</script>
+{% endblock %}

@@ -470,7 +470,7 @@
 {% block content %}
 <div class="main-container">
     <div class="nav-header">
-        <a href="{{ url_for('math_games') }}" class="home-btn">🚀 Back to Games</a>
+        <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn">🚀 Back to Games</a>
         <div>
             <h1 class="game-title">🛰️ Math Obstacle Course</h1>
             <p class="game-subtitle">Clear every gate to decode the secret transmission</p>
@@ -561,7 +561,7 @@
         </div>
         <div class="completion-buttons">
             <button class="start-btn" id="play-again-btn">🔁 Play Again</button>
-            <a href="{{ url_for('math_games') }}" class="home-btn" style="text-decoration:none;">🚀 Back to Games</a>
+            <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn" style="text-decoration:none;">🚀 Back to Games</a>
         </div>
     </div>
 </div>

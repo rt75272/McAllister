@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Snake Arcade - Mrs. McAllister's Learning Center</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at 15% 10%, #16a34a 0, transparent 40%), radial-gradient(circle at 80% 20%, #0ea5e9 0, transparent 45%), #020617;
+            color: #e2e8f0;
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+        }
+
+        .shell {
+            width: min(92vw, 760px);
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #475569;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.45);
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+
+        .top h1 {
+            margin: 0;
+            font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+            color: #86efac;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #f8fafc;
+            background: linear-gradient(120deg, #0ea5e9, #6366f1);
+            border: 1px solid #7dd3fc;
+            border-radius: 10px;
+            font-weight: 700;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+
+        .board-wrap {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+
+        #board {
+            width: 420px;
+            max-width: 56vw;
+            aspect-ratio: 1 / 1;
+            background: #020617;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            image-rendering: pixelated;
+        }
+
+        .side {
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .stat {
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .label {
+            color: #67e8f9;
+            font-weight: 700;
+        }
+
+        .kbd {
+            display: inline-block;
+            border: 1px solid #64748b;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-weight: 700;
+            padding: 1px 5px;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            margin-top: 8px;
+            width: 100%;
+            background: #166534;
+            border: 1px solid #22c55e;
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 8px;
+            color: #fef08a;
+            min-height: 1.2em;
+        }
+
+        @media (max-width: 680px) {
+            .board-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            #board {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="top">
+            <h1>Math Snake Arcade</h1>
+            <a class="back-btn" href="{{ request.args.get('return_to') or url_for('game_planet') }}">Back</a>
+        </div>
+        <div class="board-wrap">
+            <canvas id="board" width="420" height="420" aria-label="Snake board"></canvas>
+            <div class="side">
+                <div class="stat"><span class="label">Score:</span> <span id="score">0</span></div>
+                <div class="stat"><span class="label">Best:</span> <span id="best">0</span></div>
+                <div class="stat"><span class="label">Speed:</span> <span id="speed">1</span></div>
+                <div>
+                    <span class="label">Controls</span><br>
+                    <span class="kbd">W</span>/<span class="kbd">Up</span> Up<br>
+                    <span class="kbd">A</span>/<span class="kbd">Left</span> Left<br>
+                    <span class="kbd">S</span>/<span class="kbd">Down</span> Down<br>
+                    <span class="kbd">D</span>/<span class="kbd">Right</span> Right
+                </div>
+                <button id="restart" class="btn">Restart</button>
+                <div id="status" class="status">Collect apples and avoid crashing.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const GRID = 21;
+            const CELL = 20;
+            const BASE_SPEED = 160;
+            const MIN_SPEED = 75;
+
+            const canvas = document.getElementById('board');
+            const ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('score');
+            const bestEl = document.getElementById('best');
+            const speedEl = document.getElementById('speed');
+            const statusEl = document.getElementById('status');
+            const restartBtn = document.getElementById('restart');
+
+            let snake;
+            let dir;
+            let nextDir;
+            let food;
+            let score;
+            let best;
+            let stepMs;
+            let elapsed;
+            let over;
+            let lastTs;
+            let rafId;
+
+            function randomCell() {
+                return {
+                    x: Math.floor(Math.random() * GRID),
+                    y: Math.floor(Math.random() * GRID)
+                };
+            }
+
+            function sameCell(a, b) {
+                return a.x === b.x && a.y === b.y;
+            }
+
+            function spawnFood() {
+                let next = randomCell();
+                while (snake.some((part) => sameCell(part, next))) {
+                    next = randomCell();
+                }
+                food = next;
+            }
+
+            function updateHud() {
+                scoreEl.textContent = String(score);
+                bestEl.textContent = String(best);
+                speedEl.textContent = String(Math.round((BASE_SPEED / stepMs) * 10) / 10);
+            }
+
+            function reset() {
+                snake = [
+                    { x: 10, y: 10 },
+                    { x: 9, y: 10 },
+                    { x: 8, y: 10 }
+                ];
+                dir = { x: 1, y: 0 };
+                nextDir = { x: 1, y: 0 };
+                score = 0;
+                stepMs = BASE_SPEED;
+                elapsed = 0;
+                over = false;
+                lastTs = 0;
+                statusEl.textContent = 'Collect apples and avoid crashing.';
+                spawnFood();
+                updateHud();
+            }
+
+            function gameOver() {
+                over = true;
+                best = Math.max(best, score);
+                localStorage.setItem('snake_arcade_best', String(best));
+                statusEl.textContent = 'Game over. Press Restart.';
+                updateHud();
+            }
+
+            function insideGrid(cell) {
+                return cell.x >= 0 && cell.x < GRID && cell.y >= 0 && cell.y < GRID;
+            }
+
+            function tickStep() {
+                if (over) return;
+
+                dir = nextDir;
+                const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+                if (!insideGrid(head) || snake.some((part) => sameCell(part, head))) {
+                    gameOver();
+                    return;
+                }
+
+                snake.unshift(head);
+
+                if (sameCell(head, food)) {
+                    score += 10;
+                    stepMs = Math.max(MIN_SPEED, stepMs - 4);
+                    spawnFood();
+                    statusEl.textContent = 'Nice! Keep going.';
+                } else {
+                    snake.pop();
+                }
+
+                best = Math.max(best, score);
+                localStorage.setItem('snake_arcade_best', String(best));
+                updateHud();
+            }
+
+            function drawBoard() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let y = 0; y < GRID; y += 1) {
+                    for (let x = 0; x < GRID; x += 1) {
+                        if ((x + y) % 2 === 0) {
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+                            ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+                        }
+                    }
+                }
+
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(food.x * CELL + 2, food.y * CELL + 2, CELL - 4, CELL - 4);
+
+                snake.forEach((part, index) => {
+                    ctx.fillStyle = index === 0 ? '#22c55e' : '#16a34a';
+                    ctx.fillRect(part.x * CELL + 1, part.y * CELL + 1, CELL - 2, CELL - 2);
+                });
+            }
+
+            function frame(ts) {
+                if (!lastTs) lastTs = ts;
+                const delta = ts - lastTs;
+                lastTs = ts;
+                elapsed += delta;
+
+                while (elapsed >= stepMs) {
+                    elapsed -= stepMs;
+                    tickStep();
+                }
+
+                drawBoard();
+                rafId = requestAnimationFrame(frame);
+            }
+
+            function isOpposite(a, b) {
+                return a.x === -b.x && a.y === -b.y;
+            }
+
+            document.addEventListener('keydown', (event) => {
+                let candidate = null;
+
+                if (event.code === 'ArrowUp' || event.code === 'KeyW') candidate = { x: 0, y: -1 };
+                if (event.code === 'ArrowDown' || event.code === 'KeyS') candidate = { x: 0, y: 1 };
+                if (event.code === 'ArrowLeft' || event.code === 'KeyA') candidate = { x: -1, y: 0 };
+                if (event.code === 'ArrowRight' || event.code === 'KeyD') candidate = { x: 1, y: 0 };
+
+                if (candidate) {
+                    event.preventDefault();
+                    if (!isOpposite(candidate, dir)) {
+                        nextDir = candidate;
+                    }
+                }
+            });
+
+            restartBtn.addEventListener('click', () => {
+                reset();
+            });
+
+            best = Number(localStorage.getItem('snake_arcade_best') || 0);
+            reset();
+            rafId = requestAnimationFrame(frame);
+
+            window.addEventListener('beforeunload', () => {
+                if (rafId) cancelAnimationFrame(rafId);
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -51,7 +51,6 @@
         }
 
         .back-btn:hover {
-            transform: scale(1.05);
             background: #475569;
         }
 
@@ -276,7 +275,6 @@
         }
 
         .station-node:hover .station-circle {
-            transform: scale(1.15);
             box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 8px 15px rgba(0,0,0,0.6);
         }
 
@@ -332,13 +330,15 @@
 
         .accessible-modal-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 980px;
             background: #1a1a2e;
             border: 3.5px solid #38bdf8;
             padding: 24px;
             border-radius: 24px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8);
             color: #f1f5ff;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         /* Lighten key copy blocks for better contrast on dark map backgrounds. */
@@ -393,9 +393,39 @@
         }
 
         .btn-accessible:hover {
-            transform: scale(1.03);
             background: #4338ca;
             border-color: #a5b4fc;
+        }
+
+        /* Quiz-first game portal layout with a distinct optional side mission rail */
+        .portal-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .portal-main {
+            background: #020617;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .portal-side {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        @media (min-width: 920px) {
+            .portal-layout {
+                grid-template-columns: minmax(0, 1.7fr) minmax(210px, 0.9fr);
+            }
         }
 
         /* Chrome Dino runner styles */
@@ -442,9 +472,9 @@
             <div class="terrain-backdrop"></div>
             <div class="terrain-midground"></div>
             <div class="terrain-foreground"></div>
-            <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path id="connector-line" d="" fill="none" stroke="#1e293b" stroke-width="4" stroke-dasharray="8 6"></path>
-                <path id="completed-line" d="" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="4 4" style="display: none;"></path>
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style="display: none;">
+                <path id="connector-line" d="" fill="none" stroke="none" stroke-width="0"></path>
+                <path id="completed-line" d="" fill="none" stroke="none" stroke-width="0" style="display: none;"></path>
             </svg>
 
             <!-- Dynamic Nodes will populate here via script -->
@@ -472,7 +502,7 @@
         </div>
 
         <!-- Content Body -->
-        <div id="modal-body-content" class="text-xs leading-relaxed space-y-4">
+        <div id="modal-body-content" class="text-sm leading-relaxed space-y-4">
             <!-- Dynamic game/practice interface loaded here -->
         </div>
     </div>
@@ -492,13 +522,24 @@
                 unit_id: "planet_1_number_properties",
                 planet_name: "Prime Alpha",
                 activities: [
-                    { id: "p1_s1", title: "Prime Crater Sprint", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "number_properties", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p1_s1",
+                        title: "Meteor Blaster",
+                        type: "asteroid_shooter",
+                        question_topic: "number_properties",
+                        description: "A standard ship shooter with simple vector-line asteroids and number-properties checkpoints.",
+                        points_reward: 200,
+                        min_questions: 5,
+                        max_questions: 8
+                    },
                     {
                         id: "p1_s2",
+                        title: "Void Defenders",
                         type: "gamified_skill",
                         theme: "space_bakery",
                         mechanic: "ingredient_sequencing",
                         skill: "greatest_common_factor",
+                        description: "Defend a lunar colony from descending robotic drone waves while solving GCF missions.",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
@@ -518,161 +559,132 @@
                     },
                     {
                         id: "p1_s3",
+                        title: "Rocket Runner",
                         type: "gamified_skill",
                         theme: "cargo_loader",
                         mechanic: "timeline_slider",
                         skill: "least_common_multiple",
+                        description: "Keep a sputtering rocket module flying between broken alien pillars while solving LCM prompts.",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
                         question_generator: () => {
-                            const [a, b] = pickRandom([[3, 4], [3, 5], [4, 5], [4, 6], [3, 8], [5, 6], [4, 9], [6, 8], [9, 6], [5, 4]]);
-                            const answer = lcmOf(a, b);
-                            return {
-                                scenario: "Schedule Sync",
-                                task: `Droid A repeats every ${a} mins, Droid B every ${b} mins. Slide the timeline to when they next meet.`,
-                                answer: String(answer),
-                                key: `${a}_${b}`
-                            };
+                            return pickChallengeVariant([
+                                () => {
+                                    const [a, b] = pickRandom([[3, 4], [3, 5], [4, 5], [4, 6], [3, 8], [5, 6], [4, 9], [6, 8], [9, 6], [5, 4]]);
+                                    const answer = lcmOf(a, b);
+                                    return {
+                                        scenario: "Schedule Sync",
+                                        task: `Droid A repeats every ${a} mins, Droid B every ${b} mins. Slide the timeline to when they next meet.`,
+                                        answer: String(answer),
+                                        key: `${a}_${b}`
+                                    };
+                                },
+                                () => ({
+                                    scenario: "Snack Stand Sync",
+                                    task: "Hot dogs come in packs of 10 and buns come in packs of 8. What is the least number of each you need to buy to have an equal amount of hot dogs and buns?",
+                                    answer: "40",
+                                    key: "hot_dogs_buns_10_8",
+                                    hint: "Find the least common multiple of 10 and 8."
+                                })
+                            ]);
                         }
                     },
                     {
                         id: "p1_s4",
-                        type: "gamified_skill",
-                        theme: "airlock_hacker",
-                        mechanic: "node_connecting",
-                        skill: "prime_factorization",
-                        points_reward: 100,
-                        min_questions: 6,
-                        max_questions: 10,
-                        question_generator: () => {
-                            const composite = pickRandom([18, 24, 30, 36, 40, 45, 48, 54, 60, 84]);
-                            const factors = primeFactorsOf(composite);
-                            return {
-                                scenario: "Breach the Sector",
-                                task: `Connect the prime factor nodes of ${composite} in order to hack the door.`,
-                                answer: factors.join(", "),
-                                options: Array.from(new Set(factors.concat([2, 3, 5, 7]))),
-                                key: String(composite)
-                            };
-                        }
+                        title: "Exponent World",
+                        type: "game_portal",
+                        game_name: "Exponent World",
+                        game_url: "{{ url_for('exponent_world') }}",
+                        game_topic: "exponents",
+                        question_topic: "exponents",
+                        game_icon: "🌍",
+                        description: "Answer an exponent checkpoint, then launch Exponent World.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
                     },
                     {
                         id: "p1_s5",
-                        type: "gamified_skill",
-                        theme: "engine_calibrator",
-                        mechanic: "drag_and_drop_blocks",
-                        skill: "distributive_property",
-                        points_reward: 100,
-                        min_questions: 6,
-                        max_questions: 10,
-                        question_generator: () => {
-                            const a = randomInt(2, 9);
-                            const b = randomInt(2, 12);
-                            const c = randomInt(2, 12);
-                            const usePlus = Math.random() < 0.5;
-                            return {
-                                scenario: "Route Thruster Power",
-                                task: `Drag the expanded blocks to match ${a}(${b} ${usePlus ? "+" : "-"} ${c}).`,
-                                answer: usePlus ? `${a * b} + ${a * c}` : `${a * b} - ${a * c}`,
-                                key: `${a}_${b}_${c}_${usePlus}`
-                            };
-                        }
+                        title: "Exponent Rules",
+                        type: "game_portal",
+                        game_name: "Exponent Rules",
+                        game_url: "{{ url_for('exponent_rules') }}",
+                        game_topic: "exponents",
+                        question_topic: "exponents",
+                        game_icon: "📐",
+                        description: "Answer an exponent checkpoint, then launch Exponent Rules.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
                     },
-                    { id: "p1_s6", type: "asteroid_shooter", question_topic: "number_properties", round_target: 7, points_reward: 180, min_questions: 3, max_questions: 3 },
-                    { id: "p1_s7", type: "tic_tac_toe_bot", question_topic: "number_properties", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    {
+                        id: "p1_s6",
+                        title: "Math Practice",
+                        type: "game_portal",
+                        game_name: "Math Practice",
+                        game_url: "{{ url_for('math_practice') }}",
+                        game_topic: "number_properties",
+                        question_topic: "number_properties",
+                        game_icon: "📚",
+                        description: "Answer a number-properties checkpoint, then launch Math Practice.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
+                    {
+                        id: "p1_s7",
+                        title: "Math Blast",
+                        type: "game_portal",
+                        game_name: "Math Blast",
+                        game_url: "{{ url_for('math_blast') }}",
+                        game_topic: "number_properties",
+                        question_topic: "number_properties",
+                        game_icon: "🎮",
+                        description: "Answer a checkpoint, then launch Math Blast.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     {
                         id: "p1_s8",
-                        title: "Factor Field Practice",
-                        type: "adaptive_practice",
-                        skill: "number_properties_review",
-                        points_reward: 100,
-                        min_questions: 4,
-                        max_questions: 6,
-                        question_generator: () => {
-                            const challengeType = pickRandom(['factors', 'multiples', 'prime']);
-                            if (challengeType === 'factors') {
-                                const base = pickRandom([18, 24, 30, 36, 42, 48]);
-                                const validFactors = [2, 3, 4, 5, 6, 7, 8].filter((candidate) => base % candidate === 0);
-                                const factor = pickRandom(validFactors);
-                                return {
-                                    scenario: 'Factor Field Practice',
-                                    task: `Enter a factor of ${base}.`,
-                                    answer: String(factor),
-                                    key: `factor_${base}_${factor}`,
-                                    hint: 'A factor divides the number with no remainder.'
-                                };
-                            }
-                            if (challengeType === 'prime') {
-                                const composite = pickRandom([24, 36, 40, 54, 70, 84]);
-                                const primeFactor = pickRandom([2, 3, 5, 7].filter((candidate) => composite % candidate === 0));
-                                return {
-                                    scenario: 'Factor Field Practice',
-                                    task: `Enter a prime factor of ${composite}.`,
-                                    answer: String(primeFactor),
-                                    key: `prime_${composite}_${primeFactor}`,
-                                    hint: 'Use a prime number that divides the composite evenly.'
-                                };
-                            }
-                            const multiplier = pickRandom([4, 5, 6, 7, 8, 9]);
-                            const product = multiplier * 6;
-                            return {
-                                scenario: 'Factor Field Practice',
-                                task: `What multiple of 6 equals ${product}?`,
-                                answer: String(product),
-                                key: `multiple_${multiplier}_${product}`,
-                                hint: 'Count by sixes until you reach the target.'
-                            };
-                        }
+                        title: "Math Race",
+                        type: "game_portal",
+                        game_name: "Math Race",
+                        game_url: "{{ url_for('math_race') }}",
+                        game_topic: "number_properties",
+                        question_topic: "number_properties",
+                        game_icon: "🏁",
+                        description: "Answer a checkpoint, then launch Math Race.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
                     },
                     {
                         id: "p1_s9",
-                        title: "Multiple Meteor Practice",
-                        type: "adaptive_practice",
-                        skill: "number_properties_review",
-                        points_reward: 100,
-                        min_questions: 4,
-                        max_questions: 6,
-                        question_generator: () => {
-                            const mode = pickRandom(['gcf', 'lcm', 'prime_factorization']);
-                            if (mode === 'gcf') {
-                                const base = randomInt(2, 8);
-                                const a = base * randomInt(2, 5);
-                                const b = base * randomInt(2, 5);
-                                return {
-                                    scenario: 'Multiple Meteor Practice',
-                                    task: `Find the greatest common factor of ${a} and ${b}.`,
-                                    answer: String(gcdOf(a, b)),
-                                    key: `gcf_${a}_${b}`,
-                                    hint: 'List the common factors and choose the greatest one.'
-                                };
-                            }
-                            if (mode === 'lcm') {
-                                const [a, b] = pickRandom([[3, 4], [3, 5], [4, 5], [4, 6], [5, 6], [6, 8]]);
-                                return {
-                                    scenario: 'Multiple Meteor Practice',
-                                    task: `Find the least common multiple of ${a} and ${b}.`,
-                                    answer: String(lcmOf(a, b)),
-                                    key: `lcm_${a}_${b}`,
-                                    hint: 'List multiples or use prime factors to find the first shared multiple.'
-                                };
-                            }
-                            const composite = pickRandom([18, 24, 30, 36, 40, 45, 48, 54, 60]);
-                            return {
-                                scenario: 'Multiple Meteor Practice',
-                                task: `Write the prime factorization of ${composite} using commas between factors.`,
-                                answer: primeFactorsOf(composite).join(', '),
-                                key: `pf_${composite}`,
-                                hint: 'Break the composite into prime factors from smallest to largest.'
-                            };
-                        }
+                        title: "Math Memory",
+                        type: "game_portal",
+                        game_name: "Math Memory",
+                        game_url: "{{ url_for('math_memory') }}",
+                        game_topic: "number_properties",
+                        question_topic: "number_properties",
+                        game_icon: "🧠",
+                        description: "Answer a checkpoint, then launch Math Memory.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
                     },
                     {
                         id: "p1_s10",
-                        type: "student_creation",
-                        skill_focus: "number_properties",
-                        prompt: "You are the alien teacher! Create your own math problem using Greatest Common Factors. Type the question, provide the answer, and write a hint for your classmates.",
-                        points_reward: 300,
+                        title: "Exponent Power",
+                        type: "game_portal",
+                        game_name: "Exponent Power",
+                        game_url: "{{ url_for('exponent_power') }}",
+                        game_topic: "exponents",
+                        question_topic: "exponents",
+                        game_icon: "⚡",
+                        description: "Answer an exponents checkpoint, then launch Exponent Power.",
+                        points_reward: 120,
                         min_questions: 1,
                         max_questions: 1
                     }
@@ -682,13 +694,25 @@
                 unit_id: "planet_2_fractions_decimals",
                 planet_name: "Gorilla Nebula",
                 activities: [
-                    { id: "p2_s1", type: "quick_facts", skill: "simplify_fractions", difficulty: "easy", points_reward: 50, min_questions: 5, max_questions: 7 },
+                    {
+                        id: "p2_s1",
+                        title: "Lunar Leaper",
+                        type: "quick_facts",
+                        skill: "simplify_fractions",
+                        difficulty: "easy",
+                        description: "Jetpack upward across floating debris to reach the mothership while simplifying fractions.",
+                        points_reward: 50,
+                        min_questions: 5,
+                        max_questions: 7
+                    },
                     {
                         id: "p2_s2",
+                        title: "Station Maze",
                         type: "gamified_skill",
                         theme: "space_bakery",
                         mechanic: "ingredient_sequencing",
                         skill: "adding_fractions_like_denominators",
+                        description: "Navigate a grid and collect energy cells while evading rogue bots and adding fractions.",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
@@ -708,10 +732,12 @@
                     },
                     {
                         id: "p2_s3",
+                        title: "Asteroid Hopper",
                         type: "gamified_skill",
                         theme: "cargo_loader",
                         mechanic: "timeline_slider",
                         skill: "equivalent_fractions",
+                        description: "Hop through moving comet lanes and satellite traffic while building equivalent fractions.",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
@@ -731,10 +757,12 @@
                     },
                     {
                         id: "p2_s4",
+                        title: "Colony Rescue",
                         type: "gamified_skill",
                         theme: "airlock_hacker",
                         mechanic: "node_connecting",
                         skill: "comparing_ordering_decimals",
+                        description: "Fly over jagged alien terrain and rescue stranded scientists while ordering decimals.",
                         points_reward: 100,
                         min_questions: 6,
                         max_questions: 10,
@@ -776,7 +804,20 @@
                             };
                         }
                     },
-                    { id: "p2_s6", type: "asteroid_shooter", question_topic: "fractions_decimals", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    {
+                        id: "p2_s6",
+                        title: "Decimal Master",
+                        type: "game_portal",
+                        game_name: "Decimal Master",
+                        game_url: "{{ url_for('decimal_master') }}",
+                        game_topic: "fractions_decimals",
+                        question_topic: "fractions_decimals",
+                        game_icon: "🔢",
+                        description: "Answer a fraction-and-decimal checkpoint, then launch Decimal Master.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     { id: "p2_s7", type: "tic_tac_toe_bot", question_topic: "fractions_decimals", points_reward: 150, min_questions: 1, max_questions: 1 },
                     { id: "p2_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "fractions_decimals", points_reward: 200, min_questions: 5, max_questions: 8 },
                     { id: "p2_s9", type: "fraction_master_embed", points_reward: 150, min_questions: 1, max_questions: 1 },
@@ -883,10 +924,36 @@
                             };
                         }
                     },
-                    { id: "p3_s6", type: "asteroid_shooter", question_topic: "rational_numbers", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    {
+                        id: "p3_s6",
+                        title: "Plot Points",
+                        type: "game_portal",
+                        game_name: "Plot Points",
+                        game_url: "{{ url_for('plot_points') }}",
+                        game_topic: "rational_numbers",
+                        question_topic: "rational_numbers",
+                        game_icon: "📈",
+                        description: "Answer a coordinate-plane checkpoint, then launch Plot Points.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     { id: "p3_s7", type: "tic_tac_toe_bot", question_topic: "rational_numbers", points_reward: 150, min_questions: 1, max_questions: 1 },
                     { id: "p3_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "rational_numbers", points_reward: 200, min_questions: 5, max_questions: 8 },
-                    { id: "p3_s9", type: "coordinate_flight", points_reward: 150, min_questions: 1, max_questions: 1 },
+                    {
+                        id: "p3_s9",
+                        title: "Coordinate Navigator",
+                        type: "game_portal",
+                        game_name: "Coordinate Navigator",
+                        game_url: "{{ url_for('coordinate_navigator') }}",
+                        game_topic: "rational_numbers",
+                        question_topic: "rational_numbers",
+                        game_icon: "🛰️",
+                        description: "Answer a coordinate checkpoint, then launch Coordinate Navigator.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     {
                         id: "p3_s10",
                         type: "student_creation",
@@ -993,9 +1060,35 @@
                             };
                         }
                     },
-                    { id: "p4_s6", type: "asteroid_shooter", question_topic: "expressions", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    {
+                        id: "p4_s6",
+                        title: "Expression Comparison",
+                        type: "game_portal",
+                        game_name: "Expression Comparison",
+                        game_url: "{{ url_for('expression_comparison') }}",
+                        game_topic: "expressions",
+                        question_topic: "expressions",
+                        game_icon: "⚖️",
+                        description: "Answer an expressions checkpoint, then launch Expression Comparison.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     { id: "p4_s7", type: "tic_tac_toe_bot", question_topic: "expressions", points_reward: 150, min_questions: 1, max_questions: 1 },
-                    { id: "p4_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "expressions", points_reward: 200, min_questions: 5, max_questions: 8 },
+                    {
+                        id: "p4_s8",
+                        title: "Math Adventure",
+                        type: "game_portal",
+                        game_name: "Math Adventure",
+                        game_url: "{{ url_for('math_adventure') }}",
+                        game_topic: "expressions",
+                        question_topic: "expressions",
+                        game_icon: "⚔️",
+                        description: "Answer an expressions checkpoint, then launch Math Adventure.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     { id: "p4_s9", type: "vault_unlocking", points_reward: 150, min_questions: 1, max_questions: 1 },
                     {
                         id: "p4_s10",
@@ -1099,7 +1192,20 @@
                             };
                         }
                     },
-                    { id: "p5_s6", type: "asteroid_shooter", question_topic: "equations", round_target: 6, points_reward: 180, min_questions: 2, max_questions: 3 },
+                    {
+                        id: "p5_s6",
+                        title: "Vault Solver",
+                        type: "game_portal",
+                        game_name: "Vault Solver",
+                        game_url: "{{ url_for('vault_solver') }}",
+                        game_topic: "equations",
+                        question_topic: "equations",
+                        game_icon: "🔐",
+                        description: "Answer an equations checkpoint, then launch Vault Solver.",
+                        points_reward: 120,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
                     { id: "p5_s7", type: "tic_tac_toe_bot", question_topic: "equations", points_reward: 150, min_questions: 1, max_questions: 1 },
                     { id: "p5_s8", type: "arcade_action_with_pause", theme: "flappy_rocket", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
                     { id: "p5_s9", type: "arcade_action_with_pause", theme: "lunar_rover_jump", question_topic: "equations", points_reward: 200, min_questions: 5, max_questions: 8 },
@@ -1118,17 +1224,17 @@
         ];
 
         const planetProfiles = {
-            1: { name: "Prime Alpha", icon: "🪐", desc: "Number properties command center: factors, multiples, exponents, and operations mechanics.", theme: "garden", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_1_emerald_grove.png') }}", pathColor: "#ec4899", completedPathColor: "#4ade80" },
-            2: { name: "Gorilla Nebula", icon: "🦍", desc: "Fraction cliffs and decimal ravines across a dense jungle landing zone.", theme: "jungle", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_2_tundra_research.png') }}", pathColor: "#22d3ee", completedPathColor: "#bef264" },
-            3: { name: "Bathhouse Battle", icon: "♨️", desc: "Steam caverns and frozen pools mark the rational-number route.", theme: "frozen", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_3_crystal_extraction.png') }}", pathColor: "#93c5fd", completedPathColor: "#67e8f9" },
-            4: { name: "Tenting Trouble", icon: "⛺", desc: "A rocky ridge trail climbs through expression campsites and canyon tents.", theme: "rocky", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_4_fiery_geothermal.png') }}", pathColor: "#f97316", completedPathColor: "#fbbf24" },
-            5: { name: "Construction Canyon", icon: "🏗️", desc: "Industrial scaffold paths and steel plateaus shape the algebra route.", theme: "industrial", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_5_dunes_exploration.png') }}", pathColor: "#14b8a6", completedPathColor: "#34d399" },
-            6: { name: "Slo-Mo Valley", icon: "⏳", desc: "Wind-carved desert lanes stretch across ratio dunes and timing ridges.", theme: "desert", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_6_mystic_swamp.png') }}", pathColor: "#f59e0b", completedPathColor: "#fde047" },
-            7: { name: "Dumbo Beat", icon: "🐘", desc: "Savanna market trails turn percent models, tables, and discounts into expedition supplies.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_7_clockwork_central.png') }}", pathColor: "#84cc16", completedPathColor: "#bef264" },
-            8: { name: "Djinn's Revenge", icon: "🧞", desc: "Crystal dunes and glowing tile fields frame the area expedition.", theme: "crystal", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_8_whispering_woods.png') }}", pathColor: "#a78bfa", completedPathColor: "#c4b5fd" },
-            9: { name: "Safari Park", icon: "🦁", desc: "Wild habitat prisms make surface area and volume a hands-on supply mission.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_9_skyloft_citadel.png') }}", pathColor: "#fb923c", completedPathColor: "#facc15" },
-            10: { name: "The Mothership", icon: "🛸", desc: "A data-command finale uses statistical graphs to guide the crew home.", theme: "volcanic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_10_stargazer_command.png') }}", pathColor: "#ef4444", completedPathColor: "#fb7185" },
-            default: { name: "Learning Planet", icon: "🌌", desc: "Complete stations to earn points and unlock mastery.", theme: "cosmic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_galaxy_strip.png') }}", pathColor: "#38bdf8", completedPathColor: "#4ade80" }
+            1: { name: "Prime Alpha", icon: "🪐", desc: "Number properties command center: factors, multiples, exponents, and operations mechanics.", theme: "garden", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_1_emerald_grove.png') }}", pathColor: "none", completedPathColor: "none" },
+            2: { name: "Gorilla Nebula", icon: "🦍", desc: "Fraction cliffs and decimal ravines across a dense jungle landing zone.", theme: "jungle", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_2_tundra_research.png') }}", pathColor: "none", completedPathColor: "none" },
+            3: { name: "Bathhouse Battle", icon: "♨️", desc: "Steam caverns and frozen pools mark the rational-number route.", theme: "frozen", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_3_crystal_extraction.png') }}", pathColor: "none", completedPathColor: "none" },
+            4: { name: "Tenting Trouble", icon: "⛺", desc: "A rocky ridge trail climbs through expression campsites and canyon tents.", theme: "rocky", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_4_fiery_geothermal.png') }}", pathColor: "none", completedPathColor: "none" },
+            5: { name: "Construction Canyon", icon: "🏗️", desc: "Industrial scaffold paths and steel plateaus shape the algebra route.", theme: "industrial", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_5_dunes_exploration.png') }}", pathColor: "none", completedPathColor: "none" },
+            6: { name: "Slo-Mo Valley", icon: "⏳", desc: "Wind-carved desert lanes stretch across ratio dunes and timing ridges.", theme: "desert", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_6_mystic_swamp.png') }}", pathColor: "none", completedPathColor: "none" },
+            7: { name: "Dumbo Beat", icon: "🐘", desc: "Savanna market trails turn percent models, tables, and discounts into expedition supplies.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_7_clockwork_central.png') }}", pathColor: "none", completedPathColor: "none" },
+            8: { name: "Djinn's Revenge", icon: "🧞", desc: "Crystal dunes and glowing tile fields frame the area expedition.", theme: "crystal", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_8_whispering_woods.png') }}", pathColor: "none", completedPathColor: "none" },
+            9: { name: "Safari Park", icon: "🦁", desc: "Wild habitat prisms make surface area and volume a hands-on supply mission.", theme: "savanna", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_9_skyloft_citadel.png') }}", pathColor: "none", completedPathColor: "none" },
+            10: { name: "The Mothership", icon: "🛸", desc: "A data-command finale uses statistical graphs to guide the crew home.", theme: "volcanic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_10_stargazer_command.png') }}", pathColor: "none", completedPathColor: "none" },
+            default: { name: "Learning Planet", icon: "🌌", desc: "Complete stations to earn points and unlock mastery.", theme: "cosmic", bgImage: "{{ url_for('static', filename='img/planet_backgrounds/station_galaxy_strip.png') }}", pathColor: "none", completedPathColor: "none" }
         };
 
         const fallbackQuestions = [
@@ -1185,6 +1291,7 @@
 
         function stationNameFromActivity(activity, stationNum) {
             if (activity.title) return activity.title;
+            if (activity.type === 'game_portal') return activity.game_name || `Game Portal ${stationNum}`;
             if (activity.type === 'quick_facts') return `Warmup ${stationNum}`;
             if (activity.type === 'student_creation') return 'Alien Teacher Studio';
             if (activity.type === 'arcade_action_with_pause') return activity.theme === 'flappy_rocket' ? 'Flappy Rocket Bay' : 'Lunar Rover Jump Bay';
@@ -1212,6 +1319,7 @@
 
         function stationDescFromActivity(activity) {
             if (activity.description) return activity.description;
+            if (activity.type === 'game_portal') return `Complete the station quiz streak, and optionally launch ${activity.game_name} from the side button.`;
             if (activity.type === 'adaptive_practice') return 'A fresh curriculum challenge appears after every correct answer.';
             if (activity.type === 'math_snake') return 'Collect energy cells, avoid hazard cores, and solve a unit math question when a hazard is hit.';
             if (activity.type === 'student_creation') return 'Build a custom math problem for classmates and submit it to teacher review.';
@@ -1348,6 +1456,10 @@
                 loadQuickFacts(mBody, station, activity);
                 return;
             }
+            if (activity.type === 'game_portal') {
+                loadGamePortal(mBody, station, activity);
+                return;
+            }
             if (activity.type === 'coordinate_flight') {
                 loadCoordinateFlightEmbed(mBody, station, activity);
                 return;
@@ -1411,6 +1523,9 @@
             if (activity && activity.type === 'student_creation') {
                 return { required: 1, solved: 0, isSingle: true };
             }
+            if (activity && activity.type === 'game_portal') {
+                return { required: randomInt(4, 6), solved: 0, isSingle: false };
+            }
             const minQuestions = normalizeQuestionBound(activity && activity.min_questions, 5);
             const maxQuestions = normalizeQuestionBound(activity && activity.max_questions, 10);
             const safeMin = Math.min(minQuestions, maxQuestions);
@@ -1432,21 +1547,43 @@
             return list[Math.floor(Math.random() * list.length)];
         }
 
+        function pickChallengeVariant(variants) {
+            return pickRandom(variants)();
+        }
+
+        function makeGamePortal(id, title, gameName, gameUrl, topic, pointsReward, icon, description, challengeFactory) {
+            return {
+                id,
+                title,
+                type: 'game_portal',
+                game_name: gameName,
+                game_url: gameUrl,
+                game_topic: topic,
+                question_topic: topic,
+                game_icon: icon,
+                description,
+                points_reward: pointsReward || 150,
+                min_questions: 1,
+                max_questions: 1,
+                question_generator: challengeFactory,
+            };
+        }
+
         // Units 6-10 share a flexible practice shell, but every node names a distinct
         // skill and draws a new, grade-appropriate problem on every attempt.
         function buildLaterUnitCurriculum() {
             const units = [
                 { number: 6, id: 'ratios_rates', name: 'Slo-Mo Valley: Ratios & Rates', topic: 'ratios_rates', stations: [
-                    ['Ratio Relay', 'simplify_ratio'], ['Unit Rate Depot', 'unit_rate'], ['Ratio Table Trail', 'ratio_table'], ['Equivalent Ratio Forge', 'equivalent_ratio'], ['Better Buy Base', 'compare_rates'], ['Recipe Scale Lab', 'scale_recipe'], ['Proportion Portal', 'proportion'], ['Rate Graph Grid', 'rate_graph'], ['Ratio Word Quest', 'ratio_word']
+                    ['Ratio Relay', 'simplify_ratio'], ['Unit Rate Depot', 'unit_rate'], ['Ratio Table Trail', 'ratio_table'], ['Equivalent Ratio Forge', 'equivalent_ratio'], ['Better Buy Base', 'compare_rates'], makeGamePortal('p6_s6', 'Ratio River Crossing', 'Ratio River Crossing', "{{ url_for('ratio_river') }}", 'ratios_rates', 120, '🌊', 'Answer a ratio checkpoint, then launch Ratio River Crossing.'), ['Proportion Portal', 'proportion'], ['Rate Graph Grid', 'rate_graph'], ['Ratio Word Quest', 'ratio_word']
                 ] },
                 { number: 7, id: 'percents', name: 'Dumbo Beat: Percents', topic: 'percents', stations: [
-                    ['Percent Model Match', 'percent_model'], ['Percent Table Trek', 'percent_table'], ['Part of a Whole', 'percent_of'], ['Decimal Converter', 'decimal_percent'], ['Fraction Converter', 'fraction_percent'], ['Discount Dash', 'discount'], ['Tax Terminal', 'tax'], ['Tip Top-Up', 'tip'], ['Percent Increase Lab', 'percent_change']
+                    ['Percent Model Match', 'percent_model'], ['Percent Table Trek', 'percent_table'], ['Part of a Whole', 'percent_of'], ['Decimal Converter', 'decimal_percent'], ['Fraction Converter', 'fraction_percent'], makeGamePortal('p7_s6', 'Percentage Quest', 'Percentage Quest', "{{ url_for('percentage_quest') }}", 'percents', 120, '🐉', 'Answer a percent checkpoint, then launch Percentage Quest.'), ['Tax Terminal', 'tax'], ['Tip Top-Up', 'tip'], ['Percent Increase Lab', 'percent_change']
                 ] },
                 { number: 8, id: 'area', name: "Djinn's Revenge: Area", topic: 'area', stations: [
-                    ['Rectangle Tile Field', 'rectangle_area'], ['Triangle Tent Camp', 'triangle_area'], ['Parallelogram Platform', 'parallelogram_area'], ['Trapezoid Terrace', 'trapezoid_area'], ['Composite Courtyard', 'composite_area'], ['Missing Side Scanner', 'missing_dimension'], ['Coordinate Garden', 'coordinate_area'], ['Unit Conversion Plot', 'area_conversion'], ['Area Comparison Course', 'compare_area']
+                    ['Rectangle Tile Field', 'rectangle_area'], ['Triangle Tent Camp', 'triangle_area'], ['Parallelogram Platform', 'parallelogram_area'], ['Trapezoid Terrace', 'trapezoid_area'], ['Composite Courtyard', 'composite_area'], makeGamePortal('p8_s6', 'Area Explorer', 'Area Explorer', "{{ url_for('area_explorer') }}", 'area', 120, '📐', 'Answer an area checkpoint, then launch Area Explorer.'), ['Coordinate Garden', 'coordinate_area'], ['Unit Conversion Plot', 'area_conversion'], ['Area Comparison Course', 'compare_area']
                 ] },
                 { number: 9, id: 'surface_area_volume', name: 'Safari Park: Surface Area & Volume', topic: 'surface_area_volume', stations: [
-                    ['Prism Volume Habitat', 'rectangular_volume'], ['Cube Cargo Bay', 'cube_volume'], ['Surface Area Supply Crate', 'rectangular_surface_area'], ['Cube Net Workshop', 'cube_surface_area'], ['Base Area Tunnel', 'prism_base_area'], ['Water Tank Fill-Up', 'tank_volume'], ['Missing Dimension Dock', 'volume_missing_dimension'], ['Prism Comparison Trail', 'compare_volume'], ['Unit Cube Converter', 'volume_conversion']
+                    ['Prism Volume Habitat', 'rectangular_volume'], ['Cube Cargo Bay', 'cube_volume'], ['Surface Area Supply Crate', 'rectangular_surface_area'], ['Cube Net Workshop', 'cube_surface_area'], ['Base Area Tunnel', 'prism_base_area'], ['Water Tank Fill-Up', 'tank_volume'], ['Missing Dimension Dock', 'volume_missing_dimension'], ['Prism Comparison Trail', 'compare_volume'], makeGamePortal('p9_s9', 'Math Obstacle Course', 'Math Obstacle Course', "{{ url_for('obstacle_course') }}", 'number_properties', 120, '🛰️', 'Answer a mixed-review checkpoint, then launch Math Obstacle Course.')
                 ] },
                 { number: 10, id: 'statistical_graphs', name: 'The Mothership: Statistical Graphs', topic: 'statistical_graphs', stations: [
                     ['Mean Mission Control', 'mean'], ['Median Message', 'median'], ['Mode Monitor', 'mode'], ['Range Radar', 'range'], ['Bar Graph Bridge', 'bar_graph'], ['Dot Plot Deck', 'dot_plot'], ['Frequency Table Flight', 'frequency_table'], ['Data Comparison Console', 'data_compare'], ['Outlier Observatory', 'outlier']
@@ -1457,16 +1594,22 @@
                 unit_id: `planet_${unit.number}_${unit.id}`,
                 planet_name: unit.name,
                 activities: [
-                    ...unit.stations.map(([title, skill], index) => ({
-                        id: `p${unit.number}_s${index + 1}`,
-                        title,
-                        type: 'adaptive_practice',
-                        skill,
-                        points_reward: 100,
-                        min_questions: unit.number === 6 && index === 5 ? 7 : 4,
-                        max_questions: unit.number === 6 && index === 5 ? 7 : 6,
-                        question_generator: () => generateLaterUnitQuestion(unit.topic, skill)
-                    })),
+                    ...unit.stations.map((station, index) => {
+                        if (!Array.isArray(station)) {
+                            return station;
+                        }
+                        const [title, skill] = station;
+                        return {
+                            id: `p${unit.number}_s${index + 1}`,
+                            title,
+                            type: 'adaptive_practice',
+                            skill,
+                            points_reward: 100,
+                            min_questions: unit.number === 6 && index === 5 ? 7 : 4,
+                            max_questions: unit.number === 6 && index === 5 ? 7 : 6,
+                            question_generator: () => generateLaterUnitQuestion(unit.topic, skill)
+                        };
+                    }),
                     {
                         id: `p${unit.number}_s10`,
                         title: 'Math Snake Arena',
@@ -1499,66 +1642,177 @@
 
             if (topic === 'ratios_rates') {
                 const a = randomInt(2, 9), b = randomInt(2, 9), scale = randomInt(2, 6);
-                if (skill === 'simplify_ratio') return makeChallenge('Ratio Relay', `Simplify the ratio ${a * scale}:${b * scale}.`, `${a}:${b}`, `${a}_${b}_${scale}`, 'Divide both parts by their shared factor.');
-                if (skill === 'unit_rate') { const rate = randomInt(2, 12), count = randomInt(2, 8); return makeChallenge('Unit Rate Depot', `${rate * count} energy cells are packed into ${count} crates. How many cells are in 1 crate?`, rate, `${rate}_${count}`, 'Divide the total by the number of crates.'); }
-                if (skill === 'ratio_table') { const rate = randomInt(2, 10), count = randomInt(3, 9); return makeChallenge('Ratio Table Trail', `A ratio table starts at 1 pilot : ${rate} fuel packs. How many fuel packs match ${count} pilots?`, rate * count, `${rate}_${count}`, 'Keep the rate per one pilot constant.'); }
-                if (skill === 'equivalent_ratio') return makeChallenge('Equivalent Ratio Forge', `${a}:${b} = ${a * scale}:?. Fill the missing value.`, b * scale, `${a}_${b}_${scale}`, 'Multiply both parts of a ratio by the same factor.');
-                if (skill === 'compare_rates') { const r1 = randomInt(4, 12), r2 = randomInt(2, r1 - 1); return makeChallenge('Better Buy Base', `Pack A has ${r1} batteries per box. Pack B has ${r2} batteries per box. Type A or B for the better rate.`, 'A', `${r1}_${r2}`, 'Compare how much is in one box.'); }
-                if (skill === 'scale_recipe') { const cups = randomInt(2, 5), batches = randomInt(2, 6); return makeChallenge('Recipe Scale Lab', `One batch needs ${cups} cups of water. How many cups are needed for ${batches} batches?`, cups * batches, `${cups}_${batches}`, 'Multiply the amount for one batch by the number of batches.'); }
-                if (skill === 'proportion') { const per = randomInt(2, 9), groups = randomInt(2, 8); return makeChallenge('Proportion Portal', `${per} star maps cost ${per * groups} credits. How many star maps can ${per * groups * 2} credits buy at the same rate?`, groups * 2, `${per}_${groups}`, 'Find the cost of one map, then scale up.'); }
-                if (skill === 'rate_graph') { const rate = randomInt(2, 8), hours = randomInt(2, 10); return makeChallenge('Rate Graph Grid', `A graph follows y = ${rate}x. What is y when x = ${hours}?`, rate * hours, `${rate}_${hours}`, 'Multiply the rate by x.'); }
-                { const red = randomInt(2, 8), blue = randomInt(2, 8), scaleWord = randomInt(2, 5); return makeChallenge('Ratio Word Quest', `A rover uses ${red} red chips for every ${blue} blue chips. If it uses ${red * scaleWord} red chips, how many blue chips does it use?`, blue * scaleWord, `${red}_${blue}_${scaleWord}`, 'Use the same scale factor for each part of the ratio.'); }
+                if (skill === 'simplify_ratio') return pickChallengeVariant([
+                    () => makeChallenge('Ratio Relay', `Simplify the ratio ${a * scale}:${b * scale}.`, `${a}:${b}`, `${a}_${b}_${scale}`, 'Divide both parts by their shared factor.'),
+                    () => makeChallenge('Snack Shop Ratio', 'If there are 12 apples for every 18 oranges, what is the simplest ratio of apples to oranges?', '2:3', '12_18', 'Divide both parts by 6.')
+                ]);
+                if (skill === 'unit_rate') { const rate = randomInt(2, 12), count = randomInt(2, 8); return pickChallengeVariant([
+                    () => makeChallenge('Unit Rate Depot', `${rate * count} energy cells are packed into ${count} crates. How many cells are in 1 crate?`, rate, `${rate}_${count}`, 'Divide the total by the number of crates.'),
+                    () => makeChallenge('Fuel Gauge Flash', 'A car travels 180 miles in 3 hours. At this same average speed, how far will it travel in 5 hours?', 300, '180_3_5', 'Find the miles per hour, then multiply by 5.')
+                ]); }
+                if (skill === 'ratio_table') { const rate = randomInt(2, 10), count = randomInt(3, 9); return pickChallengeVariant([
+                    () => makeChallenge('Ratio Table Trail', `A ratio table starts at 1 pilot : ${rate} fuel packs. How many fuel packs match ${count} pilots?`, rate * count, `${rate}_${count}`, 'Keep the rate per one pilot constant.'),
+                    () => makeChallenge('Recipe Table Run', `A recipe uses 2 cups of rice for 3 bowls. How many cups are needed for ${count} bowls?`, 2 * count / 3, `recipe_${count}`, 'Scale the ratio table by the same factor.')
+                ]); }
+                if (skill === 'equivalent_ratio') return pickChallengeVariant([
+                    () => makeChallenge('Equivalent Ratio Forge', `${a}:${b} = ${a * scale}:?. Fill the missing value.`, b * scale, `${a}_${b}_${scale}`, 'Multiply both parts of a ratio by the same factor.'),
+                    () => makeChallenge('Beacon Pairing', 'Write an equivalent ratio to 4:6 by multiplying both terms by 2.', '8:12', '4_6_2', 'Use the same multiplier on both numbers.')
+                ]);
+                if (skill === 'compare_rates') { const r1 = randomInt(4, 12), r2 = randomInt(2, r1 - 1); return pickChallengeVariant([
+                    () => makeChallenge('Better Buy Base', `Pack A has ${r1} batteries per box. Pack B has ${r2} batteries per box. Type A or B for the better rate.`, 'A', `${r1}_${r2}`, 'Compare how much is in one box.'),
+                    () => makeChallenge('Price Check Point', 'Which is the better deal: 4 avocados for $5.00 or 6 avocados for $7.20?', '4 avocados for $5.00', 'avocados_deal', 'Find and compare the unit price for each option.')
+                ]); }
+                if (skill === 'scale_recipe') { const cups = randomInt(2, 5), batches = randomInt(2, 6); return pickChallengeVariant([
+                    () => makeChallenge('Recipe Scale Lab', `One batch needs ${cups} cups of water. How many cups are needed for ${batches} batches?`, cups * batches, `${cups}_${batches}`, 'Multiply the amount for one batch by the number of batches.'),
+                    () => makeChallenge('Hot Dog Helper', 'Hot dog buns come in packs of 8 and hot dogs come in packs of 10. What is the least number of each you need for the same amount?', 40, 'hot_dog_recipe', 'Find the least common multiple of 8 and 10.')
+                ]); }
+                if (skill === 'proportion') { const per = randomInt(2, 9), groups = randomInt(2, 8); return pickChallengeVariant([
+                    () => makeChallenge('Proportion Portal', `${per} star maps cost ${per * groups} credits. How many star maps can ${per * groups * 2} credits buy at the same rate?`, groups * 2, `${per}_${groups}`, 'Find the cost of one map, then scale up.'),
+                    () => makeChallenge('Scaled Supply Line', 'If 3 crates hold 12 tools, how many tools are in 9 crates?', 36, '3_12_9', 'Set up an equivalent ratio and scale it.')
+                ]); }
+                if (skill === 'rate_graph') { const rate = randomInt(2, 8), hours = randomInt(2, 10); return pickChallengeVariant([
+                    () => makeChallenge('Rate Graph Grid', `A graph follows y = ${rate}x. What is y when x = ${hours}?`, rate * hours, `${rate}_${hours}`, 'Multiply the rate by x.'),
+                    () => makeChallenge('Travel Graph Test', 'A line shows 6 miles per hour. What distance is covered in 4 hours?', 24, '6_4', 'Multiply the unit rate by the number of hours.')
+                ]); }
+                return pickChallengeVariant([
+                    () => {
+                        const red = randomInt(2, 8), blue = randomInt(2, 8), scaleWord = randomInt(2, 5);
+                        return makeChallenge('Ratio Word Quest', `A rover uses ${red} red chips for every ${blue} blue chips. If it uses ${red * scaleWord} red chips, how many blue chips does it use?`, blue * scaleWord, `${red}_${blue}_${scaleWord}`, 'Use the same scale factor for each part of the ratio.');
+                    },
+                    () => makeChallenge('Shared Pack Puzzle', 'Two crates keep a ratio of 3 red bolts to 5 blue bolts. If there are 12 red bolts, how many blue bolts are there?', 20, '3_5_12', 'Find the scale factor from 3 to 12.')
+                ]);
             }
 
             if (topic === 'percents') {
                 const percent = pickRandom([10, 20, 25, 30, 40, 50, 60, 75]);
-                if (skill === 'percent_model') return makeChallenge('Percent Model Match', `A 100-square model has ${percent} shaded squares. What percent is shaded?`, `${percent}%`, `${percent}`, 'Out of 100, the shaded count is the percent.');
-                if (skill === 'percent_table') { const whole = pickRandom([20, 40, 60, 80, 100]), part = Math.round(whole * percent / 100); return makeChallenge('Percent Table Trek', `Complete the table: ${part} out of ${whole} is what percent?`, `${percent}%`, `${whole}_${percent}`, 'Part divided by whole, then multiply by 100.'); }
-                if (skill === 'percent_of') { const whole = pickRandom([20, 40, 60, 80, 100, 120]), part = Math.round(whole * percent / 100); return makeChallenge('Part of a Whole', `Find ${percent}% of ${whole}.`, part, `${whole}_${percent}`, 'Change the percent to a decimal and multiply.'); }
-                if (skill === 'decimal_percent') { const decimal = percent / 100; return makeChallenge('Decimal Converter', `Write ${decimal} as a percent.`, `${percent}%`, `${percent}`, 'Move the decimal point two places right.'); }
-                if (skill === 'fraction_percent') { const numerator = pickRandom([1, 1, 1, 3, 1]), denominator = numerator === 3 ? 4 : pickRandom([2, 4, 5, 10]); const value = numerator / denominator * 100; return makeChallenge('Fraction Converter', `Write ${numerator}/${denominator} as a percent.`, `${value}%`, `${numerator}_${denominator}`, 'Divide, then multiply by 100.'); }
-                if (skill === 'discount') { const price = pickRandom([20, 40, 60, 80, 100]), off = pickRandom([10, 20, 25, 50]); return makeChallenge('Discount Dash', `A ${price}-credit item is ${off}% off. What is the discount amount?`, price * off / 100, `${price}_${off}`, 'Find the percent of the original price.'); }
-                if (skill === 'tax') { const price = pickRandom([20, 40, 60, 80]), tax = pickRandom([5, 10, 15]); return makeChallenge('Tax Terminal', `A ${price}-credit item has ${tax}% tax. What is the tax amount?`, price * tax / 100, `${price}_${tax}`, 'Find the percent of the original price.'); }
-                if (skill === 'tip') { const bill = pickRandom([20, 40, 60, 80]), tip = pickRandom([10, 15, 20, 25]); return makeChallenge('Tip Top-Up', `What is a ${tip}% tip on a ${bill}-credit bill?`, bill * tip / 100, `${bill}_${tip}`, 'Multiply the bill by the percent as a decimal.'); }
-                { const start = pickRandom([20, 40, 60, 80]), increase = pickRandom([10, 25, 50]); return makeChallenge('Percent Increase Lab', `A supply count of ${start} increases by ${increase}%. What is the increase amount?`, start * increase / 100, `${start}_${increase}`, 'Find the stated percent of the starting amount.'); }
+                if (skill === 'percent_model') return pickChallengeVariant([
+                    () => makeChallenge('Percent Model Match', `A 100-square model has ${percent} shaded squares. What percent is shaded?`, `${percent}%`, `${percent}`, 'Out of 100, the shaded count is the percent.'),
+                    () => makeChallenge('Poster Progress', 'A poster has 30 of 100 squares colored in. What percent is shaded?', '30%', '30_percent_model', 'Count shaded out of 100.')
+                ]);
+                if (skill === 'percent_table') { const whole = pickRandom([20, 40, 60, 80, 100]), part = Math.round(whole * percent / 100); return pickChallengeVariant([
+                    () => makeChallenge('Percent Table Trek', `Complete the table: ${part} out of ${whole} is what percent?`, `${percent}%`, `${whole}_${percent}`, 'Part divided by whole, then multiply by 100.'),
+                    () => makeChallenge('Work Backward Table', '15 is exactly 25% of what number?', 60, '15_25', 'Divide the part by the percent written as a decimal.')
+                ]); }
+                if (skill === 'percent_of') { const whole = pickRandom([20, 40, 60, 80, 100, 120]), part = Math.round(whole * percent / 100); return pickChallengeVariant([
+                    () => makeChallenge('Part of a Whole', `Find ${percent}% of ${whole}.`, part, `${whole}_${percent}`, 'Change the percent to a decimal and multiply.'),
+                    () => makeChallenge('Shopping Cart Percent', 'What is 30% of 150?', 45, '30_150', 'Multiply 150 by 0.30.')
+                ]); }
+                if (skill === 'decimal_percent') { const decimal = percent / 100; return pickChallengeVariant([
+                    () => makeChallenge('Decimal Converter', `Write ${decimal} as a percent.`, `${percent}%`, `${percent}`, 'Move the decimal point two places right.'),
+                    () => makeChallenge('Sale Sign Swap', 'Write 0.75 as a percent.', '75%', '0_75_percent', 'Move the decimal two places to the right.')
+                ]); }
+                if (skill === 'fraction_percent') { const numerator = pickRandom([1, 1, 1, 3, 1]), denominator = numerator === 3 ? 4 : pickRandom([2, 4, 5, 10]); const value = numerator / denominator * 100; return pickChallengeVariant([
+                    () => makeChallenge('Fraction Converter', `Write ${numerator}/${denominator} as a percent.`, `${value}%`, `${numerator}_${denominator}`, 'Divide, then multiply by 100.'),
+                    () => makeChallenge('Pie Chart Percent', 'Write 1/4 as a percent.', '25%', '1_4_percent', 'One fourth is 25 out of 100.')
+                ]); }
+                if (skill === 'discount') { const price = pickRandom([20, 40, 60, 80, 100]), off = pickRandom([10, 20, 25, 50]); return pickChallengeVariant([
+                    () => makeChallenge('Discount Dash', `A ${price}-credit item is ${off}% off. What is the discount amount?`, price * off / 100, `${price}_${off}`, 'Find the percent of the original price.'),
+                    () => makeChallenge('Headphones Sale', 'A pair of headphones normally costs $60 but is on sale for 20% off. What is the final sale price after the discount?', 48, '60_20', 'Find 20% of 60, then subtract it from 60.')
+                ]); }
+                if (skill === 'tax') { const price = pickRandom([20, 40, 60, 80]), tax = pickRandom([5, 10, 15]); return pickChallengeVariant([
+                    () => makeChallenge('Tax Terminal', `A ${price}-credit item has ${tax}% tax. What is the tax amount?`, price * tax / 100, `${price}_${tax}`, 'Find the percent of the original price.'),
+                    () => makeChallenge('Register Receipt', 'What is a 10% tax on a $40 purchase?', 4, '40_10_tax', 'Multiply 40 by 0.10.')
+                ]); }
+                if (skill === 'tip') { const bill = pickRandom([20, 40, 60, 80]), tip = pickRandom([10, 15, 20, 25]); return pickChallengeVariant([
+                    () => makeChallenge('Tip Top-Up', `What is a ${tip}% tip on a ${bill}-credit bill?`, bill * tip / 100, `${bill}_${tip}`, 'Multiply the bill by the percent as a decimal.'),
+                    () => makeChallenge('Cafe Tip', 'What is 15% of a $30 bill?', 4.5, '30_15_tip', 'Multiply 30 by 0.15.')
+                ]); }
+                return pickChallengeVariant([
+                    () => {
+                        const start = pickRandom([20, 40, 60, 80]), increase = pickRandom([10, 25, 50]);
+                        return makeChallenge('Percent Increase Lab', `A supply count of ${start} increases by ${increase}%. What is the increase amount?`, start * increase / 100, `${start}_${increase}`, 'Find the stated percent of the starting amount.');
+                    },
+                    () => makeChallenge('Percent Whole Check', 'A new value is 120 after a 20% increase. What was the original amount?', 100, '120_20', 'Work backward by dividing by 1.20.')
+                ]);
             }
 
             if (topic === 'area') {
                 const length = randomInt(4, 14), width = randomInt(3, 10), height = randomInt(3, 12);
-                if (skill === 'rectangle_area') return makeChallenge('Rectangle Tile Field', `Find the area of a rectangle with length ${length} units and width ${width} units.`, length * width, `${length}_${width}`, 'Area = length times width.');
-                if (skill === 'triangle_area') return makeChallenge('Triangle Tent Camp', `Find the area of a triangle with base ${length} units and height ${height} units.`, length * height / 2, `${length}_${height}`, 'Area = one-half times base times height.');
+                if (skill === 'rectangle_area') return pickChallengeVariant([
+                    () => makeChallenge('Rectangle Tile Field', `Find the area of a rectangle with length ${length} units and width ${width} units.`, length * width, `${length}_${width}`, 'Area = length times width.'),
+                    () => makeChallenge('Window Pane Check', 'Draw a polygon on a coordinate plane with vertices at (1, 1), (1, 6), (5, 6), and (5, 1). Name the shape and calculate its area.', 20, '1_1_1_6_5_6_5_1', 'The shape is a rectangle.')
+                ]);
+                if (skill === 'triangle_area') return pickChallengeVariant([
+                    () => makeChallenge('Triangle Tent Camp', `Find the area of a triangle with base ${length} units and height ${height} units.`, length * height / 2, `${length}_${height}`, 'Area = one-half times base times height.'),
+                    () => makeChallenge('Camping Flysheet', 'Find the area of a triangle with a base of 14 cm and a height of 8 cm.', 56, '14_8_triangle', 'Multiply base by height, then divide by 2.')
+                ]);
                 if (skill === 'parallelogram_area') return makeChallenge('Parallelogram Platform', `Find the area of a parallelogram with base ${length} units and height ${height} units.`, length * height, `${length}_${height}`, 'Area = base times perpendicular height.');
-                if (skill === 'trapezoid_area') { const base2 = randomInt(4, 14); return makeChallenge('Trapezoid Terrace', `Find the area of a trapezoid with bases ${length} and ${base2} units and height ${height} units.`, (length + base2) * height / 2, `${length}_${base2}_${height}`, 'Average the bases, then multiply by height.'); }
+                if (skill === 'trapezoid_area') { const base2 = randomInt(4, 14); return pickChallengeVariant([
+                    () => makeChallenge('Trapezoid Terrace', `Find the area of a trapezoid with bases ${length} and ${base2} units and height ${height} units.`, (length + base2) * height / 2, `${length}_${base2}_${height}`, 'Average the bases, then multiply by height.'),
+                    () => makeChallenge('Painted Wall', 'You are painting a wall shaped like a trapezoid. The top base is 10 ft, the bottom base is 14 ft, and the height is 8 ft. How many square feet of paint do you need to cover the wall?', 96, '10_14_8_paint', 'Use the trapezoid area formula.')
+                ]); }
                 if (skill === 'composite_area') { const extra = randomInt(2, 8); return makeChallenge('Composite Courtyard', `A courtyard has two non-overlapping rectangles: ${length} by ${width}, and ${extra} by ${width}. What is the total area?`, (length + extra) * width, `${length}_${width}_${extra}`, 'Find both rectangle areas and add them.'); }
                 if (skill === 'missing_dimension') { const area = length * width; return makeChallenge('Missing Side Scanner', `A rectangle has area ${area} square units and width ${width} units. What is its length?`, length, `${length}_${width}`, 'Divide area by the known side length.'); }
-                if (skill === 'coordinate_area') { const x = randomInt(3, 10), y = randomInt(3, 10); return makeChallenge('Coordinate Garden', `A rectangle has corners (0,0), (${x},0), (${x},${y}), and (0,${y}). What is its area?`, x * y, `${x}_${y}`, 'Use the horizontal and vertical side lengths.'); }
+                if (skill === 'coordinate_area') { const x = randomInt(3, 10), y = randomInt(3, 10); return pickChallengeVariant([
+                    () => makeChallenge('Coordinate Garden', `A rectangle has corners (0,0), (${x},0), (${x},${y}), and (0,${y}). What is its area?`, x * y, `${x}_${y}`, 'Use the horizontal and vertical side lengths.'),
+                    () => makeChallenge('Polygon Plot', 'Draw a polygon on a coordinate plane with vertices at (1, 1), (1, 6), (5, 6), and (5, 1). Name the shape and calculate its area.', 20, '1_1_1_6_5_6_5_1', 'The shape is a rectangle.')
+                ]); }
                 if (skill === 'area_conversion') { const side = randomInt(2, 9); return makeChallenge('Unit Conversion Plot', `A square has side length ${side} meters. What is its area in square meters?`, side * side, `${side}`, 'Square the side length.'); }
-                { const areaA = length * width, areaB = randomInt(2, 8) * randomInt(2, 8); return makeChallenge('Area Comparison Course', `Rectangle A has area ${areaA}. Rectangle B has area ${areaB}. Type A or B for the larger area.`, areaA >= areaB ? 'A' : 'B', `${areaA}_${areaB}`, 'Compare the two area values.'); }
+                return pickChallengeVariant([
+                    () => {
+                        const areaA = length * width, areaB = randomInt(2, 8) * randomInt(2, 8);
+                        return makeChallenge('Area Comparison Course', `Rectangle A has area ${areaA}. Rectangle B has area ${areaB}. Type A or B for the larger area.`, areaA >= areaB ? 'A' : 'B', `${areaA}_${areaB}`, 'Compare the two area values.');
+                    },
+                    () => makeChallenge('Area Check', 'Which shape has the larger area: a 4 by 5 rectangle or a 3 by 8 rectangle?', 'B', '4_5_3_8', 'Compute each area and compare.')
+                ]);
             }
 
             if (topic === 'surface_area_volume') {
                 const l = randomInt(3, 10), w = randomInt(2, 8), h = randomInt(2, 8);
-                if (skill === 'rectangular_volume') return makeChallenge('Prism Volume Habitat', `Find the volume of a rectangular prism: ${l} by ${w} by ${h} units.`, l * w * h, `${l}_${w}_${h}`, 'Volume = length times width times height.');
-                if (skill === 'cube_volume') { const side = randomInt(2, 9); return makeChallenge('Cube Cargo Bay', `Find the volume of a cube with side length ${side} units.`, side ** 3, `${side}`, 'A cube has three equal dimensions.'); }
+                if (skill === 'rectangular_volume') return pickChallengeVariant([
+                    () => makeChallenge('Prism Volume Habitat', `Find the volume of a rectangular prism: ${l} by ${w} by ${h} units.`, l * w * h, `${l}_${w}_${h}`, 'Volume = length times width times height.'),
+                    () => makeChallenge('Fish Tank Fill-Up', 'A fish tank shaped like a rectangular prism needs to hold water. If the single tank is 20 inches long, 10 inches wide, and 12 inches tall, what is its maximum volume?', 2400, '20_10_12', 'Multiply all three dimensions.')
+                ]);
+                if (skill === 'cube_volume') { const side = randomInt(2, 9); return pickChallengeVariant([
+                    () => makeChallenge('Cube Cargo Bay', `Find the volume of a cube with side length ${side} units.`, side ** 3, `${side}`, 'A cube has three equal dimensions.'),
+                    () => makeChallenge('Storage Cube', 'Find the volume of a cube with side length 5 units.', 125, '5_cube_volume', 'Multiply the side length three times.')
+                ]); }
                 if (skill === 'rectangular_surface_area') return makeChallenge('Surface Area Supply Crate', `Find the surface area of a ${l} by ${w} by ${h} rectangular prism.`, 2 * (l * w + l * h + w * h), `${l}_${w}_${h}`, 'Add the areas of all six faces.');
                 if (skill === 'cube_surface_area') { const side = randomInt(2, 9); return makeChallenge('Cube Net Workshop', `Find the surface area of a cube with side length ${side} units.`, 6 * side * side, `${side}`, 'A cube has six congruent square faces.'); }
                 if (skill === 'prism_base_area') { const baseArea = l * w; return makeChallenge('Base Area Tunnel', `A prism has base area ${baseArea} square units and height ${h} units. What is its volume?`, baseArea * h, `${baseArea}_${h}`, 'Volume = base area times height.'); }
-                if (skill === 'tank_volume') return makeChallenge('Water Tank Fill-Up', `A tank is ${l} m by ${w} m by ${h} m. How many cubic meters can it hold?`, l * w * h, `${l}_${w}_${h}`, 'Multiply all three dimensions.');
+                if (skill === 'tank_volume') return pickChallengeVariant([
+                    () => makeChallenge('Water Tank Fill-Up', `A tank is ${l} m by ${w} m by ${h} m. How many cubic meters can it hold?`, l * w * h, `${l}_${w}_${h}`, 'Multiply all three dimensions.'),
+                    () => makeChallenge('Aquarium Capacity', 'A rectangular fish tank measures 20 inches by 10 inches by 12 inches. What is its volume?', 2400, '20_10_12_aquarium', 'Multiply length, width, and height.')
+                ]);
                 if (skill === 'volume_missing_dimension') { const volume = l * w * h; return makeChallenge('Missing Dimension Dock', `A prism has volume ${volume}, length ${l}, and width ${w}. What is its height?`, h, `${l}_${w}_${h}`, 'Divide volume by length times width.'); }
                 if (skill === 'compare_volume') { const other = randomInt(3, 9) * randomInt(2, 7) * randomInt(2, 7); const current = l * w * h; return makeChallenge('Prism Comparison Trail', `Prism A has volume ${current}. Prism B has volume ${other}. Type A or B for the larger volume.`, current >= other ? 'A' : 'B', `${current}_${other}`, 'Compare the cubic-unit totals.'); }
-                { const side = randomInt(2, 8); return makeChallenge('Unit Cube Converter', `A cube is built from ${side} layers of ${side} by ${side} unit cubes. How many unit cubes are used?`, side ** 3, `${side}`, 'Multiply side length three times.'); }
+                return pickChallengeVariant([
+                    () => {
+                        const side = randomInt(2, 8);
+                        return makeChallenge('Unit Cube Converter', `A cube is built from ${side} layers of ${side} by ${side} unit cubes. How many unit cubes are used?`, side ** 3, `${side}`, 'Multiply side length three times.');
+                    },
+                    () => makeChallenge('Cardboard Box Net', 'A cardboard delivery box is a single rectangular prism measuring 3 ft by 2 ft by 2 ft. If you unfold the box into a 2D net, what is the total surface area of the cardboard used?', 32, '3_2_2_net', 'Find the area of all six faces.')
+                ]);
             }
 
             const values = Array.from({ length: 5 }, () => randomInt(2, 18));
-            if (skill === 'mean') { const base = randomInt(3, 14); const offsets = [-2, -1, 0, 1, 2]; const list = offsets.map((offset) => base + offset); return makeChallenge('Mean Mission Control', `Find the mean of: ${list.join(', ')}.`, base, list.join('_'), 'Add the values and divide by how many there are.'); }
-            if (skill === 'median') { const list = values.sort((a, b) => a - b); return makeChallenge('Median Message', `Find the median of: ${list.join(', ')}.`, list[2], list.join('_'), 'The median is the middle value after sorting.'); }
-            if (skill === 'mode') { const repeated = randomInt(3, 12); const list = [repeated, repeated, repeated, randomInt(13, 20), randomInt(21, 28)]; return makeChallenge('Mode Monitor', `Find the mode of: ${list.sort(() => Math.random() - 0.5).join(', ')}.`, repeated, `${repeated}_${list.join('_')}`, 'The mode appears most often.'); }
-            if (skill === 'range') { const low = randomInt(2, 8), high = randomInt(14, 25); return makeChallenge('Range Radar', `Find the range of: ${low}, ${randomInt(low + 1, high - 1)}, ${high}.`, high - low, `${low}_${high}`, 'Subtract smallest from largest.'); }
+            if (skill === 'mean') { const base = randomInt(3, 14); const offsets = [-2, -1, 0, 1, 2]; const list = offsets.map((offset) => base + offset); return pickChallengeVariant([
+                () => makeChallenge('Mean Mission Control', `Find the mean of: ${list.join(', ')}.`, base, list.join('_'), 'Add the values and divide by how many there are.'),
+                () => makeChallenge('Test Score Target', 'A student’s test scores are 85, 90, and 88. What exact score do they need on their fourth test to have a mean of exactly 90?', 97, '85_90_88_4', 'Use the target mean to find the missing sum.')
+            ]); }
+            if (skill === 'median') { const list = values.sort((a, b) => a - b); return pickChallengeVariant([
+                () => makeChallenge('Median Message', `Find the median of: ${list.join(', ')}.`, list[2], list.join('_'), 'The median is the middle value after sorting.'),
+                () => makeChallenge('Sleep Survey Median', 'Find the median of: 6, 8, 7, 5, 9.', 7, '6_8_7_5_9', 'Sort the list first.')
+            ]); }
+            if (skill === 'mode') { const repeated = randomInt(3, 12); const list = [repeated, repeated, repeated, randomInt(13, 20), randomInt(21, 28)]; return pickChallengeVariant([
+                () => makeChallenge('Mode Monitor', `Find the mode of: ${list.sort(() => Math.random() - 0.5).join(', ')}.`, repeated, `${repeated}_${list.join('_')}`, 'The mode appears most often.'),
+                () => makeChallenge('Most Common Value', 'Which value appears most often in 4, 8, 8, 10, 15?', 8, '4_8_8_10_15', 'Look for the repeated value.')
+            ]); }
+            if (skill === 'range') { const low = randomInt(2, 8), high = randomInt(14, 25); return pickChallengeVariant([
+                () => makeChallenge('Range Radar', `Find the range of: ${low}, ${randomInt(low + 1, high - 1)}, ${high}.`, high - low, `${low}_${high}`, 'Subtract smallest from largest.'),
+                () => makeChallenge('Spread Check', 'Find the range of 3, 7, 10, 12.', 9, '3_7_10_12', 'Subtract 3 from 12.')
+            ]); }
             if (skill === 'bar_graph') { const a = randomInt(4, 12), b = randomInt(4, 12), c = randomInt(4, 12); return makeChallenge('Bar Graph Bridge', `A bar graph shows Rover A: ${a}, Rover B: ${b}, Rover C: ${c}. What is the total?`, a + b + c, `${a}_${b}_${c}`, 'Add all bar heights.'); }
             if (skill === 'dot_plot') { const dotValue = randomInt(2, 12), count = randomInt(3, 7); return makeChallenge('Dot Plot Deck', `A dot plot has ${count} dots above ${dotValue}. What is the total of those data values?`, dotValue * count, `${dotValue}_${count}`, 'Repeated values add together.'); }
             if (skill === 'frequency_table') { const frequency = randomInt(3, 9), value = randomInt(2, 12); return makeChallenge('Frequency Table Flight', `A frequency table lists value ${value} with frequency ${frequency}. What is the total contribution?`, value * frequency, `${value}_${frequency}`, 'Multiply value by frequency.'); }
-            if (skill === 'data_compare') { const a = randomInt(8, 20), b = randomInt(2, a - 1); return makeChallenge('Data Comparison Console', `Dataset A has mean ${a}; Dataset B has mean ${b}. Type A or B for the larger mean.`, 'A', `${a}_${b}`, 'Compare the mean values.'); }
-            { const normal = randomInt(4, 10), outlier = randomInt(25, 40); return makeChallenge('Outlier Observatory', `Which value is the outlier in: ${normal - 1}, ${normal}, ${normal + 1}, ${outlier}?`, outlier, `${normal}_${outlier}`, 'Look for the value far from the cluster.'); }
+            if (skill === 'data_compare') { const a = randomInt(8, 20), b = randomInt(2, a - 1); return pickChallengeVariant([
+                () => makeChallenge('Data Comparison Console', `Dataset A has mean ${a}; Dataset B has mean ${b}. Type A or B for the larger mean.`, 'A', `${a}_${b}`, 'Compare the mean values.'),
+                () => makeChallenge('Statistical Question Check', 'Explain why “How many days are in a week?” is not a statistical question, but “How many hours of sleep do 6th graders get?” is.', 'It has variable answers / It varies by student', 'statistical_question', 'Statistical questions expect variability in the data.')
+            ]); }
+            return pickChallengeVariant([
+                () => { const normal = randomInt(4, 10), outlier = randomInt(25, 40); return makeChallenge('Outlier Observatory', `Which value is the outlier in: ${normal - 1}, ${normal}, ${normal + 1}, ${outlier}?`, outlier, `${normal}_${outlier}`, 'Look for the value far from the cluster.'); },
+                () => makeChallenge('Data Review', 'Explain why 4, 8, 8, 10, 15 has a mode but 6, 7, 8, 9, 10 does not.', 'The first set repeats 8', 'mode_review', 'A mode is the value that appears most often.')
+            ]);
         }
 
         // ---------------------------------------------------------------
@@ -1664,33 +1918,82 @@
         // wrap-up question, and (as a fallback) the obstacle course checkpoints.
         function buildShooterCheckpoint(topic) {
             if (topic === 'number_properties') {
-                const a = randomInt(2, 12), b = randomInt(2, 9), c = randomInt(2, 9);
-                return { prompt: `Checkpoint: ${a} + ${b} \u00d7 ${c} = ?`, answer: String(a + b * c), hint: 'Multiply before you add (order of operations).' };
+                return pickChallengeVariant([
+                    () => {
+                        const a = randomInt(2, 12), b = randomInt(2, 9), c = randomInt(2, 9);
+                        return { prompt: `Checkpoint: ${a} + ${b} \u00d7 ${c} = ?`, answer: String(a + b * c), hint: 'Multiply before you add (order of operations).' };
+                    },
+                    () => ({ prompt: 'Checkpoint: Find the prime factorization of 72.', answer: '2, 2, 2, 3, 3', hint: 'Keep dividing by the smallest prime numbers.' }),
+                    () => ({ prompt: 'Checkpoint: Hot dogs come in packs of 10 and buns come in packs of 8. What is the least number of each you need to buy to have an equal amount?', answer: '40', hint: 'Find the least common multiple of 10 and 8.' })
+                ]);
             }
             if (topic === 'fractions_decimals') {
-                const whole = randomInt(1, 9);
-                const tenth = randomInt(1, 9);
-                return { prompt: `Checkpoint: How many tenths are in ${whole}.${tenth}?`, answer: String(whole * 10 + tenth), hint: `Multiply ${whole}.${tenth} by 10.` };
+                return pickChallengeVariant([
+                    () => {
+                        const whole = randomInt(1, 9);
+                        const tenth = randomInt(1, 9);
+                        return { prompt: `Checkpoint: How many tenths are in ${whole}.${tenth}?`, answer: String(whole * 10 + tenth), hint: `Multiply ${whole}.${tenth} by 10.` };
+                    },
+                    () => ({ prompt: 'Checkpoint: Divide 4.5 by 0.5.', answer: '9', hint: 'Dividing by 0.5 is the same as multiplying by 2.' }),
+                    () => ({ prompt: 'Checkpoint: A cookie recipe calls for 1 3/4 cups of flour. If you want to make exactly half of the recipe, how much flour do you need?', answer: '7/8', hint: 'Multiply 1 3/4 by 1/2.' }),
+                    () => ({ prompt: 'Checkpoint: When adding 3.4 and 12.85, a student got 13.19. What is the correct sum?', answer: '16.25', hint: 'Line up the decimal points before adding.' })
+                ]);
             }
             if (topic === 'rational_numbers') {
-                const a = randomInt(-9, -1);
-                const b = randomInt(2, 9);
-                return { prompt: `Checkpoint: ${a} \u00d7 ${b} = ?`, answer: String(a * b), hint: 'A negative times a positive is negative.' };
+                return pickChallengeVariant([
+                    () => {
+                        const a = randomInt(-9, -1);
+                        const b = randomInt(2, 9);
+                        return { prompt: `Checkpoint: ${a} \u00d7 ${b} = ?`, answer: String(a * b), hint: 'A negative times a positive is negative.' };
+                    },
+                    () => ({ prompt: 'Checkpoint: Compare the rational numbers using <, >, or = : -8 ___ -12.', answer: '>', hint: 'The number closer to zero is greater.' }),
+                    () => ({ prompt: 'Checkpoint: Plot the point (-4, 3) on a coordinate plane. If you reflect this point across the y-axis, what are the new coordinates?', answer: '(4, 3)', hint: 'Reflection across the y-axis changes the sign of x only.' }),
+                    () => ({ prompt: 'Checkpoint: A scuba diver is swimming at -25 feet and a bird is flying at 40 feet. What is the total vertical distance between them?', answer: '65', hint: 'Add the distance below sea level to the distance above sea level.' })
+                ]);
             }
             if (topic === 'expressions') {
-                const coeff = randomInt(2, 9);
-                const x = randomInt(1, 9);
-                const constant = randomInt(1, 9);
-                return { prompt: `Checkpoint: Evaluate ${coeff}x + ${constant} when x = ${x}.`, answer: String(coeff * x + constant), hint: `Substitute x = ${x}, then multiply before adding.` };
+                return pickChallengeVariant([
+                    () => {
+                        const coeff = randomInt(2, 9);
+                        const x = randomInt(1, 9);
+                        const constant = randomInt(1, 9);
+                        return { prompt: `Checkpoint: Evaluate ${coeff}x + ${constant} when x = ${x}.`, answer: String(coeff * x + constant), hint: `Substitute x = ${x}, then multiply before adding.` };
+                    },
+                    () => ({ prompt: 'Checkpoint: Evaluate 4x^2 - 3 when x = 3.', answer: '33', hint: 'Substitute 3 for x, square it, then multiply by 4.' }),
+                    () => ({ prompt: 'Checkpoint: Write an algebraic expression for the total cost of t movie tickets if each ticket costs $8.50.', answer: '8.5t', hint: 'Multiply the ticket price by the number of tickets.' }),
+                    () => ({ prompt: 'Checkpoint: Are the expressions 5(2x + 1) and 10x + 5 equivalent? Type yes or no.', answer: 'yes', hint: 'Distribute 5 to both terms inside the parentheses.' })
+                ]);
             }
             if (topic === 'equations') {
-                const x = randomInt(2, 20);
-                const add = randomInt(1, 15);
-                return { prompt: `Checkpoint: x + ${add} = ${x + add}. What is x?`, answer: String(x), hint: `Subtract ${add} from ${x + add}.` };
+                return pickChallengeVariant([
+                    () => {
+                        const x = randomInt(2, 20);
+                        const add = randomInt(1, 15);
+                        return { prompt: `Checkpoint: x + ${add} = ${x + add}. What is x?`, answer: String(x), hint: `Subtract ${add} from ${x + add}.` };
+                    },
+                    () => ({ prompt: 'Checkpoint: Solve for m: m / 4 = 12.', answer: '48', hint: 'Multiply both sides by 4.' }),
+                    () => ({ prompt: 'Checkpoint: Sarah has saved $45, which is $15 less than her total savings goal (g). Write and solve an equation to find g.', answer: '60', hint: 'Add 15 to 45.' })
+                ]);
             }
-            const multiplier = randomInt(3, 9);
-            const product = multiplier * 6;
-            return { prompt: `Checkpoint: what multiple of 6 equals ${product}?`, answer: String(product), hint: 'Count by sixes.' };
+            if (topic === 'exponents') {
+                return pickChallengeVariant([
+                    () => {
+                        const base = randomInt(2, 5);
+                        const power = randomInt(2, 4);
+                        return { prompt: `Checkpoint: Evaluate ${base}^${power}.`, answer: String(base ** power), hint: 'Multiply the base by itself the number of times shown by the exponent.' };
+                    },
+                    () => ({ prompt: 'Checkpoint: Evaluate 2^3.', answer: '8', hint: '2 × 2 × 2 = 8.' }),
+                    () => ({ prompt: 'Checkpoint: Evaluate 5^2.', answer: '25', hint: '5 × 5 = 25.' })
+                ]);
+            }
+            return pickChallengeVariant([
+                () => {
+                    const multiplier = randomInt(3, 9);
+                    const product = multiplier * 6;
+                    return { prompt: `Checkpoint: what multiple of 6 equals ${product}?`, answer: String(product), hint: 'Count by sixes.' };
+                },
+                () => ({ prompt: 'Checkpoint: Which is the better deal: 4 avocados for $5.00 or 6 avocados for $7.20?', answer: '4 avocados for $5.00', hint: 'Compare the unit price for each option.' })
+            ]);
         }
 
         // Minimal 3x3 tic-tac-toe engine (minimax with an occasional relaxed move so
@@ -3166,10 +3469,10 @@
                 <p class="text-slate-400">Launch into the Ratio River Crossing game! Match proportions of falling crates and escape river eddies.</p>
                 <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
                     <span class="text-4xl block animate-bounce">🌊</span>
-                    <h4 class="font-extrabold text-sm text-cyan-400">Ratio River Crossing</h4>
+                    <h4 class="font-extrabold text-sm text-yellow-400">Ratio River Crossing</h4>
                     <p class="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">Click below to test your proportion arithmetic and steer baskets across wild rapids!</p>
                     <a href="/ratio-river" class="btn-accessible inline-flex items-center gap-1.5 no-underline">
-                        🌊 Launch Ratio River Game
+                        🌊 Launch Ratio River Crossing
                     </a>
                 </div>
                 <div class="flex justify-between items-center bg-slate-950/70 border border-slate-800 rounded-xl p-3 mt-3">
@@ -3193,7 +3496,7 @@
         function loadVaultUnlockingEmbed(container, station, activity) {
             const points = activity.points_reward || 150;
             container.innerHTML = `
-                <p class="text-slate-400">Launch into the Equation Vault Solver! Solve algebraic expressions and equations to unlock ancient passcode dials.</p>
+                <p class="text-slate-400">Launch into The Vault Password Solver! Solve expression locks and equation passcodes to breach each chamber.</p>
                 <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 text-center space-y-4">
                     <span class="text-4xl block animate-bounce">🔐</span>
                     <h4 class="font-extrabold text-sm text-yellow-400">The Vault Password Solver</h4>
@@ -3248,6 +3551,55 @@
                     closeModal();
                 }, 1000);
             });
+        }
+
+        function loadGamePortal(container, station, activity) {
+            const points = activity.points_reward || 100;
+            const challenge = getFreshChallenge(activity) || buildShooterCheckpoint(activity.question_topic || activity.game_topic || 'number_properties');
+            const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
+            const gameUrl = `${activity.game_url}${activity.game_url.includes('?') ? '&' : '?'}return_to=${returnTo}`;
+            const promptText = challenge.prompt || `${challenge.scenario || 'Mission Checkpoint'}: ${challenge.task || ''}`;
+            const quizFirstMessage = `Complete this station's quiz streak. ${activity.game_name} is available as an optional side mission.`;
+            container.innerHTML = `
+                <p class="text-slate-400">${quizFirstMessage}</p>
+                ${progressBanner(points)}
+                <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+                    <div class="portal-layout">
+                        <div class="portal-main">
+                            <div class="flex items-center gap-2 justify-center text-sm font-bold text-yellow-300">
+                                <span class="text-xl">${activity.game_icon || '🎮'}</span>
+                                <span>${activity.game_name}</span>
+                            </div>
+                            <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4 text-center text-sm font-mono text-slate-100">${promptText}</div>
+                            <div class="flex gap-2">
+                                <input id="portal-answer" type="text" autocomplete="off" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-center text-white" placeholder="Type your answer">
+                                <button id="portal-submit" class="btn-accessible px-4">Check</button>
+                            </div>
+                        </div>
+                        <aside class="portal-side text-center space-y-2">
+                            <p class="text-[11px] text-slate-300 font-bold uppercase tracking-wide">Side Mission</p>
+                            <a id="portal-link" class="btn-accessible inline-flex items-center gap-1.5 no-underline w-full justify-center" href="${gameUrl}">${activity.game_icon || '🎮'} Play ${activity.game_name}</a>
+                            <p class="text-[10px] text-slate-500">Optional. Quiz progress and station completion come from the left panel.</p>
+                        </aside>
+                    </div>
+                </div>
+                <p id="portal-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            const submit = () => {
+                const answer = document.getElementById('portal-answer').value;
+                const feedback = document.getElementById('portal-feedback');
+                if (normalizeChallengeAnswer(answer) === normalizeChallengeAnswer(challenge.answer)) {
+                    resolveCorrectAttempt(container, station, activity, points, feedback, 'Correct!', loadGamePortal);
+                } else {
+                    feedback.textContent = challenge.hint || 'Try again.';
+                    feedback.style.color = '#ef4444';
+                }
+            };
+
+            document.getElementById('portal-submit').addEventListener('click', submit);
+            bindEnterSubmit(['portal-answer'], submit);
+            document.getElementById('portal-answer').focus();
         }
 
         // ---------------------------------------------------------------

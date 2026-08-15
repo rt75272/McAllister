@@ -49,7 +49,7 @@
     </div>
     
     <div style="text-align: center;">
-        <a href="{{ url_for('math_games') }}" class="nav-link">Return to Games Hall</a>
+        <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="nav-link">Return to Games Hall</a>
     </div>
 
     <!-- Victory/Defeat Modal -->

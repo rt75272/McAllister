@@ -1,0 +1,959 @@
+{% extends "base.html" %}
+
+{% block title %}Earth Science Planet - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --sky-deep: #0b1b2d;
+        --sky-mid: #102a43;
+        --aqua: #67e8f9;
+        --lime: #bef264;
+        --sand: #facc15;
+        --card: rgba(9, 22, 38, 0.82);
+        --ink: #ecfeff;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Trebuchet MS", "Verdana", sans-serif;
+        color: var(--ink);
+        background:
+            radial-gradient(circle at 12% 16%, rgba(52, 211, 153, 0.16), transparent 35%),
+            radial-gradient(circle at 88% 14%, rgba(103, 232, 249, 0.22), transparent 32%),
+            radial-gradient(circle at 55% 82%, rgba(251, 191, 36, 0.14), transparent 34%),
+            linear-gradient(150deg, #020617 0%, var(--sky-deep) 45%, var(--sky-mid) 100%);
+    }
+
+    .star-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.65;
+        background-image:
+            radial-gradient(circle at 14% 22%, rgba(255,255,255,0.8) 1px, transparent 2px),
+            radial-gradient(circle at 64% 18%, rgba(255,255,255,0.7) 1px, transparent 2px),
+            radial-gradient(circle at 42% 62%, rgba(255,255,255,0.8) 1px, transparent 2px),
+            radial-gradient(circle at 82% 78%, rgba(255,255,255,0.9) 1px, transparent 2px);
+        background-size: 240px 240px, 320px 320px, 280px 280px, 360px 360px;
+        animation: drift 24s linear infinite;
+    }
+
+    @keyframes drift {
+        from { transform: translateY(0); }
+        to { transform: translateY(-28px); }
+    }
+
+    .page-shell {
+        position: relative;
+        z-index: 1;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .top-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .portal-link {
+        text-decoration: none;
+        color: #06243f;
+        background: linear-gradient(120deg, #67e8f9, #bef264);
+        border-radius: 999px;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(14, 165, 233, 0.25);
+        transition: transform 0.2s ease;
+    }
+
+    .portal-link:hover {
+        transform: translateY(-2px);
+    }
+
+    .hero {
+        background: linear-gradient(145deg, rgba(6, 29, 51, 0.9), rgba(11, 74, 119, 0.8));
+        border: 1px solid rgba(103, 232, 249, 0.45);
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 20px 34px rgba(0, 0, 0, 0.35);
+        margin-bottom: 14px;
+    }
+
+    .hero h1 {
+        margin: 0;
+        color: #f0fdf4;
+        font-size: clamp(1.7rem, 3.2vw, 2.5rem);
+    }
+
+    .hero p {
+        margin: 8px 0 0;
+        color: #cffafe;
+        line-height: 1.55;
+        max-width: 80ch;
+    }
+
+    .progress-panel {
+        margin-top: 12px;
+        background: rgba(2, 6, 23, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+        padding: 10px 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .progress-bar {
+        flex: 1;
+        min-width: 220px;
+        height: 12px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(100, 116, 139, 0.45);
+    }
+
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(120deg, #22d3ee, #84cc16);
+        transition: width 0.25s ease;
+    }
+
+    .glass-station-panel {
+        background: rgba(10, 22, 38, 0.85);
+        border: 3px solid #8b5a2b;
+        border-radius: 20px;
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.42);
+        backdrop-filter: blur(10px);
+        padding: 16px;
+        margin-top: 14px;
+    }
+
+    .constellation-map {
+        position: relative;
+        width: 100%;
+        height: 460px;
+        border: 2px solid #334155;
+        border-radius: 14px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 18% 22%, rgba(255,255,255,0.65) 0 1px, transparent 1.2px),
+            radial-gradient(circle at 38% 74%, rgba(255,255,255,0.6) 0 1px, transparent 1.2px),
+            radial-gradient(circle at 72% 36%, rgba(191, 219, 254, 0.68) 0 1px, transparent 1.2px),
+            linear-gradient(180deg, #020617 0%, #030c1c 100%);
+    }
+
+    .constellation-map svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    #nodes-container {
+        position: absolute;
+        inset: 0;
+    }
+
+    .station-node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .station-orb {
+        width: 46px;
+        height: 46px;
+        border-radius: 999px;
+        border: 2px solid rgba(147, 197, 253, 0.9);
+        background: radial-gradient(circle at 30% 30%, #38bdf8, #1d4ed8);
+        color: #f8fbff;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.45);
+    }
+
+    .station-orb.completed {
+        border-color: rgba(34, 197, 94, 0.95);
+        background: radial-gradient(circle at 30% 30%, #34d399, #059669);
+        box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+    }
+
+    .station-orb.locked {
+        border-color: rgba(71, 85, 105, 0.85);
+        background: radial-gradient(circle at 30% 30%, #475569, #334155);
+        color: #cbd5e1;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+    .station-tag {
+        font-size: 11px;
+        font-weight: 800;
+        color: #dbeafe;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(71, 85, 105, 0.85);
+        border-radius: 999px;
+        padding: 1px 8px;
+    }
+
+    .detail-banner {
+        margin-top: 10px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(51, 65, 85, 0.9);
+        border-radius: 12px;
+        padding: 10px 12px;
+        min-height: 74px;
+    }
+
+    .detail-banner h4 {
+        margin: 0;
+        color: #67e8f9;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .detail-banner p {
+        margin: 6px 0 0;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .station-grid { display: none; }
+
+    .station-card {
+        background: var(--card);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 14px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 180px;
+    }
+
+    .station-card h2 {
+        margin: 0;
+        font-size: 1.02rem;
+        color: #a5f3fc;
+    }
+
+    .station-topic {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #bef264;
+        font-weight: 800;
+    }
+
+    .station-card p {
+        margin: 0;
+        line-height: 1.45;
+        color: #dbeafe;
+        flex-grow: 1;
+        font-size: 0.95rem;
+    }
+
+    .station-btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: #05253c;
+        background: linear-gradient(120deg, #67e8f9, #facc15);
+        transition: transform 0.2s ease;
+    }
+
+    .station-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .station-card.completed {
+        border-color: rgba(34, 197, 94, 0.75);
+        box-shadow: inset 0 0 0 2px rgba(34, 197, 94, 0.32);
+    }
+
+    .station-card.completed .station-btn {
+        background: linear-gradient(120deg, #86efac, #34d399);
+    }
+
+    .station-card.locked {
+        opacity: 0.62;
+        filter: grayscale(0.2);
+    }
+
+    .station-card.locked .station-btn {
+        background: linear-gradient(120deg, #64748b, #475569);
+        color: #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    .station-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+    }
+
+    .station-status {
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+    }
+
+    .station-status.ready {
+        color: #67e8f9;
+    }
+
+    .station-status.done {
+        color: #86efac;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.82);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 100;
+    }
+
+    .modal {
+        width: 100%;
+        max-width: 760px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #04101d;
+        border: 2px solid rgba(103, 232, 249, 0.55);
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 8px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .modal-head h3 {
+        margin: 0;
+        color: #a5f3fc;
+        font-size: 1.2rem;
+    }
+
+    .close-btn {
+        border: 0;
+        background: transparent;
+        color: #cbd5e1;
+        font-size: 26px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .question-box {
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.55);
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .question-box p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #f0f9ff;
+    }
+
+    .choice-grid {
+        display: grid;
+        gap: 8px;
+    }
+
+    .choice-btn {
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.88);
+        color: #e2e8f0;
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    .choice-btn:hover {
+        border-color: rgba(103, 232, 249, 0.75);
+    }
+
+    .feedback {
+        min-height: 20px;
+        font-weight: 700;
+        margin-top: 10px;
+    }
+
+    .streak-box {
+        margin-top: 8px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: rgba(2, 6, 23, 0.75);
+        color: #dbeafe;
+        font-size: 0.9rem;
+    }
+
+    .modal-actions {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .utility-btn {
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 10px;
+        background: rgba(30, 41, 59, 0.75);
+        color: #e2e8f0;
+        font-weight: 700;
+        padding: 8px 12px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .utility-btn.primary {
+        color: #05253c;
+        background: linear-gradient(120deg, #67e8f9, #bef264);
+        border: 0;
+    }
+
+    @media (max-width: 700px) {
+        .page-shell {
+            padding: 12px;
+        }
+
+        .hero {
+            padding: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="star-overlay"></div>
+<div class="page-shell">
+    <nav class="top-links">
+        <a class="portal-link" href="{{ url_for('quest_map') }}">🪐 Return to Unit Space Map</a>
+        <a class="portal-link" href="{{ url_for('solar_system_study') }}">🔭 Study the Solar System</a>
+        <a class="portal-link" href="{{ url_for('solar_system') }}">🚀 Fly the Solar System</a>
+    </nav>
+
+    <section class="hero">
+        <h1>🌍 Earth Science Planet: Grade 6 Mission Zone</h1>
+        <p>
+            Explore ten stations focused on rocks, erosion, earthquakes, condensation, and the water cycle.
+            Each station gives a quick concept check so students practice core Earth science ideas while they travel.
+        </p>
+        <div class="progress-panel">
+            <strong id="progress-label">Stations completed: 0 / 10</strong>
+            <div class="progress-bar" aria-hidden="true"><div id="progress-fill" class="progress-fill"></div></div>
+        </div>
+    </section>
+
+    <section class="glass-station-panel">
+        <h3 class="station-topic" style="margin: 0 0 10px 0; color: #93c5fd;">Unit Constellation Pathway</h3>
+        <div id="constellation-map" class="constellation-map" aria-label="Earth Science station map">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="display: none;">
+                <path id="connector-line" d="" fill="none" stroke="none" stroke-width="0"></path>
+                <path id="completed-line" d="" fill="none" stroke="none" stroke-width="0"></path>
+            </svg>
+            <div id="nodes-container"></div>
+        </div>
+        <div id="station-detail" class="detail-banner">
+            <h4>Mission Coordinate Computer</h4>
+            <p>Hover over a station orb to preview each Earth Science checkpoint before launching.</p>
+        </div>
+    </section>
+
+    <section id="station-grid" class="station-grid" aria-label="Earth Science Stations"></section>
+</div>
+
+<div id="station-modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="station-title">
+        <div class="modal-head">
+            <div>
+                <p id="station-topic" class="station-topic">Topic</p>
+                <h3 id="station-title">Station</h3>
+            </div>
+            <button id="close-modal" class="close-btn" type="button" aria-label="Close">&times;</button>
+        </div>
+
+        <p id="station-description"></p>
+        <div id="streak-box" class="streak-box">Streak: 0 / 2 correct</div>
+        <div class="question-box"><p id="question-text"></p></div>
+        <div id="choice-grid" class="choice-grid"></div>
+        <p id="feedback" class="feedback"></p>
+
+        <div class="modal-actions">
+            <button id="next-question" class="utility-btn primary" type="button" disabled>Next Question</button>
+            <button id="close-station" class="utility-btn" type="button">Close Station</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pickRandom(list) {
+        return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function shuffleList(list) {
+        const copy = [...list];
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+    }
+
+    function makeMCQuestion(id, prompt, correctChoice, wrongChoices) {
+        const choices = shuffleList([correctChoice, ...wrongChoices]);
+        return {
+            id,
+            prompt,
+            choices,
+            answer: choices.indexOf(correctChoice)
+        };
+    }
+
+    const stations = [
+        {
+            id: "es1",
+            title: "Igneous Rock Lab",
+            topic: "Rock Types",
+            summary: "Identify how igneous rocks form from cooling magma or lava.",
+            question_generators: [
+                () => makeMCQuestion("es1_igneous_1", "Igneous rocks form when what cools and hardens?", "Magma or lava", ["Sand layers", "Plant remains", "Shell fragments"]),
+                () => makeMCQuestion("es1_igneous_2", "Which rock is usually igneous?", "Granite", ["Limestone", "Sandstone", "Coal"]),
+                () => makeMCQuestion("es1_igneous_3", "If magma cools slowly underground, crystals are usually...", "Larger", ["Smaller", "Absent", "Always glassy"]),
+                () => makeMCQuestion("es1_igneous_4", "Basalt is most often what kind of igneous rock?", "Extrusive", ["Sedimentary", "Metamorphic", "Intrusive only"]),
+                () => {
+                    const place = pickRandom(["below Earth's surface", "inside Earth's crust", "deep underground"]);
+                    return makeMCQuestion(`es1_igneous_place_${place}`, `Magma is molten rock found where? (${place})`, place, ["Only in rivers", "Only in clouds", "Only on glaciers"]);
+                }
+            ]
+        },
+        {
+            id: "es2",
+            title: "Sedimentary Layers Station",
+            topic: "Rock Types",
+            summary: "Explore how sediment builds in layers and becomes rock over time.",
+            question_generators: [
+                () => makeMCQuestion("es2_sed_1", "Sedimentary rocks are often formed by what process?", "Compaction and cementation", ["Melting and cooling", "Only volcanic eruption", "Magnetic pull"]),
+                () => makeMCQuestion("es2_sed_2", "Fossils are most likely found in which rock type?", "Sedimentary", ["Igneous", "Metamorphic", "Crystal only"]),
+                () => makeMCQuestion("es2_sed_3", "Which clue most strongly suggests a sedimentary rock?", "Visible layers", ["Glassy texture", "Large interlocking crystals", "No grains at all"]),
+                () => {
+                    const layers = randomInt(3, 9);
+                    return makeMCQuestion(`es2_sed_layers_${layers}`, `A cliff shows ${layers} visible layers of packed sediment. Which rock type is most likely?`, "Sedimentary", ["Igneous", "Metamorphic", "Molten"]);
+                },
+                () => makeMCQuestion("es2_sed_4", "Tiny rock pieces carried by water and wind are called...", "Sediment", ["Magma", "Lava", "Crystal gas"])
+            ]
+        },
+        {
+            id: "es3",
+            title: "Metamorphic Pressure Vault",
+            topic: "Rock Types",
+            summary: "See how heat and pressure transform existing rocks.",
+            question_generators: [
+                () => makeMCQuestion("es3_meta_1", "Metamorphic rocks are created when existing rock is changed by...", "Heat and pressure", ["Freezing only", "Rain only", "Plant roots only"]),
+                () => makeMCQuestion("es3_meta_2", "Marble is a metamorphic rock made from what parent rock?", "Limestone", ["Granite", "Basalt", "Obsidian"]),
+                () => makeMCQuestion("es3_meta_3", "Slate is a metamorphic rock formed from...", "Shale", ["Basalt", "Sandstone", "Granite"]),
+                () => makeMCQuestion("es3_meta_4", "Metamorphic rock usually forms with...", "No melting into liquid", ["Complete melting first", "Only evaporation", "Only freezing of water"]),
+                () => {
+                    const depth = randomInt(5, 25);
+                    return makeMCQuestion(`es3_meta_depth_${depth}`, `A rock is buried about ${depth} km deep and squeezed over time. Which process best explains this change?`, "Metamorphism", ["Evaporation", "Photosynthesis", "Instant cooling"]);
+                }
+            ]
+        },
+        {
+            id: "es4",
+            title: "Rock Cycle Orbit",
+            topic: "Rock Cycle",
+            summary: "Trace how rocks can change from one type to another over time.",
+            question_generators: [
+                () => makeMCQuestion("es4_cycle_1", "In the rock cycle, a rock can change into...", "Any of the three rock types", ["Only sedimentary", "Only igneous", "Only metamorphic"]),
+                () => makeMCQuestion("es4_cycle_2", "Which process can turn sedimentary rock into metamorphic rock?", "Heat and pressure", ["Evaporation only", "Wind only", "Freezing only"]),
+                () => makeMCQuestion("es4_cycle_3", "Melted rock that cools becomes which type?", "Igneous", ["Sedimentary", "Metamorphic", "Soil"]),
+                () => makeMCQuestion("es4_cycle_4", "Weathering and erosion help create material for which rock type?", "Sedimentary", ["Igneous only", "Metamorphic only", "None"]),
+                () => {
+                    const start = pickRandom(["igneous", "sedimentary", "metamorphic"]);
+                    return makeMCQuestion(`es4_cycle_start_${start}`, `A ${start} rock is buried and heated for millions of years. It is most likely to become...`, "Metamorphic", ["Sediment only", "Magma gas", "A fossil shell"]);
+                }
+            ]
+        },
+        {
+            id: "es5",
+            title: "Weathering vs. Erosion Base",
+            topic: "Erosion",
+            summary: "Distinguish between breaking rock apart and moving it.",
+            question_generators: [
+                () => makeMCQuestion("es5_ero_1", "What is weathering?", "Breaking rock into smaller pieces", ["Carrying rock away", "Building mountains", "Melting rock"]),
+                () => makeMCQuestion("es5_ero_2", "What is erosion?", "Movement of sediment by wind, water, ice, or gravity", ["Rock cooling underground", "Only volcanic ash", "Only earthquake shaking"]),
+                () => makeMCQuestion("es5_ero_3", "Tree roots cracking sidewalk rock is an example of...", "Weathering", ["Erosion", "Condensation", "Plate collision"]),
+                () => makeMCQuestion("es5_ero_4", "A river carrying sand downstream is mainly...", "Erosion", ["Weathering only", "Condensation", "Rock melting"]),
+                () => {
+                    const years = randomInt(10, 80);
+                    return makeMCQuestion(`es5_ero_years_${years}`, `After ${years} years, acid rain made a statue surface rough and crumbly. This is mostly...`, "Chemical weathering", ["Deposition only", "Plate spreading", "Volcanic eruption"]);
+                }
+            ]
+        },
+        {
+            id: "es6",
+            title: "Erosion Agents Dock",
+            topic: "Erosion",
+            summary: "Discover how water, wind, glaciers, and gravity shape Earth.",
+            question_generators: [
+                () => makeMCQuestion("es6_agents_1", "Which agent can carve deep canyons over time?", "Flowing water", ["Moonlight", "Clouds", "Sound waves"]),
+                () => makeMCQuestion("es6_agents_2", "Glaciers mostly cause erosion by...", "Scraping and moving rock", ["Heating magma", "Creating lightning", "Growing plants"]),
+                () => makeMCQuestion("es6_agents_3", "Sand dunes moving across a desert show erosion by...", "Wind", ["Tides only", "Volcano gas", "Earth's core"]),
+                () => makeMCQuestion("es6_agents_4", "Rockfall down a steep slope is driven mostly by...", "Gravity", ["Condensation", "Solar radiation", "Plate cooling"]),
+                () => {
+                    const stormDays = randomInt(2, 9);
+                    return makeMCQuestion(`es6_agents_storm_${stormDays}`, `A coastline loses sediment after ${stormDays} days of rough waves. Which agent dominated the erosion?`, "Water", ["Wind only", "Glacial ice", "Volcanic ash"]);
+                }
+            ]
+        },
+        {
+            id: "es7",
+            title: "Earthquake Epicenter Lab",
+            topic: "Earthquakes",
+            summary: "Learn what causes earthquakes and where they begin.",
+            question_generators: [
+                () => makeMCQuestion("es7_quake_1", "Earthquakes happen when stress is released along...", "Faults in Earth's crust", ["Ocean waves", "Cloud layers", "Plant roots"]),
+                () => makeMCQuestion("es7_quake_2", "The point inside Earth where an earthquake begins is the...", "Focus", ["Epicenter", "Fault line map", "Core ring"]),
+                () => makeMCQuestion("es7_quake_3", "The point on Earth's surface directly above the focus is called the...", "Epicenter", ["Mantle zone", "Transform edge", "Magma chamber"]),
+                () => makeMCQuestion("es7_quake_4", "Earthquake energy travels through Earth as...", "Seismic waves", ["Water currents", "Jet streams", "Solar rays"]),
+                () => {
+                    const mag = randomInt(3, 7);
+                    return makeMCQuestion(`es7_quake_mag_${mag}`, `A magnitude ${mag} event was recorded. Which instrument measures earthquake vibrations?`, "Seismograph", ["Thermometer", "Barometer", "Anemometer"]);
+                }
+            ]
+        },
+        {
+            id: "es8",
+            title: "Plate Boundary Control",
+            topic: "Earthquakes",
+            summary: "Connect tectonic plate movement with earthquake activity.",
+            question_generators: [
+                () => makeMCQuestion("es8_plate_1", "Most earthquakes occur near...", "Plate boundaries", ["The center of deserts", "Cloud tops", "The equator only"]),
+                () => makeMCQuestion("es8_plate_2", "A sudden slip along a fault releases energy as...", "Seismic waves", ["Magnetic rain", "Solar flares", "Water vapor"]),
+                () => makeMCQuestion("es8_plate_3", "At a transform boundary, plates mostly...", "Slide past each other", ["Move apart only", "Stack into clouds", "Melt instantly"]),
+                () => makeMCQuestion("es8_plate_4", "Convergent plate boundaries can create...", "Mountains and strong earthquakes", ["Only calm weather", "No crust movement", "Only ocean currents"]),
+                () => {
+                    const cm = randomInt(2, 9);
+                    return makeMCQuestion(`es8_plate_speed_${cm}`, `Two plates move about ${cm} cm per year. Over long timescales this movement can cause...`, "Stress buildup and earthquakes", ["No geologic change", "Only evaporation", "Faster moon phases"]);
+                }
+            ]
+        },
+        {
+            id: "es9",
+            title: "Condensation Cloud Hub",
+            topic: "Condensation",
+            summary: "Understand how water vapor changes state to form clouds.",
+            question_generators: [
+                () => makeMCQuestion("es9_cond_1", "Condensation is when water vapor turns into...", "Liquid water", ["Solid rock", "Magma", "Dust"]),
+                () => makeMCQuestion("es9_cond_2", "Clouds form when warm, moist air rises and...", "Cools enough for condensation", ["Gets hotter forever", "Becomes sediment", "Turns to lava"]),
+                () => makeMCQuestion("es9_cond_3", "Dew on grass in the morning is caused by...", "Condensation", ["Erosion", "Sublimation", "Combustion"]),
+                () => makeMCQuestion("es9_cond_4", "When air reaches its dew point, water vapor is likely to...", "Condense into droplets", ["Turn to sediment", "Become magma", "Disappear"]),
+                () => {
+                    const tempDrop = randomInt(4, 15);
+                    return makeMCQuestion(`es9_cond_temp_${tempDrop}`, `Night air cools by ${tempDrop} degrees and fog forms. Which process is most responsible?`, "Condensation", ["Deposition of rock", "Plate collision", "Solar heating"]);
+                }
+            ]
+        },
+        {
+            id: "es10",
+            title: "Water Cycle Command",
+            topic: "Water Cycle",
+            summary: "Connect evaporation, condensation, precipitation, and collection.",
+            question_generators: [
+                () => makeMCQuestion("es10_water_1", "Which sequence best matches the water cycle?", "Evaporation -> Condensation -> Precipitation -> Collection", ["Condensation -> Erosion -> Melting -> Collection", "Precipitation -> Rock cycle -> Evaporation", "Collection -> Melting -> Lava"]),
+                () => makeMCQuestion("es10_water_2", "When water falls from clouds as rain or snow, it is called...", "Precipitation", ["Condensation", "Infiltration", "Weathering"]),
+                () => makeMCQuestion("es10_water_3", "Water soaking into soil after rainfall is called...", "Infiltration", ["Evaporation", "Condensation", "Melting"]),
+                () => makeMCQuestion("es10_water_4", "The Sun's energy most directly powers which water cycle step?", "Evaporation", ["Collection", "Runoff only", "Rock formation"]),
+                () => {
+                    const liters = randomInt(20, 90);
+                    return makeMCQuestion(`es10_water_liters_${liters}`, `A pond loses about ${liters} liters on a hot day without rain. Which process best explains the loss?`, "Evaporation", ["Precipitation", "Weathering", "Plate motion"]);
+                }
+            ]
+        }
+    ];
+
+    const completionKey = 'earth_science_planet_progress_v2';
+    const completionState = JSON.parse(localStorage.getItem(completionKey) || '{}');
+
+    let activeStation = null;
+    let activeQuestion = null;
+    let activeRunSolved = 0;
+    let activeRunTarget = 2;
+    let isReviewMode = false;
+    let activeUsedQuestionIds = new Set();
+    let activeLastQuestionId = null;
+
+    const stationGrid = document.getElementById('station-grid');
+    const nodesContainer = document.getElementById('nodes-container');
+    const connectorLine = document.getElementById('connector-line');
+    const completedLine = document.getElementById('completed-line');
+    const stationDetail = document.getElementById('station-detail');
+    const modal = document.getElementById('station-modal');
+    const stationTopic = document.getElementById('station-topic');
+    const stationTitle = document.getElementById('station-title');
+    const stationDescription = document.getElementById('station-description');
+    const streakBox = document.getElementById('streak-box');
+    const questionText = document.getElementById('question-text');
+    const choiceGrid = document.getElementById('choice-grid');
+    const feedback = document.getElementById('feedback');
+    const nextQuestionBtn = document.getElementById('next-question');
+
+    const nodeLayout = [
+        { x: 10, y: 68 },
+        { x: 18, y: 54 },
+        { x: 30, y: 42 },
+        { x: 42, y: 50 },
+        { x: 52, y: 66 },
+        { x: 58, y: 82 },
+        { x: 67, y: 74 },
+        { x: 76, y: 58 },
+        { x: 86, y: 42 },
+        { x: 92, y: 28 }
+    ];
+
+    function saveProgress() {
+        localStorage.setItem(completionKey, JSON.stringify(completionState));
+    }
+
+    function isStationCompleted(stationId) {
+        return Boolean(completionState[stationId] && completionState[stationId].completed);
+    }
+
+    function isStationUnlocked(index) {
+        return true;
+    }
+
+    function completedCount() {
+        return stations.filter((station) => isStationCompleted(station.id)).length;
+    }
+
+    function updateProgressUI() {
+        const count = completedCount();
+        document.getElementById('progress-label').textContent = `Stations completed: ${count} / ${stations.length}`;
+        document.getElementById('progress-fill').style.width = `${(count / stations.length) * 100}%`;
+    }
+
+    function drawStations() {
+        const points = nodeLayout.slice(0, stations.length);
+        const pathData = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+        connectorLine.setAttribute('d', pathData);
+
+        let completedUpTo = 0;
+        for (let i = 0; i < stations.length; i += 1) {
+            if (isStationCompleted(stations[i].id)) {
+                completedUpTo = i + 1;
+            } else {
+                break;
+            }
+        }
+        const donePoints = points.slice(0, Math.max(1, completedUpTo));
+        const donePath = donePoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+        completedLine.setAttribute('d', donePath);
+        completedLine.style.display = completedUpTo > 1 ? 'block' : 'none';
+
+        nodesContainer.innerHTML = stations.map((station, index) => {
+            const done = isStationCompleted(station.id);
+            const unlocked = isStationUnlocked(index);
+            const point = points[index] || { x: 50, y: 50 };
+            const orbClass = done ? 'completed' : (unlocked ? '' : 'locked');
+            return `
+                <div class="station-node" style="left: ${point.x}%; top: ${point.y}%;" data-station-id="${station.id}">
+                    <button class="station-orb ${orbClass}" type="button" data-station-id="${station.id}" ${unlocked ? '' : 'disabled'}>${index + 1}</button>
+                    <span class="station-tag">Station ${index + 1}</span>
+                </div>
+            `;
+        }).join('');
+
+        nodesContainer.querySelectorAll('.station-node').forEach((node) => {
+            const station = stations.find((item) => item.id === node.dataset.stationId);
+            if (!station) return;
+            node.addEventListener('mouseenter', () => {
+                stationDetail.innerHTML = `<h4>${station.title}</h4><p>${station.summary}</p>`;
+            });
+            node.addEventListener('mouseleave', () => {
+                stationDetail.innerHTML = '<h4>Mission Coordinate Computer</h4><p>Hover over a station orb to preview each Earth Science checkpoint before launching.</p>';
+            });
+        });
+
+        nodesContainer.querySelectorAll('.station-orb').forEach((button) => {
+            button.addEventListener('click', () => openStation(button.dataset.stationId));
+        });
+
+        updateProgressUI();
+    }
+
+    function pickQuestion(station) {
+        if (!station || !Array.isArray(station.question_generators) || station.question_generators.length === 0) {
+            return makeMCQuestion("fallback", "Which Earth process moves sediment from one place to another?", "Erosion", ["Condensation", "Crystallization", "Metamorphism"]);
+        }
+
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+            const generator = pickRandom(station.question_generators);
+            const question = generator();
+            if (!activeUsedQuestionIds.has(question.id) && question.id !== activeLastQuestionId) {
+                activeUsedQuestionIds.add(question.id);
+                activeLastQuestionId = question.id;
+                return question;
+            }
+        }
+
+        activeUsedQuestionIds = new Set();
+        const fallbackQuestion = pickRandom(station.question_generators)();
+        activeUsedQuestionIds.add(fallbackQuestion.id);
+        activeLastQuestionId = fallbackQuestion.id;
+        return fallbackQuestion;
+    }
+
+    function updateStreakBox() {
+        if (!activeStation) return;
+        if (isReviewMode) {
+            streakBox.textContent = 'Review mode: answer a question to revisit this station.';
+            return;
+        }
+        streakBox.textContent = `Streak: ${activeRunSolved} / ${activeRunTarget} correct`;
+    }
+
+    function renderQuestion() {
+        if (!activeStation) return;
+        activeQuestion = pickQuestion(activeStation);
+        stationTopic.textContent = activeStation.topic;
+        stationTitle.textContent = activeStation.title;
+        stationDescription.textContent = activeStation.summary;
+        updateStreakBox();
+        questionText.textContent = activeQuestion.prompt;
+        feedback.textContent = '';
+        feedback.style.color = '#e2e8f0';
+        nextQuestionBtn.disabled = true;
+        nextQuestionBtn.textContent = isReviewMode ? 'Another Review Question' : 'Next Checkpoint';
+
+        choiceGrid.innerHTML = activeQuestion.choices.map((choice, index) =>
+            `<button class="choice-btn" type="button" data-choice-index="${index}">${String.fromCharCode(65 + index)}. ${choice}</button>`
+        ).join('');
+
+        choiceGrid.querySelectorAll('[data-choice-index]').forEach((button) => {
+            button.addEventListener('click', () => checkAnswer(Number(button.dataset.choiceIndex)));
+        });
+    }
+
+    function checkAnswer(choiceIndex) {
+        if (!activeStation || !activeQuestion) return;
+        const isCorrect = choiceIndex === activeQuestion.answer;
+        if (isCorrect) {
+            if (isReviewMode) {
+                feedback.textContent = 'Correct. Nice review work!';
+                feedback.style.color = '#4ade80';
+                nextQuestionBtn.disabled = false;
+                return;
+            }
+
+            activeRunSolved += 1;
+            updateStreakBox();
+            if (activeRunSolved >= activeRunTarget) {
+                feedback.textContent = 'Station complete. Great Earth Science thinking!';
+                feedback.style.color = '#4ade80';
+                completionState[activeStation.id] = {
+                    completed: true,
+                    bestStreak: Math.max(activeRunTarget, completionState[activeStation.id]?.bestStreak || 0)
+                };
+                saveProgress();
+                drawStations();
+            } else {
+                feedback.textContent = `Correct. ${activeRunTarget - activeRunSolved} more to clear this station.`;
+                feedback.style.color = '#4ade80';
+            }
+            nextQuestionBtn.disabled = false;
+        } else {
+            feedback.textContent = 'Not yet. Read the clues and try again.';
+            feedback.style.color = '#f87171';
+        }
+    }
+
+    function openStation(stationId) {
+        const stationIndex = stations.findIndex((station) => station.id === stationId);
+        if (stationIndex === -1) return;
+        if (!isStationUnlocked(stationIndex)) return;
+
+        activeStation = stations[stationIndex];
+        if (!activeStation) return;
+        isReviewMode = isStationCompleted(stationId);
+        activeRunSolved = 0;
+        activeRunTarget = 2 + Math.floor(Math.random() * 2);
+        activeUsedQuestionIds = new Set();
+        activeLastQuestionId = null;
+        renderQuestion();
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        activeStation = null;
+        activeQuestion = null;
+        activeRunSolved = 0;
+        activeRunTarget = 2;
+        isReviewMode = false;
+        activeUsedQuestionIds = new Set();
+        activeLastQuestionId = null;
+    }
+
+    document.getElementById('next-question').addEventListener('click', renderQuestion);
+    document.getElementById('close-modal').addEventListener('click', closeModal);
+    document.getElementById('close-station').addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeModal();
+    });
+
+    drawStations();
+</script>
+{% endblock %}

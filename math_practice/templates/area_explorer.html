@@ -10,7 +10,7 @@
     <div class="game-wrapper">
         <!-- Navigation -->
         <nav class="game-nav">
-            <a href="{{ url_for('math_games') }}" class="home-btn">← Math Games</a>
+            <a href="{{ request.args.get('return_to') or url_for('solar_system') }}" class="home-btn">← Math Games</a>
             <h1 class="game-title">📐 Area Explorer</h1>
             <div class="nav-spacer"></div>
         </nav>

@@ -23,6 +23,15 @@
     }
 
     .solar-shell { max-width: 1380px; margin: 0 auto; padding: 24px; color: var(--ink) !important; }
+    .portal-deck { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .portal-panel { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 14px; box-shadow: 0 14px 32px rgba(0, 0, 0, .3); }
+    .portal-panel h2 { margin: 0 0 6px; font-size: 16px; }
+    .portal-panel p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .portal-links { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .portal-btn { text-decoration: none; color: var(--ink); border: 1px solid rgba(103, 232, 249, .45); background: rgba(8, 145, 178, .16); border-radius: 5px; padding: 8px 10px; font-size: 12px; font-weight: 700; }
+    .portal-btn:hover, .portal-btn:focus-visible { background: rgba(8, 145, 178, .3); color: var(--cyan); border-color: var(--cyan); }
+    .black-hole-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 84px; border-radius: 8px; border: 1px solid rgba(196, 181, 253, .5); color: #ddd6fe; background: radial-gradient(circle at 50% 45%, #111827 5%, #312e81 45%, #030712 85%); font-weight: 800; letter-spacing: .03em; }
+    .black-hole-btn:hover, .black-hole-btn:focus-visible { color: #f5f3ff; border-color: #c4b5fd; }
     .solar-shell p, .solar-shell h1, .solar-shell h2, .solar-shell li, .solar-shell span, .solar-shell div { color: inherit; }
     .solar-shell p, .solar-shell .fact-list li, .solar-shell .planet-name, .solar-shell .keyboard-note, .solar-shell .image-credit, .solar-shell .scale-note { color: var(--muted) !important; }
     .solar-shell .eyebrow, .solar-shell .au-guide { color: var(--cyan) !important; }
@@ -81,7 +90,7 @@
     .step-button:hover { background: rgba(8, 145, 178, .3); }
     .keyboard-note { font-size: 11px; color: #94a3b8; margin: 0; text-align: center; }
 
-    @media (max-width: 980px) { .explorer-grid { grid-template-columns: 1fr; } .fact-card { display: grid; grid-template-columns: 260px 1fr; } .fact-image { height: 100%; min-height: 240px; } }
+    @media (max-width: 980px) { .portal-deck { grid-template-columns: 1fr; } .explorer-grid { grid-template-columns: 1fr; } .fact-card { display: grid; grid-template-columns: 260px 1fr; } .fact-image { height: 100%; min-height: 240px; } }
     @media (max-width: 680px) { .solar-shell { padding: 14px; } .topbar { align-items: start; } .scale-note { display: none; } .solar-map { min-height: 455px; padding: 16px; } .orbit-region { height: 270px; overflow-x: auto; } .planet-row { min-width: 760px; } .fact-card { display: flex; } .fact-image { height: 200px; min-height: 0; } .map-heading { display: block; } .au-guide { display: inline-block; margin-top: 10px; } }
 </style>
 {% endblock %}
@@ -96,6 +105,26 @@
         </div>
         <p class="scale-note">Explore whenever curiosity strikes. This map keeps the real planet order and relative planet sizes while compressing the huge distances between worlds.</p>
     </header>
+
+    <section class="portal-deck" aria-label="Interplanetary learning portals">
+        <div class="portal-panel">
+            <h2>Special Planet Portals</h2>
+            <p>Travel directly to cross-curricular destinations, then return here using each page's portal links.</p>
+            <div class="portal-links">
+                <a class="portal-btn" href="{{ url_for('ela_planet') }}">🌌 ELA Planet</a>
+                <a class="portal-btn" href="{{ url_for('baking_club_planet') }}">🧁 Baking Club Planet</a>
+                <a class="portal-btn" href="{{ url_for('game_planet') }}">🕹️ Game Planet</a>
+                <a class="portal-btn" href="{{ url_for('earth_science_planet') }}">🌍 Earth Science Planet</a>
+            </div>
+        </div>
+        <div class="portal-panel">
+            <h2>Black Hole Gate</h2>
+            <p>Warp into the Unit Learning Center map. A return black hole there brings you back here.</p>
+            <div class="portal-links">
+                <a class="black-hole-btn" href="{{ url_for('quest_map') }}">🌀 Enter Black Hole to Unit Center</a>
+            </div>
+        </div>
+    </section>
 
     <section class="explorer-grid" aria-label="Interactive solar system map and planet details">
         <section class="solar-map" aria-labelledby="map-title">
