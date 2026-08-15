@@ -428,6 +428,71 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .hub-container {
+                padding: 12px !important;
+            }
+            .constellation-map {
+                height: 320px !important;
+            }
+            .station-circle {
+                width: 40px !important;
+                height: 40px !important;
+                font-size: 16px !important;
+                border-width: 2px !important;
+            }
+            .station-node {
+                width: 40px !important;
+                height: 40px !important;
+            }
+            .station-label {
+                font-size: 8px !important;
+                padding: 1px 4px !important;
+                bottom: -20px !important;
+            }
+            .glass-station-panel {
+                padding: 16px !important;
+                border-radius: 16px !important;
+            }
+            .station-detail-banner {
+                height: auto !important;
+                min-height: 80px !important;
+                padding: 10px !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hub-container > div:first-child {
+                flex-direction: column !important;
+                gap: 8px !important;
+                align-items: stretch !important;
+            }
+            .back-btn {
+                justify-content: center !important;
+                font-size: 13px !important;
+            }
+            .hub-container > div:first-child > div:last-child {
+                justify-content: center !important;
+                padding: 6px 12px !important;
+            }
+            .glass-station-panel > div:first-child {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 8px !important;
+            }
+            #planet-title-full {
+                font-size: 1.5rem !important;
+            }
+            #planet-description {
+                text-align: center !important;
+            }
+            #dino-canvas, #galaga-canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+
         /* Chrome Dino runner styles */
         #dino-canvas, #galaga-canvas {
             background: #020617;

@@ -205,6 +205,79 @@
             color: #f1f5ff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
         }
+
+        /* Mobile responsiveness styles */
+        @media (max-width: 768px) {
+            .space-hud {
+                padding: 10px !important;
+            }
+            .space-hud > div:first-child {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+            .space-hud h1 {
+                font-size: 1.25rem !important;
+                text-align: center;
+                margin: 4px 0 !important;
+            }
+            .hud-subtitle {
+                display: none !important;
+            }
+            .stats-hud {
+                font-size: 11px !important;
+                gap: 8px !important;
+            }
+            .stats-hud .wood-hud-panel {
+                padding: 6px 12px !important;
+            }
+            .controls-panel {
+                display: none !important; /* Hide flight controls guide on mobile to save screen estate */
+            }
+            .status-panel {
+                min-width: unset !important;
+                width: 100% !important;
+                text-align: center !important;
+                padding: 8px !important;
+                font-size: 10px !important;
+            }
+            .home-btn {
+                padding: 6px 10px !important;
+                font-size: 11px !important;
+                border-radius: 8px !important;
+            }
+            .space-hud > div:nth-child(2) {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .space-hud h1 {
+                font-size: 1.1rem !important;
+            }
+            .space-hud > div:first-child > .flex {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 4px;
+            }
+            .proximity-banner {
+                width: 92vw !important;
+                padding: 10px 16px !important;
+                bottom: 20px !important;
+            }
+            .proximity-banner h3 {
+                font-size: 12px !important;
+            }
+            .proximity-banner p {
+                font-size: 10px !important;
+            }
+            .descend-btn {
+                padding: 6px 10px !important;
+                font-size: 10px !important;
+            }
+        }
     </style>
 {% endblock %}
 
