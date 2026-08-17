@@ -1,12 +1,19 @@
+/**
+ * Percentage Quest Boss Battle RPG Game.
+ *
+ * Turn-based fantasy battle game where answering percent-of-a-number, discount,
+ * and tax calculations launches attacks against dungeon boss monsters.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Game State
+    // Game State.
     let maxHP = 100;
     let currentHP = 100;
     let currentQuestion = {};
     let bossLevel = 1;
     let playerDamage = 20;
 
-    // Elements
+    // Elements.
     const bossHealthBar = document.getElementById('boss-health-bar');
     const bossHPText = document.getElementById('boss-hp');
     const bossMaxHPText = document.getElementById('boss-max-hp');
@@ -23,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const storyText = document.getElementById('story-text');
     const playerLevelText = document.getElementById('player-level');
 
-    // Boss Data
+    // Boss Data.
     const bosses = [
         { name: "Goblin Thief", icon: "👺", hp: 100 },
         { name: "Orc Warlord", icon: "👹", hp: 200 },
@@ -43,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bossIndex = (bossLevel - 1) % bosses.length;
         const boss = bosses[bossIndex];
         
-        // Scale HP with level loops
+        // Scale HP with level loops.
         const difficultyMultiplier = Math.floor((bossLevel - 1) / bosses.length) + 1;
         
         maxHP = boss.hp * difficultyMultiplier;

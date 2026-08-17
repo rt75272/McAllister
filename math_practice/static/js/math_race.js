@@ -1,4 +1,11 @@
-// Game state
+/**
+ * Math Race Timed Challenge Game.
+ *
+ * Fast 60-second timed math sprint with streak bonuses, accuracy analytics,
+ * and adaptive difficulty progression.
+ */
+
+// Game state.
 let gameState = {
     isPlaying: false,
     timeLeft: 60,
@@ -13,7 +20,7 @@ let gameState = {
     timer: null
 };
 
-// DOM elements
+// DOM elements.
 const elements = {
     timer: document.getElementById('timer'),
     score: document.getElementById('score'),
@@ -31,7 +38,7 @@ const elements = {
     progressBar: document.getElementById('progress-bar')
 };
 
-// Generate random math problem based on difficulty
+// Generate random math problem based on difficulty.
 function generateProblem(difficulty) {
     let num1, num2, operation, answer;
     const operations = ['+', '-', '×', '÷'];

@@ -1,5 +1,5 @@
 /**
- * 6th Grade Math Platform Question Bank Core
+ * 6th Grade Math Platform Question Bank Core.
  * 
  * Houses curated questions mapped across 10 curriculum units.
  * Supports different types (multiple choice, numeric input), difficulties,
@@ -7,7 +7,7 @@
  */
 export const questions = [
   // ==========================================
-  // PLANET 1: RATIOS & UNIT RATES (6.RP)
+  // PLANET 1: RATIOS & UNIT RATES (6.RP).
   // ==========================================
   {
     id: "u1_q1",
@@ -47,7 +47,7 @@ export const questions = [
   },
 
   // ==========================================
-  // PLANET 2: DIVIDING FRACTIONS (6.NS.1)
+  // PLANET 2: DIVIDING FRACTIONS (6.NS.1).
   // ==========================================
   {
     id: "u2_q1",
@@ -99,21 +99,21 @@ export const QuestionBank = {
   },
 
   /**
-   * Retrieve a specific question object by its globally unique ID
+   * Retrieve a specific question object by its globally unique ID.
    */
   getQuestionById: (id) => {
     return questions.find(q => q.id === id) || null;
   },
 
   /**
-   * Get questions within a unit filtered by difficulty ("easy", "medium", "hard")
+   * Get questions within a unit filtered by difficulty ("easy", "medium", "hard").
    */
   getQuestionsByDifficulty: (unitNumber, difficulty) => {
     return questions.filter(q => q.unit === unitNumber && q.difficulty === difficulty);
   },
 
   /**
-   * Draw a random question from a unit matching a criteria to keep games dynamic
+   * Draw a random question from a unit matching a criteria to keep games dynamic.
    */
   getRandomQuestion: (unitNumber, criteria = {}) => {
     let list = questions.filter(q => q.unit === unitNumber);

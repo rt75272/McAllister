@@ -1,44 +1,51 @@
+/**
+ * Math Blast Fast-Paced Arcade Game.
+ *
+ * Canvas-based arithmetic action game where math equations descend down the screen
+ * and students must calculate and type the answer before they hit the ground.
+ */
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 let problems = [];
 let score = 0;
 let lives = 3;
 let level = 1;
-let userSpeedMultiplier = 1.0; // User-controlled speed multiplier
+let userSpeedMultiplier = 1.0; // User-controlled speed multiplier.
 
-// Calculate difficulty level based on score
+// Calculate difficulty level based on score.
 function getDifficultyLevel() {
-    return Math.floor(score / 50) + 1; // Level increases every 50 points
+    return Math.floor(score / 50) + 1; // Level increases every 50 points.
 }
 
-// Get speed multiplier based on level and user setting
+// Get speed multiplier based on level and user setting.
 function getSpeedMultiplier() {
-    const baseSpeed = 0.3; // Very slow starting speed
-    const speedIncrease = 0.15; // Speed increase per level
-    const maxSpeed = 2.0; // Maximum speed cap
+    const baseSpeed = 0.3; // Very slow starting speed.
+    const speedIncrease = 0.15; // Speed increase per level.
+    const maxSpeed = 2.0; // Maximum speed cap.
     const calculatedSpeed = baseSpeed + (level - 1) * speedIncrease;
     const levelSpeed = Math.min(calculatedSpeed, maxSpeed);
-    // Apply user speed multiplier
+    // Apply user speed multiplier.
     return levelSpeed * userSpeedMultiplier;
 }
 
-// Generate a random math problem
+// Generate a random math problem.
 function randomProblem() {
-    // Update level based on current score
+    // Update level based on current score.
     level = getDifficultyLevel();
-    // Adjust number range based on level for increased difficulty
-    const maxNumber = Math.min(5 + level * 2, 15); // Start with 1-7, max at 1-15
+    // Adjust number range based on level for increased difficulty.
+    const maxNumber = Math.min(5 + level * 2, 15); // Start with 1-7, max at 1-15.
     let a = Math.floor(Math.random() * maxNumber) + 1;
     let b = Math.floor(Math.random() * maxNumber) + 1;
     let op = ["+", "-", "*"][Math.floor(Math.random() * 3)];
-    // Ensure subtraction doesn't result in negative numbers for early levels
+    // Ensure subtraction doesn't result in negative numbers for early levels.
     if (op === "-" && level < 3 && a < b) {
-        [a, b] = [b, a]; // Swap to ensure positive result
+        [a, b] = [b, a]; // Swap to ensure positive result.
     }
     let ans = eval(a + op + b);
-    // Calculate speed based on difficulty level
+    // Calculate speed based on difficulty level.
     const baseSpeed = getSpeedMultiplier();
-    const speedVariation = 0.3; // Small random variation
+    const speedVariation = 0.3; // Small random variation.
     const finalSpeed = baseSpeed + (Math.random() * speedVariation);
     return {
         x: Math.random() * 760, 

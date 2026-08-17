@@ -1,8 +1,15 @@
+/**
+ * Space Kitchen Ratio Bakery Mini-Game.
+ *
+ * Culinary ratio scaling simulation where students calculate equivalent ratios
+ * and proportions to mix ingredients and prepare galactic recipes.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { ChefHat, Flame, HelpCircle, AlertCircle, CheckCircle, RotateCcw, Coins, ShieldAlert } from 'lucide-react';
 
-// Pre-defined modular galactic baking orders
+// Pre-defined modular galactic baking orders.
 const galacticRecipes = [
   {
     id: "rec_1",
@@ -36,17 +43,9 @@ const galacticRecipes = [
   }
 ];
 
-/**
- * RatioBakeryGame - Space Kitchen Time-Management Mini-Game
- * 
- * Mechanics:
- * - Orders pop up indicating a base ratio recipe.
- * - To bake a dish, students must solve matching equivalent ratio challenges.
- * - Completing equations correctly adds the ingredients into the progressive assembly line bowl.
- */
 export default function RatioBakeryGame({ studentSession, unitId, onGameFinished }) {
   const [currentRecipeIndex, setCurrentRecipeIndex] = useState(0);
-  const [assemblyProgress, setAssemblyProgress] = useState(0); // 0: empty, 1: half full, 2: completed/baked
+  const [assemblyProgress, setAssemblyProgress] = useState(0); // 0: empty, 1: half full, 2: completed/baked.
   const [score, setScore] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');

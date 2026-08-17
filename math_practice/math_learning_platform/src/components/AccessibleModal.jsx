@@ -1,18 +1,16 @@
+/**
+ * Reusable Accessible Modal Component.
+ *
+ * Dyslexia-friendly accessible modal container with high contrast,
+ * clear typography, escape-key dismiss handlers, and focus management.
+ */
+
 import React, { useEffect } from 'react';
 import { X, Sparkles, AlertCircle, Info } from 'lucide-react';
 
-/**
- * Reusable AccessibleModal Component
- * 
- * Automatically enforces:
- * - Dyslexia-friendly typography & spacing (Tahoma/Verdana/Comic Sans MS fallback)
- * - Muted colors & contrast (Soft space-blue background, off-white text to prevent visual blurring)
- * - Large letter-spacing (tracking) & strict left-alignment (no justified text blocks)
- * - Highlight classes for math operators and key numbers
- */
 export default function AccessibleModal({ isOpen, onClose, title, subtitle, children }) {
   
-  // Close on Escape key press (keyboard accessibility)
+  // Close on Escape key press for keyboard accessibility.
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -27,7 +25,7 @@ export default function AccessibleModal({ isOpen, onClose, title, subtitle, chil
 
   return (
     <div className="fixed inset-0 bg-[#0b0b14]/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      {/* Modal wrapper with soft space-blue background */}
+      {/* Modal wrapper with soft space-blue background. */}
       <div 
         className="w-full max-w-lg bg-[#1a1a2e] border-2 border-[#38bdf8] p-6 sm:p-8 rounded-3xl shadow-2xl overflow-hidden flex flex-col justify-between"
         style={{
@@ -38,7 +36,7 @@ export default function AccessibleModal({ isOpen, onClose, title, subtitle, chil
           textAlign: "left"
         }}
       >
-        {/* Header Section */}
+        {/* Header Section. */}
         <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-5">
           <div className="space-y-1">
             {subtitle && (

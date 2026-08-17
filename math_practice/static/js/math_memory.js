@@ -1,4 +1,11 @@
-// Game state
+/**
+ * Math Memory Card Matching Game.
+ *
+ * Concentration memory game matching math problems with their corresponding solutions
+ * across multiple arithmetic modes (addition, subtraction, multiplication, division, mixed).
+ */
+
+// Game state.
 let gameState = {
     isPlaying: false,
     difficulty: 'easy',
@@ -12,7 +19,7 @@ let gameState = {
     canFlip: true
 };
 
-// DOM elements
+// DOM elements.
 const elements = {
     gameBoard: document.getElementById('game-board'),
     matches: document.getElementById('matches'),
@@ -27,7 +34,7 @@ const elements = {
     finalStats: document.getElementById('final-stats')
 };
 
-// Generate math problems based on difficulty and mode
+// Generate math problems based on difficulty and mode.
 function generateMathProblems(difficulty, mode) {
     const problems = [];
     let maxNum;
@@ -38,7 +45,7 @@ function generateMathProblems(difficulty, mode) {
         case 'hard': maxNum = 50; break;
     }
     
-    // Generate 8 unique problems
+    // Generate 8 unique problems.
     for (let i = 0; i < 8; i++) {
         let num1, num2, operation, answer, problemText;
         

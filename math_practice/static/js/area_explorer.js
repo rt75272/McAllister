@@ -2,20 +2,20 @@
  * Area Explorer – a multi-level shape-area game with difficulty settings.
  *
  * Difficulty:
- *   Easy   – small whole numbers, basic shapes (rect, square, triangle)
- *   Medium – larger whole numbers + simple decimals, all shapes
- *   Hard   – decimals & fractions, all shapes, tighter tolerance
+ *   Easy   – small whole numbers, basic shapes (rect, square, triangle).
+ *   Medium – larger whole numbers + simple decimals, all shapes.
+ *   Hard   – decimals & fractions, all shapes, tighter tolerance.
  *
  * Levels per difficulty:
- *   Easy   (5 levels): Rectangles → Squares → Triangles → Parallelograms → Mixed
- *   Medium (7 levels): + Trapezoids, Circles, Mixed
- *   Hard   (8 levels): + Composite shapes
+ *   Easy   (5 levels): Rectangles → Squares → Triangles → Parallelograms → Mixed.
+ *   Medium (7 levels): + Trapezoids, Circles, Mixed.
+ *   Hard   (8 levels): + Composite shapes.
  *
  * Each level has 8 questions.
  */
 class AreaExplorer {
     constructor() {
-        this.difficulty = null;      // set when user picks
+        this.difficulty = null;      // Set when user picks.
         this.currentLevel = 1;
         this.score = 0;
         this.streak = 0;

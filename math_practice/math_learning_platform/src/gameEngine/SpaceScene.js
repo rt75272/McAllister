@@ -1,9 +1,16 @@
+/**
+ * 3D Space Flight Exploration and Planet Landing Engine.
+ *
+ * Implements real-time spaceship flight with WASD steering, particle trails,
+ * orbiting curriculum planets, assessment moons, and landing sequence interpolations.
+ */
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars, Text, Trail } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Low-poly 10 curriculum planets with positions and details
+// Low-poly 10 curriculum planets with positions and details.
 const planetConfigs = [
   { id: 1, name: "Sky Garden", color: "#ec4899", size: 1.1, pos: [-8, 0, -5], icon: "🌸", moon: "BOY Star 360" },
   { id: 2, name: "Gorilla Nebula", color: "#a855f7", size: 1.3, pos: [-5, 0, -8], icon: "🦍" },
@@ -42,7 +49,7 @@ function useKeyboardControls() {
   return keys;
 }
 
-// Interactive Planet + Orbiting Assessment Moon
+// Interactive Planet + Orbiting Assessment Moon.
 function SpacePlanetWithMoon({ id, index, name, color, size, pos, icon, landingTarget, setLandingTarget }) {
   const planetMeshRef = useRef();
   const moonGroupRef = useRef();

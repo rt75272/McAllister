@@ -4,8 +4,16 @@
 
 {% block extra_styles %}
 <style>
+    html {
+        scrollbar-gutter: stable;
+    }
+
     body {
+        display: block;
+        width: 100%;
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
         min-height: 100vh;
         font-family: "Trebuchet MS", "Verdana", sans-serif;
         background:
@@ -13,12 +21,17 @@
             radial-gradient(circle at 85% 20%, rgba(244, 63, 94, 0.2), transparent 38%),
             linear-gradient(165deg, #0b1024, #111827 55%, #1f2937 100%);
         color: #e5e7eb;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
     }
 
     .planet-shell {
+        width: 100%;
         max-width: 1100px;
         margin: 0 auto;
         padding: 16px;
+        box-sizing: border-box;
     }
 
     .topbar {

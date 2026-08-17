@@ -1,27 +1,56 @@
-# Mrs. McAllister's Math Center
+# Mrs. McAllister's Learning Center
 
-A comprehensive web-based math practice platform featuring multiple interactive games and activities to help students improve their mathematical skills. Built with Flask and featuring a progressive difficulty system.
+A comprehensive web-based learning and practice platform featuring interactive math, English Language Arts (ELA), 3D space flight exploration, curriculum station hubs, and student telemetry. Built with Flask, React, Three.js, and PostgreSQL with progressive difficulty and accessibility features.
 
 ## 🌟 Features
 
-### Core Math Games
-- **Math Practice** - Progressive difficulty system with basic arithmetic operations
-- **Math Blast** - Fast-paced math challenges
-- **Math Race** - Competitive math problem solving
-- **Math Memory** - Memory-based math activities
-- **Decimal Master** - Focused decimal arithmetic practice
-- **Fraction Master** - Fraction operations and conversions
-- **Plot Points** - Interactive graphing and coordinate activities
-- **Exponent Power** - Master exponents with interactive power calculations
-- **Exponent World** - Real-world word problems using exponent calculations
+### 🔢 Core Math Games
+- **Math Practice** - Progressive arithmetic practice advancing from easy to hard with instant feedback.
+- **Math Blast** - Fast-paced arcade math challenge with descending falling equations.
+- **Math Race** - 60-second timed problem-solving sprint with streak multipliers.
+- **Math Memory** - Concentration card matching for arithmetic expressions and solutions.
+- **Decimal Master** - Decimal arithmetic operations and place value drills.
+- **Fraction Master** - 8 progressive levels covering simplifying, common denominators, multiplication, and division.
+- **Plot Points** - Four-quadrant Cartesian graphing and distance measurement tool.
+- **Exponent Power** - Numerical exponent evaluation with step-by-step worked solutions.
+- **Exponent Rules** - Product of powers, quotient of powers, negative, and fractional exponents.
+- **Exponent World** - Real-world applied word problems covering biology, technology, geometry, and finance.
+- **Area Explorer** - Multi-level polygon and composite geometric area solver with canvas diagrams.
+- **Coordinate Navigator** - Quadrant grid navigation and directional distance challenges.
+- **Ratio River** - Proportional reasoning and equivalent ratio bridge-building.
+- **Vault Solver** - Equation and pattern decoding to unlock the secret vault.
+- **Percentage Quest** - Turn-based boss battle RPG powered by percentage, discount, and tax calculations.
+- **Expression Comparison** - Variable expression inequality balancing and evaluation.
+- **Math Adventure** - Graphical fantasy RPG journey across an interactive world map.
+- **Obstacle Course** - 3D obstacle runner revealing secret math messages.
 
-### Key Features
-- **Progressive Difficulty System** - Automatically advances from easy → medium → hard based on performance
-- **Performance Tracking** - Session-based score tracking and statistics
-- **Immediate Feedback** - Real-time answer validation with detailed responses
-- **Gemini Student Helper** - Student-safe chatbot powered by Google Gemini 2.5 Flash with website-aware help
-- **Responsive Design** - Mobile-friendly interface that works on all devices
-- **Clean UI** - Modern, intuitive design optimized for student use
+### 📚 English Language Arts (ELA) Games
+- **Context Clues** - Reading comprehension inference challenges for Tier 2 and Tier 3 vocabulary.
+- **Sentence Fixer** - Capitalization, punctuation, and grammar editing mechanics.
+- **Verb Detective** - Identification of action verbs, linking verbs, and verb phrases in narrative sentences.
+- **Word Match** - Synonym and antonym pairing across tiered difficulties.
+
+### 🪐 3D Space Flight & Quest Map
+- **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.
+- **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.
+- **Solar System Explorer** - Scale planetary map with authentic NASA imagery and astronomy facts.
+- **Orientation Station** - Module 0 onboarding checking Canvas navigation, calendar, and inbox skills.
+- **Pet Land** - Pet adoption and equipment center earned via quest achievements.
+- **Grand Finale** - 3-day end-of-year math celebration slideshow with interactive mini-games.
+
+### 🕹️ Arcade Hub
+- **Dino Arcade** - Astronaut space runner jumping over planetary debris.
+- **Snake Arcade** - Classic retro snake arcade game with arithmetic checkpoints.
+- **Pong Arcade** - Paddle reflex arcade challenge.
+- **Tetris** - Block stacking puzzle challenge.
+- **Pinball Arcade** - Physics pinball score chaser.
+
+### 🤖 Student Support & Accessibility
+- **Gemini AI Helper Chatbot** - Safe student coaching chatbot powered by Google Gemini 2.5 Flash with local FAQ fast-path.
+- **Dyslexia-Friendly Typography** - Lexend font family, high-contrast panels, and left-aligned text blocks.
+- **Floating Scientific Calculator** - Draggable, responsive calculator accessible on all activity pages.
+- **FERPA Compliance** - Student privacy protection without collecting Personally Identifiable Information (PII).
+- **Teacher Analytics & Pacing Dashboard** - Real-time mastery analytics, Star 360 check-in logs, and pacing locks.
 
 ## 🚀 Live Demo
 
@@ -29,68 +58,76 @@ The application is deployed and available at: [mcallister2.onrender.com](https:/
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Flask (Python web framework)
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Session Management**: Flask sessions for user state tracking
-- **Deployment**: Gunicorn WSGI server (Render-ready)
+- **Backend**: Flask (Python 3.11+ web framework), Gunicorn WSGI server.
+- **Telemetry Backend**: Node.js, Express, PostgreSQL (`quest_logs_backend/`).
+- **Frontend SPA Platform**: React 18, Vite, Three.js / React Three Fiber, Tailwind CSS, Lucide React, Recharts (`math_learning_platform/`).
+- **Database**: PostgreSQL (student creation reviews, quest telemetry, Star 360 diagnostic check-ins).
+- **AI Integration**: Google Gemini 2.5 Flash API with strict safety system prompts.
+- **Package Management**: [uv](https://docs.astral.sh/uv/) for Python dependencies, npm for JavaScript packages.
 
 ## 📁 Project Structure
 
 ```
 math_practice/
-├── app.py                  # Main Flask application
-├── pyproject.toml        # Python project configuration
-├── uv.lock               # Locked dependencies
-├── templates/             # HTML templates
-│   ├── base.html          # Base template with common layout
-│   ├── index.html         # Homepage with game selection
-│   ├── math_practice.html # Progressive math practice
-│   ├── math_blast.html    # Math Blast game
-│   ├── math_race.html     # Math Race game
-│   ├── math_memory.html   # Math Memory game
-│   ├── decimal_master.html # Decimal practice
-│   ├── fraction_master.html # Fraction practice
-│   ├── plot_points.html   # Graphing activities
-│   ├── exponent_power.html # Exponent practice
-│   ├── exponent_world.html # Exponent word problems
-│   └── about.html         # About page
-├── static/               # Static assets (CSS/JS)
-│   ├── style.css         # Global styles
-│   ├── main.js           # Common JavaScript
-│   ├── calculator.css/.js # Calculator functionality
-│   ├── math_blast.css/.js # Math Blast game logic
-│   ├── math_race.css/.js  # Math Race game logic
-│   ├── math_memory.css/.js # Math Memory game logic
-│   ├── fraction_master.css/.js # Fraction game logic
-│   ├── plot_points.css/.js # Graphing functionality
-│   ├── exponent_power.css/.js # Exponent game logic
-│   └── exponent_world.css/.js # Exponent word problems
-└── .venv/                # Python virtual environment (managed by uv)
+├── app.py                              # Main Flask application and API routes.
+├── pyproject.toml                      # Python package configuration and dependencies.
+├── uv.lock                             # Locked Python dependency graph.
+├── update_chatbot.py                   # Chatbot FAQ update utility.
+├── update_suggestions.py               # Autocomplete suggestions update script.
+├── math_learning_platform/             # React SPA frontend application.
+│   ├── package.json                    # React dependencies and scripts.
+│   └── src/
+│       ├── main.jsx                    # React mount entry point.
+│       ├── App.jsx                     # Top-level view router and auth gate.
+│       ├── auth/                       # Supabase authentication context.
+│       ├── components/                 # UI components (PlanetHub, Modals, Games).
+│       ├── data/                       # Curriculum units and question banks.
+│       ├── gameEngine/                 # 3D Three.js canvas engines.
+│       └── teacher/                    # Teacher analytics dashboards.
+├── quest_logs_backend/                 # Express.js telemetry microservice.
+│   ├── server.js                       # Telemetry ingestion server.
+│   ├── db.sql                          # PostgreSQL database schema.
+│   └── package.json                    # Node.js dependencies.
+├── templates/                          # Jinja2 HTML templates for all games & hubs.
+│   ├── base.html                       # Global HTML wrapper with widgets.
+│   ├── home.html                       # Main learning center landing page.
+│   ├── math_games.html                 # Math games directory.
+│   ├── ela_games.html                  # ELA games directory.
+│   ├── quest_map.html                  # 3D space flight quest navigation.
+│   ├── planet_hub.html                 # 10-station constellation trail.
+│   ├── solar_system.html               # Solar system fact explorer.
+│   ├── solar_flight.html               # 3D solar system flight simulation.
+│   ├── star360_checkin.html            # Diagnostic test check-in log.
+│   └── ...                             # Dedicated game view templates.
+└── static/                             # Static assets.
+    ├── audio/                          # Sound tracks and audio effects.
+    ├── css/                            # Modular stylesheet files.
+    ├── img/                            # Refactored images and diagrams.
+    │   ├── planet_backgrounds/         # Illustrated planet backdrop art.
+    │   └── screenshots/                # UI screenshots and captures.
+    ├── js/                             # Game logic scripts and interactive modules.
+    ├── models/                         # 3D WebGL asset models.
+    └── pdfs/                           # Printable learning worksheets.
 ```
 
 ## 🎯 How the Progressive System Works
 
 ### Difficulty Levels
-1. **Easy**: Numbers 5-10, operations with 1-5
-2. **Medium**: Numbers 1-100, operations with 1-50  
-3. **Hard**: Numbers 1-1000, operations with 1-500
+1. **Easy**: Single-digit integers and foundational mechanics.
+2. **Medium**: Multi-digit integers, fractions, and simple decimals.
+3. **Hard**: Mixed numbers, multi-step algebra, and complex word problems.
 
 ### Progression Requirements
-- **Easy → Medium**: Answer 4 consecutive questions correctly
-- **Medium → Hard**: Answer 7 consecutive questions correctly
-- **Victory**: Answer 5 hard questions correctly
-
-### Operations Supported
-- Addition (+)
-- Subtraction (−)
-- Multiplication (×)
-- Division (÷) - with results rounded to 2 decimal places
+- **Easy → Medium**: Answer 4 consecutive questions correctly.
+- **Medium → Hard**: Answer 7 consecutive questions correctly.
+- **Victory**: Answer 5 hard questions correctly.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) package manager
+- Node.js 18+ (for React platform and telemetry microservice)
 
 ### Installation
 
@@ -100,24 +137,36 @@ math_practice/
    cd math_practice
    ```
 
-2. **Sync the environment and install dependencies**:
+2. **Sync Python dependencies**:
    ```bash
    uv sync
    ```
 
-3. **Set your Gemini API key**:
+3. **Configure Environment Variables**:
    ```bash
-   export GEMINI_API_KEY="your-api-key-here"
+   export GEMINI_API_KEY="your-gemini-api-key"
+   export DATABASE_URL="postgresql://user:pass@localhost:5432/math_practice"
    ```
 
-4. **Run the application**:
+4. **Run the Flask application**:
    ```bash
    uv run python app.py
    ```
 
-5. **Open your browser** and navigate to `http://localhost:5000`
+5. **Open your browser** and navigate to `http://localhost:5000`.
+
+### Running the React Platform (Optional)
+```bash
+cd math_learning_platform
+npm install
+npm run dev
+```
 
 ### For Production Deployment
+The application is configured for deployment with Gunicorn:
+```bash
+gunicorn app:app
+```
 
 The app is configured for deployment with Gunicorn:
 

@@ -1,4 +1,14 @@
+/**
+ * Word Match Synonyms & Antonyms Game.
+ *
+ * Vocabulary practice matching target vocabulary words with their correct
+ * synonyms or antonyms across easy, medium, and hard difficulty sets.
+ */
+
 class WordMatchGame {
+    /**
+     * Initialize score, streak, dictionary items, and event handlers.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;

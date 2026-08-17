@@ -1,29 +1,36 @@
+/**
+ * Learning Center Chatbot Widget.
+ *
+ * Implements an interactive AI support chatbot for students with FAQ fast-path
+ * matching, Gemini language model completions, dragging capabilities, and responsive UI.
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Create Chatbot Container
+    // Create Chatbot Container.
     const container = document.createElement('div');
     container.id = 'chatbot-container';
     
-    // Toggle Button
+    // Toggle Button.
     const toggleButton = document.createElement('button');
     toggleButton.id = 'chatbot-toggle';
-    toggleButton.innerHTML = '&#128172;'; // Chat bubble icon
+    toggleButton.innerHTML = '&#128172;'; // Chat bubble icon.
     toggleButton.title = 'Ask a question';
     
-    // Chat Window
+    // Chat Window.
     const chatWindow = document.createElement('div');
     chatWindow.id = 'chatbot-window';
     chatWindow.style.display = 'none';
     
-    // Header
+    // Header.
     const header = document.createElement('div');
     header.id = 'chatbot-header';
     header.innerHTML = '<span>Ask Common Questions</span><span id="chatbot-close">&times;</span>';
     
-    // Messages
+    // Messages.
     const messages = document.createElement('div');
     messages.id = 'chatbot-messages';
     
-    // Input Area
+    // Input Area.
     const inputArea = document.createElement('div');
     inputArea.id = 'chatbot-input-area';
     
@@ -36,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sendButton.id = 'chatbot-send';
     sendButton.innerText = 'Send';
     
-    // Assemble
+    // Assemble DOM elements.
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
     
@@ -49,14 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.body.appendChild(container);
     
-    // State
+    // State management.
     let isChatOpen = false;
     let isSending = false;
     
-    // Add initial bot message
+    // Add initial bot message.
     appendMessage('bot', 'Hi there. I can help with this website, school navigation questions, and short math or ELA hints. Try asking things like "How do I play this game?", "Where do I find my work?", or "Can you give me a hint?".');
     
-    // Event listeners
+    // Event listeners.
     toggleButton.addEventListener('click', () => {
         isChatOpen = !isChatOpen;
         chatWindow.style.display = isChatOpen ? 'flex' : 'none';

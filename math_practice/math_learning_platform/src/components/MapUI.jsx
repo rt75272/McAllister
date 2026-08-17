@@ -1,10 +1,17 @@
+/**
+ * Map HUD & Sidebar User Interface Component.
+ *
+ * Displays student coin balance, unit mission descriptions, quest lists,
+ * completion status, and triggers interactive game modals.
+ */
+
 import React, { useState } from 'react';
 import { Coins, ChevronLeft, Play, Lock, CheckCircle, Info } from 'lucide-react';
 import GameModal from './GameModal.jsx';
 
 export default function MapUI({ selectedUnit, setSelectedUnit, selectedTopic, setSelectedTopic }) {
   const [coins, setCoins] = useState(15);
-  const [completedTopics, setCompletedTopics] = useState(['1_1']); // Seed one completed lesson
+  const [completedTopics, setCompletedTopics] = useState(['1_1']); // Seed one completed lesson.
 
   const handleLaunchGame = (topic) => {
     setSelectedTopic(topic);
@@ -20,7 +27,7 @@ export default function MapUI({ selectedUnit, setSelectedUnit, selectedTopic, se
 
   return (
     <div className="flex flex-col h-full justify-between gap-6">
-      {/* Top Header / Coin counter */}
+      {/* Top Header / Coin counter. */}
       <div className="space-y-4">
         <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-4 rounded-xl shadow">
           <div className="flex items-center gap-2">
@@ -30,7 +37,7 @@ export default function MapUI({ selectedUnit, setSelectedUnit, selectedTopic, se
           <span className="text-xl font-black text-yellow-400 font-mono">{coins}🪙</span>
         </div>
 
-        {/* Dynamic details */}
+        {/* Dynamic details. */}
         {!selectedUnit ? (
           <div className="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl text-center space-y-3">
             <div className="text-3xl">🌌</div>
@@ -44,7 +51,7 @@ export default function MapUI({ selectedUnit, setSelectedUnit, selectedTopic, se
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Header / Zoom out */}
+            {/* Header / Zoom out. */}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSelectedUnit(null)}

@@ -1,24 +1,23 @@
+/**
+ * Galaga Math Space Shooter Game Component.
+ *
+ * 2D HTML5 Canvas space defender game where shooting descending asteroids triggers
+ * curriculum math equation challenges, with accessibility timer controls.
+ */
+
 import React, { useRef, useState, useEffect } from 'react';
 import { QuestionBank } from '../data/questionBank.js';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { Gamepad2, Volume2, ShieldAlert, Zap, Timer, HelpCircle, Loader2 } from 'lucide-react';
 
-/**
- * GalagaMathGame - Immersive 2D HTML5 Canvas Arcade Game
- * 
- * Features:
- * - Dynamic bottom defender shooting laser matrices at falling asteroids.
- * - 30-Second Interrupt Loop: Automatically pauses and launches curriculum math equations.
- * - Accessibility Speed Toggle: Students can disable the automatic timer to work at their own pace.
- */
 export default function GalagaMathGame({ studentSession, unitId, onGameFinished }) {
   const canvasRef = useRef(null);
   const requestRef = useRef(null);
   
-  // Game state controllers
+  // Game state controllers.
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(30); // 30-second interval trigger
+  const [timeRemaining, setTimeRemaining] = useState(30); // 30-second interval trigger.
   const [showMathPrompt, setShowMathPrompt] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState('');
@@ -26,20 +25,20 @@ export default function GalagaMathGame({ studentSession, unitId, onGameFinished 
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Accessibility toggle - Disable automated game speed timer
+  // Accessibility toggle - Disable automated game speed timer.
   const [disableTimer, setDisableTimer] = useState(false);
 
-  // Interactive Entity trackers
+  // Interactive entity trackers.
   const shipX = useRef(150);
   const lasers = useRef([]);
   const debris = useRef([]);
   const keysPressed = useRef({});
 
-  // Keyboard controls listener for Arcade ship movement
+  // Keyboard controls listener for arcade ship movement.
   useEffect(() => {
     const handleKeyDown = (e) => {
       keysPressed.current[e.key] = true;
-      // Prevent browser scrolling on space/arrows
+      // Prevent browser scrolling on space/arrows.
       if ([' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
       }

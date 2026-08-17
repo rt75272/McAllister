@@ -1,3 +1,9 @@
+/**
+ * React Application Entry Point.
+ *
+ * Mounts the top-level application wrapped in the Supabase authentication provider.
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';

@@ -1,15 +1,17 @@
+/**
+ * Extra Credit Quiz Station Component.
+ *
+ * Tiered difficulty math challenges connected to curriculum planet learning objectives,
+ * featuring instant feedback, point rewards, and Supabase score synchronization.
+ */
+
 import React, { useState } from 'react';
 import { QuestionBank } from '../data/questionBank.js';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { Trophy, HelpCircle, Check, ArrowRight, ShieldAlert, Coins, Loader2 } from 'lucide-react';
 
-/**
- * Immersive Extra Credit Quiz Station Component
- * 
- * Offers tiered difficulty math assignments linked to the current Planet's theme.
- */
 export default function ExtraCreditQuiz({ studentSession, unitId, onActionComplete }) {
-  const [difficulty, setDifficulty] = useState(null); // null, 'easy', 'medium', 'hard'
+  const [difficulty, setDifficulty] = useState(null); // null, 'easy', 'medium', 'hard'.
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState('');
   const [numericAnswer, setNumericAnswer] = useState('');
@@ -18,16 +20,16 @@ export default function ExtraCreditQuiz({ studentSession, unitId, onActionComple
   const [loading, setLoading] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
 
-  // Initialize Quiz Question for chosen difficulty
+  // Initialize quiz question for chosen difficulty.
   const handleSelectDifficulty = (tier) => {
     setDifficulty(tier);
     setAnswered(false);
     setSelectedOption('');
     setNumericAnswer('');
     
-    // Draw appropriate matching question from Bank
+    // Draw appropriate matching question from bank.
     const question = QuestionBank.getRandomQuestion(unitId, { difficulty: tier }) || 
-      // Safe fallback if bank doesn't have exact difficulty
+      // Safe fallback if bank doesn't have exact difficulty.
       QuestionBank.getRandomQuestion(1, { difficulty: tier });
 
     setCurrentQuestion(question);

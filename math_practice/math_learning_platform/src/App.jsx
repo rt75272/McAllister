@@ -1,3 +1,10 @@
+/**
+ * Math Learning Platform Main App Component.
+ *
+ * Provides view routing between student quest view, 3D interactive map,
+ * and teacher pacing dashboard with Supabase user authentication.
+ */
+
 import React, { useState } from 'react';
 import { useAuth } from './auth/AuthContext.jsx';
 import QuestMap3D from './gameEngine/QuestMap3D.jsx';
@@ -7,9 +14,9 @@ import { Shield, GraduationCap, Map, Users, LogOut, Loader2 } from 'lucide-react
 
 function App() {
   const { user, profile, loading, signIn, signUp, signOut } = useAuth();
-  const [currentView, setCurrentView] = useState('student'); // 'student' | 'teacher'
-  const [selectedUnit, setSelectedUnit] = useState(null); // Zoomed-in unit selection
-  const [selectedTopic, setSelectedTopic] = useState(null); // Active minigame selection
+  const [currentView, setCurrentView] = useState('student'); // 'student' | 'teacher'.
+  const [selectedUnit, setSelectedUnit] = useState(null); // Zoomed-in unit selection.
+  const [selectedTopic, setSelectedTopic] = useState(null); // Active minigame selection.
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -24,7 +31,7 @@ function App() {
     );
   }
 
-  // Auth Screen
+  // Authentication screen.
   if (!user) {
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -39,7 +46,7 @@ function App() {
           if (error) throw error;
         }
       } catch (err) {
-        setAuthError(err.message || 'Authentication failed');
+        setAuthError(err.message || 'Authentication failed.');
       }
     };
 

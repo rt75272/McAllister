@@ -1,13 +1,16 @@
-// Simple plot-points game
-// Grid: centered origin, integer coordinates. Each square = 1 unit.
+/**
+ * Coordinate Plane Plot Points Interactive Tool.
+ *
+ * Interactive Cartesian coordinate grid for plotting points across four quadrants,
+ * measuring horizontal/vertical/diagonal distance, and practicing coordinate navigator tasks.
+ */
 
-// Plot Points (two-point distance only)
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('plotCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Two-point elements
+    // Two-point elements.
     const inputAx = document.getElementById('inputAx');
     const inputAy = document.getElementById('inputAy');
     const inputBx = document.getElementById('inputBx');
@@ -22,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let canvasSize = Math.min(canvas.width, canvas.height);
     let origin = { x: canvasSize / 2, y: canvasSize / 2 };
-    const maxRange = 15; // Maximum coordinate range (up to 15)
-    let cellSize = Math.min(30, Math.floor(Math.min(canvas.width, canvas.height) / (maxRange * 2 + 2))); // Dynamic cell size
-    let placingMode = null; // 'A' or 'B' or null
+    const maxRange = 15; // Maximum coordinate range (up to 15).
+    let cellSize = Math.min(30, Math.floor(Math.min(canvas.width, canvas.height) / (maxRange * 2 + 2))); // Dynamic cell size.
+    let placingMode = null; // 'A' or 'B' or null.
     let pointA = null;
     let pointB = null;
 
@@ -40,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxCellsY = Math.min(Math.floor(canvas.height / cellSize / 2), maxRange);
         const cells = Math.min(maxCellsX, maxCellsY);
 
-        // grid lines
+        // Grid lines.
         ctx.strokeStyle = '#e6eefc';
         ctx.lineWidth = 1;
         for (let i = -cells; i <= cells; i++) {

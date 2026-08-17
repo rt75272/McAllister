@@ -1,6 +1,14 @@
-// Fraction Master Game JavaScript
+/**
+ * Fraction Master Progressive Math Game.
+ *
+ * Implements 8 levels of fraction operations: simplifying, common denominators,
+ * unlike denominators, fraction multiplication, fraction division, and mixed operations.
+ */
 
 class FractionMaster {
+    /**
+     * Initialize levels, scoring, streak counters, and event listeners.
+     */
     constructor() {
         this.currentLevel = 1;
         this.maxLevel = 8;
@@ -17,14 +25,14 @@ class FractionMaster {
         };
 
         this.levels = {
-            1: { name: "Simplify Fractions", type: "simplify", description: "Simplify fractions to their lowest terms" },
-            2: { name: "Add Fractions", type: "add_same", description: "Add fractions with the same denominator" },
-            3: { name: "Subtract Fractions", type: "subtract_same", description: "Subtract fractions with the same denominator" },
-            4: { name: "Add Different Denominators", type: "add_different", description: "Add fractions with different denominators" },
-            5: { name: "Subtract Different Denominators", type: "subtract_different", description: "Subtract fractions with different denominators" },
-            6: { name: "Multiply Fractions", type: "multiply", description: "Multiply fractions together" },
-            7: { name: "Divide Fractions", type: "divide", description: "Divide fractions" },
-            8: { name: "Mixed Operations", type: "mixed", description: "Mixed fraction operations" }
+            1: { name: "Simplify Fractions", type: "simplify", description: "Simplify fractions to their lowest terms." },
+            2: { name: "Add Fractions", type: "add_same", description: "Add fractions with the same denominator." },
+            3: { name: "Subtract Fractions", type: "subtract_same", description: "Subtract fractions with the same denominator." },
+            4: { name: "Add Different Denominators", type: "add_different", description: "Add fractions with different denominators." },
+            5: { name: "Subtract Different Denominators", type: "subtract_different", description: "Subtract fractions with different denominators." },
+            6: { name: "Multiply Fractions", type: "multiply", description: "Multiply fractions together." },
+            7: { name: "Divide Fractions", type: "divide", description: "Divide fractions." },
+            8: { name: "Mixed Operations", type: "mixed", description: "Mixed fraction operations." }
         };
 
         this.initializeElements();

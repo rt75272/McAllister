@@ -1,3 +1,10 @@
+/**
+ * Quest Logs Telemetry Backend Server.
+ *
+ * Express.js microservice for recording and auditing student quest attempts,
+ * mathematical operations, timestamps, and accuracy telemetry in PostgreSQL.
+ */
+
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -5,11 +12,13 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
+// Initialize PostgreSQL connection pool.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
+// Whitelist of valid mathematical operations for quest tracking.
 const ALLOWED_OPERATIONS = new Set([
   'addition',
   'subtraction',
@@ -24,6 +33,9 @@ const ALLOWED_OPERATIONS = new Set([
   'other',
 ]);
 
+/**
+ * Health check endpoint.
+ */
 app.get('/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -34,6 +46,9 @@ app.get('/health', async (_req, res) => {
   }
 });
 
+/**
+ * Quest log ingestion endpoint.
+ */
 app.post('/api/logs/quest', async (req, res) => {
   try {
     const {
@@ -52,25 +67,25 @@ app.post('/api/logs/quest', async (req, res) => {
     const timeNum = Number(time_to_solve_seconds);
 
     if (!Number.isInteger(idNum) || idNum <= 0) {
-      return res.status(400).json({ error: 'student_id must be a positive integer' });
+      return res.status(400).json({ error: 'student_id must be a positive integer.' });
     }
     if (!op) {
-      return res.status(400).json({ error: 'operation is required' });
+      return res.status(400).json({ error: 'operation is required.' });
     }
     if (!ALLOWED_OPERATIONS.has(op)) {
-      return res.status(400).json({ error: 'operation is invalid' });
+      return res.status(400).json({ error: 'operation is invalid.' });
     }
     if (!prompt) {
-      return res.status(400).json({ error: 'problem_asked is required' });
+      return res.status(400).json({ error: 'problem_asked is required.' });
     }
     if (!answer) {
-      return res.status(400).json({ error: 'student_answer is required' });
+      return res.status(400).json({ error: 'student_answer is required.' });
     }
     if (typeof is_correct !== 'boolean') {
-      return res.status(400).json({ error: 'is_correct must be boolean' });
+      return res.status(400).json({ error: 'is_correct must be boolean.' });
     }
     if (!Number.isFinite(timeNum) || timeNum < 0) {
-      return res.status(400).json({ error: 'time_to_solve_seconds must be a non-negative number' });
+      return res.status(400).json({ error: 'time_to_solve_seconds must be a non-negative number.' });
     }
 
     const sql = `
@@ -85,21 +100,22 @@ app.post('/api/logs/quest', async (req, res) => {
     const result = await pool.query(sql, values);
 
     return res.status(201).json({
-      message: 'Quest attempt logged successfully',
+      message: 'Quest attempt logged successfully.',
       log: result.rows[0],
     });
   } catch (err) {
     console.error('POST /api/logs/quest failed:', err);
 
     if (err.code === '23503') {
-      return res.status(400).json({ error: 'student_id does not exist' });
+      return res.status(400).json({ error: 'student_id does not exist.' });
     }
 
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 });
 
+// Start telemetry microservice server.
 const port = Number(process.env.PORT) || 3001;
 app.listen(port, () => {
-  console.log(`Quest logs backend listening on port ${port}`);
+  console.log(`Quest logs backend listening on port ${port}.`);
 });

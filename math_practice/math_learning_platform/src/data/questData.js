@@ -1,10 +1,17 @@
+/**
+ * Quest Map Curriculum Units and Island Specifications.
+ *
+ * Defines the 3D map metadata, coordinates, topics, and minigame configurations
+ * across all grade 6 curriculum units.
+ */
+
 export const units = [
   {
     id: 1,
     name: "Sky Garden Planet",
     topic: "Number Properties",
     color: "#6366f1",
-    position: [-4, 0, -2], // 3D coordinates on map
+    position: [-4, 0, -2], // 3D coordinates on map.
     icon: "🌸",
     desc: "Master GCF, LCM, division algorithms, and distributive property locks.",
     minigames: [

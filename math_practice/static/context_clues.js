@@ -1,4 +1,14 @@
+/**
+ * Context Clues ELA Interactive Game.
+ *
+ * Provides reading comprehension exercises that prompt students to determine
+ * the meaning of unfamiliar vocabulary using context clues across tiered difficulties.
+ */
+
 class ContextCluesGame {
+    /**
+     * Initialize game state, stats, achievements, and question items.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;

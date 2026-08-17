@@ -1,4 +1,14 @@
+/**
+ * Verb Detective Parts of Speech Interactive Game.
+ *
+ * Practice identifying action verbs, linking verbs, helping verbs, and verb phrases
+ * across interactive sentences with instant feedback and detective rankings.
+ */
+
 class VerbDetectiveGame {
+    /**
+     * Initialize detective score state, sentences dictionary, and achievements.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;

@@ -1,23 +1,23 @@
+/**
+ * FERPA-Compliant Student Login Component.
+ *
+ * Facilitates student sign-in using only a classroom code and first name,
+ * avoiding the collection or storage of Personally Identifiable Information (PII).
+ */
+
 import React, { useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { Rocket, GraduationCap, ArrowRight, ShieldCheck, HelpCircle, Loader2 } from 'lucide-react';
 
-/**
- * FERPA-compliant Student Login Component
- * 
- * Complies with FERPA by avoiding collection of any Personally Identifiable Information (PII)
- * such as last names, email addresses, student IDs, or school credentials.
- * Authentication utilizes a teacher-provided "Class Code" and the student's "First Name" only.
- */
 export default function StudentLogin({ onLoginSuccess }) {
-  const [step, setStep] = useState(1); // 1: Class Code, 2: First Name
+  const [step, setStep] = useState(1); // 1: Class Code, 2: First Name.
   const [classCode, setClassCode] = useState('');
   const [firstName, setFirstName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
-  // Check if a session already exists in localStorage on mount
+  // Check if a session already exists in localStorage on mount.
   useEffect(() => {
     const savedSession = localStorage.getItem('student_math_session');
     if (savedSession) {
@@ -31,7 +31,7 @@ export default function StudentLogin({ onLoginSuccess }) {
     }
   }, [onLoginSuccess]);
 
-  // Handle Class Code Verification
+  // Handle class code verification.
   const handleVerifyClassCode = async (e) => {
     e.preventDefault();
     setLoading(true);

@@ -1,3 +1,10 @@
+/**
+ * Curriculum Minigame Modal Component.
+ *
+ * Generates dynamic grade 6 math questions (ratios, exponents, division, linear equations)
+ * tailored to the selected island quest objective and awards student coins.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { X, Trophy, Check, Flame, AlertCircle } from 'lucide-react';
 
@@ -7,30 +14,30 @@ export default function GameModal({ topic, onClose, onComplete }) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [question, setQuestion] = useState({ query: '', answer: 0 });
 
-  // Generate dynamic 6th-grade math questions on modal load based on topic type
+  // Generate dynamic 6th-grade math questions on modal load based on topic type.
   useEffect(() => {
     let query = '';
     let answer = 0;
 
     if (topic.type === 'shooter') {
-      // Division or reciprocals
+      // Division or reciprocals.
       const divisor = Math.floor(Math.random() * 8) + 3;
       const quotient = Math.floor(Math.random() * 9) + 4;
       const dividend = divisor * quotient;
       query = `Calculate the landing sector coordinate: what is ${dividend} ÷ ${divisor}?`;
       answer = quotient;
     } else if (topic.type === 'baking') {
-      // Ratios
-      const mult = Math.floor(Math.random() * 3) + 3; // 3 to 5
+      // Ratios.
+      const mult = Math.floor(Math.random() * 3) + 3; // 3 to 5.
       query = `A cookie recipe requires 2 cups of sugar for every 5 cups of flour. If you scale the recipe to use ${5 * mult} cups of flour, how many cups of sugar do you need?`;
       answer = 2 * mult;
     } else if (topic.type === 'balance') {
-      // Exponents or distributive prop
-      const base = Math.floor(Math.random() * 3) + 3; // 3 or 4 or 5
+      // Exponents or distributive property.
+      const base = Math.floor(Math.random() * 3) + 3; // 3 or 4 or 5.
       query = `Evaluate the volcanic geothermal energy core exponent: what is the value of ${base}³ (base ${base} to the power of 3)?`;
       answer = Math.pow(base, 3);
     } else {
-      // Standard equation
+      // Standard equation.
       const x = Math.floor(Math.random() * 12) + 6;
       query = `Find the value of x to balance the construction girder: x + 14 = ${x + 14}`;
       answer = x;

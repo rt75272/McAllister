@@ -1,15 +1,22 @@
+/**
+ * 3D Quest Map WebGL Canvas Scene.
+ *
+ * Renders 3D island figurines for curriculum units, arched bezier travel lines,
+ * orbit controls, and glowing select states using Three.js / React Three Fiber.
+ */
+
 import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars, Center, Text, Float } from '@react-three/drei';
 import { units } from '../data/questData.js';
 import * as THREE from 'three';
 
-// 3D Unit Island Figurine
+// 3D Unit Island Figurine.
 function UnitIslandNode({ id, name, topic, icon, color, position, isSelected, onClick }) {
   const meshRef = useRef();
   const [hovered, setHovered] = useState(false);
 
-  // Soft rotation and float animation
+  // Soft rotation and float animation.
   useFrame((state) => {
     if (meshRef.current) {
       const t = state.clock.getElapsedTime();
@@ -20,7 +27,7 @@ function UnitIslandNode({ id, name, topic, icon, color, position, isSelected, on
 
   return (
     <group position={position}>
-      {/* Interactive Node Mesh */}
+      {/* Interactive Node Mesh. */}
       <mesh
         ref={meshRef}
         onClick={(e) => {
@@ -38,7 +45,7 @@ function UnitIslandNode({ id, name, topic, icon, color, position, isSelected, on
           document.body.style.cursor = 'auto';
         }}
       >
-        {/* Floating Ring Base */}
+        {/* Floating Ring Base. */}
         <cylinderGeometry args={[1.2, 1.4, 0.4, 32]} />
         <meshStandardMaterial
           color={color}

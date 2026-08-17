@@ -1,4 +1,14 @@
+/**
+ * Sentence Fixer ELA Mechanics Game.
+ *
+ * Practice spotting and correcting capitalization, punctuation, comma usage,
+ * and grammar errors in broken sentences across tiered difficulty levels.
+ */
+
 class SentenceFixerGame {
+    /**
+     * Initialize sentence items, streak tracking, and achievement state.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;

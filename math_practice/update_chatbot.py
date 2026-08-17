@@ -1,3 +1,7 @@
+"""
+Utility script for updating the chatbot FAQ dictionary in app.py.
+"""
+
 import re
 
 new_faq = """    faq = {
@@ -73,11 +77,17 @@ new_faq = """    faq = {
 with open('app.py', 'r') as f:
     text = f.read()
 
-# Replace between "    faq = {" and "    # Simple keyword matching"
+# Replace between "    faq = {" and "    # Simple keyword matching."
 match = re.search(r'    faq = \{.*?\n    \}\n', text, re.DOTALL)
 if match:
     text = text.replace(match.group(0), new_faq + "\n")
 else:
+    print("Could not match faq dict in app.py")
+
+with open('app.py', 'w') as f:
+    f.write(text)
+
+print("Updated app.py")
     print("Could not match faq dict in app.py")
 
 with open('app.py', 'w') as f:

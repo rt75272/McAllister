@@ -1,3 +1,10 @@
+/**
+ * Teacher Pacing & Analytics Dashboard Component.
+ *
+ * Visualizes student mastery distributions, progress timeline charts, unit completion
+ * metrics, and controls classroom pacing lock restrictions.
+ */
+
 import React, { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -35,7 +42,7 @@ export default function PacingDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Upper metrics row */}
+      {/* Upper metrics row. */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
         <div>
           <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">

@@ -1,4 +1,14 @@
+/**
+ * Exponent Power Interactive Game.
+ *
+ * Practice evaluating numerical exponent expressions across progressive
+ * difficulty levels with step-by-step calculation expansion hints and achievements.
+ */
+
 class ExponentPowerGame {
+    /**
+     * Initialize game attributes, DOM bindings, and initial problems.
+     */
     constructor() {
         this.difficulty = 'easy';
         this.currentProblem = {};

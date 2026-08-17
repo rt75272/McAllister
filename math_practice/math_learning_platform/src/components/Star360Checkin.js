@@ -1,22 +1,23 @@
+/**
+ * FERPA-Compliant Star 360 Diagnostic Check-In Component.
+ *
+ * Allows students to confirm and record completion of Renaissance Star 360
+ * diagnostic benchmark assessments (BOY, MOY, EOY) and claim quest reward coins.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { Calendar, CheckSquare, Sparkles, Coins, ClipboardCheck, Loader2 } from 'lucide-react';
 
-/**
- * FERPA-compliant Star 360 Check-in Component
- * 
- * Allows students to claim points once per diagnostic test period (BOY, MOY, EOY)
- * after self-reporting assessment completion.
- */
 export default function Star360Checkin({ studentSession, unitId, onActionComplete }) {
-  const [period, setPeriod] = useState('BOY'); // BOY, MOY, EOY
+  const [period, setPeriod] = useState('BOY'); // BOY, MOY, EOY.
   const [completedToday, setCompletedToday] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [claimedPeriods, setClaimedPeriods] = useState([]);
 
-  // Fetch already claimed diagnostic periods from DB
+  // Fetch already claimed diagnostic periods from DB.
   useEffect(() => {
     const fetchClaims = async () => {
       if (!studentSession) return;
@@ -35,7 +36,7 @@ export default function Star360Checkin({ studentSession, unitId, onActionComplet
           console.warn('Error fetching Star 360 claims:', err);
         }
       } else {
-        // Mock Mode: Fetch from localStorage
+        // Mock Mode: Fetch from localStorage.
         const cacheKey = `mock_star360_claims_${studentSession.id}`;
         const cached = localStorage.getItem(cacheKey);
         if (cached) {

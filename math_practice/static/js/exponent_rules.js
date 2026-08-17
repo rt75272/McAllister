@@ -1,6 +1,14 @@
-// Exponent Evaluation Game Logic
+/**
+ * Exponent Rules and Operations Interactive Game.
+ *
+ * Implements problems for product of powers, quotient of powers, power of a power,
+ * negative exponents, zero exponents, and fractional exponents with worked solutions.
+ */
 
 class ExponentRulesGame {
+    /**
+     * Initialize score tracking, difficulty selection, and problem sets.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;
@@ -32,14 +40,14 @@ class ExponentRulesGame {
         this.feedback = document.getElementById('feedback');
         this.difficultySelect = document.getElementById('difficulty');
         
-        // Stats elements
+        // Stats elements.
         this.scoreDisplay = document.getElementById('score');
         this.streakDisplay = document.getElementById('streak');
         this.accuracyDisplay = document.getElementById('accuracy');
         this.problemsSolvedDisplay = document.getElementById('problems-solved');
         this.achievementsList = document.getElementById('achievements-list');
         
-        // Modal
+        // Modal elements.
         this.workModal = document.getElementById('work-modal');
         this.workContent = document.getElementById('work-content');
         this.closeModal = document.querySelector('.close');

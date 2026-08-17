@@ -1,4 +1,9 @@
-/* The Quest Map - Main Educational Game Engine (Astro Bot Space Style!) */
+/**
+ * The Quest Map - Main Educational Game Engine (Astro Bot Space Style).
+ *
+ * Implements procedural WebGL 3D flight navigation across 10 curriculum planetary systems,
+ * audio synthesized feedback effects, interactive minigames, and student coin telemetry.
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
@@ -15,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now); // C5
-                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15); // C6
+                osc.frequency.setValueAtTime(523.25, now); // C5.
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15); // C6.
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                 osc.connect(gain);
@@ -27,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(987.77, now); // B5
-                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+                osc.frequency.setValueAtTime(987.77, now); // B5.
+                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6.
                 gain.gain.setValueAtTime(0.12, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 osc.connect(gain);
@@ -41,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const gain = ctx.createGain();
                 osc1.type = 'triangle';
                 osc2.type = 'triangle';
-                osc1.frequency.setValueAtTime(261.63, now); // C4
+                osc1.frequency.setValueAtTime(261.63, now); // C4.
                 osc1.frequency.linearRampToValueAtTime(523.25, now + 0.4);
-                osc2.frequency.setValueAtTime(329.63, now); // E4
+                osc2.frequency.setValueAtTime(329.63, now); // E4.
                 osc2.frequency.linearRampToValueAtTime(659.25, now + 0.4);
                 gain.gain.setValueAtTime(0.15, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);

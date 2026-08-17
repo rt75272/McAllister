@@ -14,8 +14,16 @@
         --ink: #ecfeff;
     }
 
+    html {
+        scrollbar-gutter: stable;
+    }
+
     body {
+        display: block;
+        width: 100%;
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
         min-height: 100vh;
         font-family: "Trebuchet MS", "Verdana", sans-serif;
         color: var(--ink);
@@ -24,6 +32,9 @@
             radial-gradient(circle at 88% 14%, rgba(103, 232, 249, 0.22), transparent 32%),
             radial-gradient(circle at 55% 82%, rgba(251, 191, 36, 0.14), transparent 34%),
             linear-gradient(150deg, #020617 0%, var(--sky-deep) 45%, var(--sky-mid) 100%);
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
     }
 
     .star-overlay {
@@ -48,9 +59,11 @@
     .page-shell {
         position: relative;
         z-index: 1;
+        width: 100%;
         max-width: 1180px;
         margin: 0 auto;
         padding: 20px;
+        box-sizing: border-box;
     }
 
     .top-links {
@@ -69,11 +82,10 @@
         font-size: 13px;
         font-weight: 800;
         box-shadow: 0 10px 24px rgba(14, 165, 233, 0.25);
-        transition: transform 0.2s ease;
     }
 
     .portal-link:hover {
-        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(14, 165, 233, 0.4);
     }
 
     .hero {
@@ -276,11 +288,10 @@
         cursor: pointer;
         color: #05253c;
         background: linear-gradient(120deg, #67e8f9, #facc15);
-        transition: transform 0.2s ease;
     }
 
     .station-btn:hover {
-        transform: translateY(-1px);
+        filter: brightness(1.1);
     }
 
     .station-card.completed {

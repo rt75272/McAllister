@@ -1,4 +1,14 @@
+/**
+ * Algebraic Expression Comparison Interactive Game.
+ *
+ * Students evaluate two variable algebraic expressions for a given variable value
+ * and choose whether the left is greater, right is greater, or both are equal.
+ */
+
 class ExpressionComparisonGame {
+    /**
+     * Initialize expression state, event listeners, and default easy problem.
+     */
     constructor() {
         this.score = 0;
         this.streak = 0;
@@ -39,13 +49,13 @@ class ExpressionComparisonGame {
             const type = Math.floor(Math.random() * 3);
             
             if (type === 0) {
-                // Simple: coefficient * variable + constant (e.g., 3x + 2)
+                // Simple: coefficient * variable + constant (e.g., 3x + 2).
                 const coeff = Math.floor(Math.random() * 5) + 1;
                 const constant = Math.floor(Math.random() * 10) + 1;
                 expr = `${coeff}${varName} + ${constant}`;
                 value = coeff * varValue + constant;
             } else if (type === 1) {
-                // Simple: coefficient * variable - constant (e.g., 4x - 3)
+                // Simple: coefficient * variable - constant (e.g., 4x - 3).
                 const coeff = Math.floor(Math.random() * 5) + 2;
                 const constant = Math.floor(Math.random() * 8) + 1;
                 expr = `${coeff}${varName} - ${constant}`;

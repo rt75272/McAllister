@@ -8,20 +8,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Immersive Space Station Theme for the Planet Hub */
+        html {
+            scrollbar-gutter: stable;
+        }
+
         body {
+            display: block;
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             background: #09090e;
             color: #eef2ff;
             font-family: 'Comic Sans MS', 'Tahoma', 'Verdana', sans-serif;
-            min-height: 100vh;
             line-height: 1.5;
             letter-spacing: 0.05em;
             text-align: left;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
         }
 
         .hub-container {
+            width: 100%;
             max-width: 1100px;
             margin: 0 auto;
             padding: 24px;
+            box-sizing: border-box;
         }
 
         /* Glass panels with thick wood-style borders for medieval-space styling */
@@ -308,6 +322,8 @@
             padding: 16px;
             margin-top: 16px;
             height: 95px;
+            min-height: 95px;
+            max-height: 95px;
             box-sizing: border-box;
             overflow: hidden;
             display: flex;
@@ -455,8 +471,9 @@
                 border-radius: 16px !important;
             }
             .station-detail-banner {
-                height: auto !important;
-                min-height: 80px !important;
+                height: 95px !important;
+                min-height: 95px !important;
+                max-height: 95px !important;
                 padding: 10px !important;
             }
         }
@@ -589,13 +606,22 @@
                 activities: [
                     {
                         id: "p1_s1",
-                        title: "Meteor Blaster",
-                        type: "asteroid_shooter",
-                        question_topic: "number_properties",
-                        description: "A standard ship shooter with simple vector-line asteroids and number-properties checkpoints.",
-                        points_reward: 200,
-                        min_questions: 5,
-                        max_questions: 8
+                        title: "Asteroid Division",
+                        type: "long_division_asteroids",
+                        description: "Survive waves of asteroids and solve long division problems to earn powerful shield boosts.",
+                        points_reward: 250,
+                        min_questions: 3, // 3 waves
+                        max_questions: 3,
+                        question_generator: () => {
+                            const divisor = randomInt(4, 12);
+                            const quotient = randomInt(10, 30);
+                            const dividend = divisor * quotient;
+                            return {
+                                prompt: `Checkpoint: ${dividend} ÷ ${divisor} = ?`,
+                                answer: String(quotient),
+                                hint: 'How many times does the divisor go into the dividend?'
+                            };
+                        }
                     },
                     {
                         id: "p1_s2",
@@ -1543,6 +1569,10 @@
             }
             if (activity.type === 'asteroid_shooter') {
                 loadAsteroidShooter(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'long_division_asteroids') {
+                loadLongDivisionAsteroids(mBody, station, activity);
                 return;
             }
             if (activity.type === 'tic_tac_toe_bot') {
@@ -3984,6 +4014,295 @@
             activeModalCleanup = () => {
                 if (state.animationId) cancelAnimationFrame(state.animationId);
                 canvas.removeEventListener('click', fireLaser);
+                window.removeEventListener('keydown', handleKeydown);
+                window.removeEventListener('keyup', handleKeyup);
+            };
+        }
+
+        // ---------------------------------------------------------------
+        // MINI-GAME: ASTEROID DIVISION (wave survival with long division checkpoints)
+        // ---------------------------------------------------------------
+        function loadLongDivisionAsteroids(container, station, activity) {
+            const points = activity.points_reward || 250;
+            const waves = [
+                { count: 10, speed: 1.2, spawn: 50, name: "Scout Wave" },
+                { count: 15, speed: 1.5, spawn: 40, name: "Warrior Wave" },
+                { count: 20, speed: 1.8, spawn: 30, name: "Berserker Wave" },
+            ];
+
+            container.innerHTML = `
+                <p class="text-slate-400">Survive escalating waves of asteroids. After each wave, solve a long division problem to repair shields and upgrade your weapon.</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between text-[11px] font-mono text-slate-300">
+                        <span id="ad-wave">Wave: 1/${waves.length}</span>
+                        <span id="ad-score">Destroyed: 0/${waves[0].count}</span>
+                        <span id="ad-shields">Shields: 3</span>
+                    </div>
+                    <canvas id="ad-canvas" width="420" height="240"></canvas>
+                    <p class="text-[10px] text-slate-500 text-center">Arrow keys / A-D to move &middot; Space or click to fire</p>
+                    <button id="ad-start" class="btn-accessible w-full">Start Survival</button>
+                </div>
+                <div id="ad-checkpoint" class="hidden space-y-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                    <p id="ad-prompt" class="text-center font-mono text-sm"></p>
+                    <div class="flex gap-2">
+                        <input id="ad-input" type="number" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-center text-white" placeholder="Enter quotient">
+                        <button id="ad-submit" class="btn-accessible px-4">Continue</button>
+                    </div>
+                </div>
+                <p id="ad-feedback" class="text-xs font-bold text-center h-4"></p>
+            `;
+
+            const canvas = document.getElementById('ad-canvas');
+            const ctx = canvas.getContext('2d');
+            const startBtn = document.getElementById('ad-start');
+            const waveLabel = document.getElementById('ad-wave');
+            const scoreLabel = document.getElementById('ad-score');
+            const shieldsLabel = document.getElementById('ad-shields');
+            const checkpoint = document.getElementById('ad-checkpoint');
+            const promptEl = document.getElementById('ad-prompt');
+            const feedback = document.getElementById('ad-feedback');
+
+            const ship = { x: canvas.width / 2, width: 26, height: 16, speed: 6.5, invincible: 0 };
+            const state = {
+                wave: 0,
+                destroyed: 0,
+                shields: 3,
+                asteroids: [],
+                lasers: [],
+                particles: [],
+                boosted: 0,
+                frame: 0,
+                running: false,
+                animationId: null,
+                keys: {},
+            };
+
+            function currentWave() { return waves[state.wave]; }
+
+            function resetGame() {
+                state.wave = 0;
+                state.destroyed = 0;
+                state.shields = 3;
+                state.asteroids = [];
+                state.lasers = [];
+                state.particles = [];
+                state.boosted = 0;
+                state.frame = 0;
+                state.running = true;
+                ship.x = canvas.width / 2;
+                checkpoint.classList.add('hidden');
+                feedback.textContent = '';
+                startBtn.textContent = 'Restart Game';
+                updateHud();
+                loop();
+            }
+
+            function updateHud() {
+                waveLabel.textContent = `Wave: ${state.wave + 1}/${waves.length} (${currentWave().name})`;
+                scoreLabel.textContent = `Destroyed: ${state.destroyed}/${currentWave().count}`;
+                shieldsLabel.textContent = `Shields: ${state.shields}`;
+            }
+
+            function spawnAsteroid() {
+                state.asteroids.push({
+                    x: randomInt(15, canvas.width - 15),
+                    y: -15,
+                    radius: randomInt(10, 22),
+                    speed: currentWave().speed + Math.random() * 0.5,
+                    rotation: 0,
+                    rotationSpeed: (Math.random() - 0.5) * 0.04,
+                });
+            }
+            
+            function createParticles(x, y) {
+                for (let i = 0; i < 15; i++) {
+                    state.particles.push({
+                        x, y,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4,
+                        alpha: 1,
+                        radius: Math.random() * 2 + 1,
+                    });
+                }
+            }
+
+            function fireLaser() {
+                if (!state.running) return;
+                state.lasers.push({ x: ship.x, y: canvas.height - 34, width: state.boosted > 0 ? 8 : 4, height: 15 });
+                if (state.boosted > 0) {
+                     state.lasers.push({ x: ship.x-15, y: canvas.height - 34, width: 4, height: 12 });
+                     state.lasers.push({ x: ship.x+15, y: canvas.height - 34, width: 4, height: 12 });
+                }
+            }
+
+            function distance(x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            }
+
+            function update() {
+                state.frame++;
+                if (state.keys.left) ship.x = Math.max(16, ship.x - ship.speed);
+                if (state.keys.right) ship.x = Math.min(canvas.width - 16, ship.x + ship.speed);
+                if (ship.invincible > 0) ship.invincible--;
+
+                if (state.frame % currentWave().spawn === 0) spawnAsteroid();
+
+                state.lasers.forEach(l => l.y -= 8);
+                state.lasers = state.lasers.filter(l => l.y > -20);
+                
+                state.asteroids.forEach(a => {
+                    a.y += a.speed;
+                    a.rotation += a.rotationSpeed;
+                });
+
+                for (let i = state.asteroids.length - 1; i >= 0; i--) {
+                    const rock = state.asteroids[i];
+                    if (rock.y - rock.radius > canvas.height) {
+                        state.asteroids.splice(i, 1);
+                        continue;
+                    }
+
+                    for (let j = state.lasers.length - 1; j >= 0; j--) {
+                        const laser = state.lasers[j];
+                        if (distance(rock.x, rock.y, laser.x, laser.y) < rock.radius) {
+                            createParticles(rock.x, rock.y);
+                            state.asteroids.splice(i, 1);
+                            state.lasers.splice(j, 1);
+                            state.destroyed++;
+                            updateHud();
+                            break;
+                        }
+                    }
+                }
+                
+                if (ship.invincible === 0) {
+                    for (let i = state.asteroids.length - 1; i >= 0; i--) {
+                        const rock = state.asteroids[i];
+                        if (distance(rock.x, rock.y, ship.x, canvas.height - 34) < rock.radius + 10) {
+                            createParticles(ship.x, canvas.height - 34);
+                            state.asteroids.splice(i,1);
+                            state.shields--;
+                            ship.invincible = 60; // 1 second of invincibility
+                            updateHud();
+                            if (state.shields <= 0) {
+                                state.running = false;
+                                feedback.textContent = 'Shields failed! Game Over.';
+                                feedback.style.color = '#ef4444';
+                                if (state.animationId) cancelAnimationFrame(state.animationId);
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                state.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.02;
+                });
+                state.particles = state.particles.filter(p => p.alpha > 0);
+
+
+                if (state.destroyed >= currentWave().count) {
+                    state.running = false;
+                    if (state.wave >= waves.length - 1) {
+                        feedback.textContent = `All waves cleared! Victory! +${points} points.`;
+                        feedback.style.color = '#10b981';
+                        awardStation(station, points);
+                        setTimeout(closeModal, 1500);
+                    } else {
+                        const challenge = getFreshChallenge(activity);
+                        checkpoint.classList.remove('hidden');
+                        promptEl.textContent = `Wave Cleared! ${challenge.prompt}`;
+                        document.getElementById('ad-input').value = '';
+                        document.getElementById('ad-input').focus();
+                        activeStationRun.checkpointChallenge = challenge;
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                state.particles.forEach(p => {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                state.asteroids.forEach(rock => {
+                    ctx.save();
+                    ctx.translate(rock.x, rock.y);
+                    ctx.rotate(rock.rotation);
+                    ctx.fillStyle = '#78716c';
+                    ctx.strokeStyle = '#44403c';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -rock.radius);
+                    for(let i=1; i<7; i++){
+                       ctx.lineTo(rock.radius * Math.sin(i*2*Math.PI/7), -rock.radius*Math.cos(i*2*Math.PI/7));
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                });
+
+                state.lasers.forEach(laser => {
+                    ctx.fillStyle = state.boosted > 0 ? '#f472b6' : '#38bdf8';
+                    ctx.fillRect(laser.x - laser.width / 2, laser.y, laser.width, laser.height);
+                });
+
+                if (ship.invincible % 10 < 5) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x, canvas.height - 34 - ship.height);
+                    ctx.lineTo(ship.x - ship.width / 2, canvas.height - 34);
+                    ctx.lineTo(ship.x + ship.width / 2, canvas.height - 34);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+
+            function loop() {
+                if (state.running) {
+                    update();
+                }
+                draw();
+                state.animationId = requestAnimationFrame(loop);
+            }
+
+            const handleKeydown = e => { state.keys[e.key.toLowerCase().replace('arrow','')] = true; if (e.key === ' ') { e.preventDefault(); fireLaser(); } };
+            const handleKeyup = e => { state.keys[e.key.toLowerCase().replace('arrow','')] = false; };
+
+            canvas.addEventListener('click', fireLaser);
+            window.addEventListener('keydown', handleKeydown);
+            window.addEventListener('keyup', handleKeyup);
+            startBtn.addEventListener('click', resetGame);
+            
+            document.getElementById('ad-submit').addEventListener('click', () => {
+                const input = document.getElementById('ad-input').value;
+                const challenge = activeStationRun.checkpointChallenge;
+                if(normalizeChallengeAnswer(input) === normalizeChallengeAnswer(challenge.answer)) {
+                    state.wave++;
+                    state.destroyed = 0;
+                    state.shields = Math.min(5, state.shields + 1);
+                    state.boosted = 300; // 5 seconds of boost
+                    state.running = true;
+                    checkpoint.classList.add('hidden');
+                    feedback.textContent = 'Correct! Shields repaired and weapon boosted!';
+                    feedback.style.color = '#10b981';
+                    updateHud();
+                } else {
+                    feedback.textContent = challenge.hint || 'Incorrect. Try again.';
+                    feedback.style.color = '#ef4444';
+                }
+            });
+
+            activeModalCleanup = () => {
+                if (state.animationId) cancelAnimationFrame(state.animationId);
                 window.removeEventListener('keydown', handleKeydown);
                 window.removeEventListener('keyup', handleKeyup);
             };

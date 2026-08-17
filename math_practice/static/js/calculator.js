@@ -1,4 +1,9 @@
-/* Calculator functionality for all pages */
+/**
+ * Calculator functionality for student assistance across all pages.
+ *
+ * Implements a floating, draggable calculator widget with basic operations,
+ * exponents, keyboard navigation, and responsive touch controls.
+ */
 
 let calculatorDisplay = '';
 let isNewCalculation = false;
@@ -50,7 +55,7 @@ function createCalculatorHTML() {
         </div>
     `;
     
-    // Add calculator HTML to body
+    // Add calculator HTML to body.
     document.body.insertAdjacentHTML('afterbegin', calculatorHTML);
 }
 
@@ -58,7 +63,7 @@ function toggleCalculator() {
     const popup = document.getElementById('calculatorPopup');
     popup.classList.toggle('show');
     
-    // Focus on the display when opening
+    // Focus on the display when opening.
     if (popup.classList.contains('show')) {
         document.getElementById('calcDisplay').focus();
     }
@@ -90,13 +95,13 @@ function appendOperator(operator) {
         isNewCalculation = false;
     }
     
-    // Replace display symbols with calculation symbols
+    // Replace display symbols with calculation symbols.
     let calcOperator = operator;
     if (operator === '×') calcOperator = '*';
     if (operator === '÷') calcOperator = '/';
     if (operator === '−') calcOperator = '-';
     
-    // Don't add operator if display is empty or ends with an operator
+    // Don't add operator if display is empty or ends with an operator.
     if (calculatorDisplay === '' || /[+\-*/^]$/.test(calculatorDisplay)) {
         return;
     }
@@ -111,11 +116,11 @@ function appendDecimal() {
         isNewCalculation = false;
     }
     
-    // Get the current number (after the last operator)
+    // Get the current number (after the last operator).
     const parts = calculatorDisplay.split(/[+\-*/^]/);
     const currentNumber = parts[parts.length - 1];
     
-    // Only add decimal if current number doesn't already have one
+    // Only add decimal if current number doesn't already have one.
     if (!currentNumber.includes('.')) {
         if (calculatorDisplay === '' || /[+\-*/^]$/.test(calculatorDisplay)) {
             calculatorDisplay += '0.';
@@ -148,21 +153,21 @@ function calculate() {
     if (calculatorDisplay === '') return;
     
     try {
-        // Replace display symbols with JavaScript operators
+        // Replace display symbols with JavaScript operators.
         let expression = calculatorDisplay
             .replace(/×/g, '*')
             .replace(/÷/g, '/')
             .replace(/−/g, '-')
             .replace(/\^/g, '**');
         
-        // Evaluate the expression
+        // Evaluate the expression.
         let result = eval(expression);
         
-        // Handle division by zero and other edge cases
+        // Handle division by zero and other edge cases.
         if (!isFinite(result)) {
             calculatorDisplay = 'Error';
         } else {
-            // Round to avoid floating point precision issues
+            // Round to avoid floating point precision issues.
             result = Math.round(result * 1000000000) / 1000000000;
             calculatorDisplay = result.toString();
         }
@@ -177,7 +182,7 @@ function calculate() {
 }
 
 function setupCalculatorEvents() {
-    // Keyboard support
+    // Keyboard support.
     document.addEventListener('keydown', function(event) {
         const popup = document.getElementById('calculatorPopup');
         if (!popup || !popup.classList.contains('show')) return;
@@ -214,7 +219,7 @@ function setupCalculatorEvents() {
         }
     });
     
-    // Setup drag functionality
+    // Setup drag functionality.
     setupCalculatorDrag();
     setupCalculatorToggleDrag();
 }
@@ -231,7 +236,7 @@ function setupCalculatorDrag() {
 
     /* — pointer start — */
     function onPointerDown(e) {
-        // Only drag from the header (not the close button)
+        // Only drag from the header (not the close button).
         if (e.target.closest('.global-calculator-close')) return;
 
         isDragging = true;
@@ -250,7 +255,7 @@ function setupCalculatorDrag() {
         const x = e.clientX - offsetX;
         const y = e.clientY - offsetY;
 
-        // Constrain to viewport
+        // Constrain to viewport.
         const pad = 10;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
@@ -274,12 +279,12 @@ function setupCalculatorDrag() {
 
     }
 
-    /* Mouse events */
+    /* Mouse events. */
     header.addEventListener('mousedown', onPointerDown);
     document.addEventListener('mousemove', onPointerMove);
     document.addEventListener('mouseup', onPointerUp);
 
-    /* Touch events */
+    /* Touch events. */
     header.addEventListener('touchstart', function(e) {
         if (e.touches.length !== 1) return;
         onPointerDown({
@@ -372,24 +377,24 @@ function setupCalculatorToggleDrag() {
     document.addEventListener('touchend', endDrag);
 }
 
-// Initialize calculator when DOM is loaded
+// Initialize calculator when DOM is loaded.
 document.addEventListener('DOMContentLoaded', function() {
-    // Only create calculator if it doesn't already exist
+    // Only create calculator if it doesn't already exist.
     if (!document.getElementById('calculatorPopup')) {
         createCalculatorHTML();
         setupCalculatorEvents();
         updateDisplay();
     } else {
-        // If calculator already exists (from base template), just set up events
+        // If calculator already exists (from base template), just set up events.
         setupCalculatorEvents();
         updateDisplay();
     }
     
-    // Initialize operator key
+    // Initialize operator key.
     initializeOperatorKey();
 });
 
-// Debug function to reset calculator position  
+// Debug function to reset calculator position.
 window.resetCalculatorPosition = function() {
     const calculatorContainer = document.querySelector('.global-calculator-container');
     if (calculatorContainer) {
@@ -398,7 +403,7 @@ window.resetCalculatorPosition = function() {
         calculatorContainer.style.top = '';
         calculatorContainer.style.right = '';
         calculatorContainer.style.bottom = '';
-        console.log('Calculator position reset');
+        console.log('Calculator position reset.');
     }
     const toggle = document.getElementById('calc-toggle-btn');
     if (toggle) {
@@ -409,20 +414,20 @@ window.resetCalculatorPosition = function() {
     }
 };
 
-// Operator Key Functions
+// Operator key functions.
 function toggleOperatorKey() {
     const operatorKey = document.getElementById('operatorKey');
     if (operatorKey) {
         operatorKey.classList.toggle('hidden');
         
-        // Save preference to localStorage
+        // Save preference to localStorage.
         const isHidden = operatorKey.classList.contains('hidden');
         localStorage.setItem('operatorKeyHidden', isHidden);
     }
 }
 
 function initializeOperatorKey() {
-    // Restore operator key visibility from localStorage
+    // Restore operator key visibility from localStorage.
     const operatorKey = document.getElementById('operatorKey');
     if (operatorKey) {
         const isHidden = localStorage.getItem('operatorKeyHidden') === 'true';

@@ -4,17 +4,29 @@
 
 {% block extra_styles %}
     <style>
+        html {
+            scrollbar-gutter: stable;
+        }
+
         body {
+            display: block;
+            width: 100%;
             background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 20px 10px;
+            box-sizing: border-box;
             font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
         }
         
         .main-container {
+            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+            box-sizing: border-box;
         }
 
         .back-link {

@@ -131,7 +131,7 @@ body {
 }
 
 .oregon-map-bg {
-    background-image: url('/static/oregon_map.jpg') !important;
+    background-image: url('/static/img/oregon_map.jpg') !important;
     background-size: 100% 100% !important;
     background-position: center !important;
 }

@@ -1,3 +1,10 @@
+/**
+ * Math Adventure Quest Map Game.
+ *
+ * Graphical node-path RPG adventure where students choose a hero class (Knight, Wizard,
+ * Ninja, Astronaut), travel through fantasy locations on a canvas map, and solve math challenges.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('map-canvas');
     const ctx = canvas.getContext('2d');
@@ -37,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         edges: [],
         currentLocationIndex: 0,
         currentProblem: null,
-        difficulty: 'easy', // Default difficulty
+        difficulty: 'easy', // Default difficulty.
         character: 'knight'
     };
 

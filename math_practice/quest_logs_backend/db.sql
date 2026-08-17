@@ -1,4 +1,5 @@
--- Quest telemetry schema for Render PostgreSQL
+-- Quest telemetry database schema for PostgreSQL.
+-- Manages student profiles, progression XP, levels, and quest attempt logs.
 
 CREATE TABLE IF NOT EXISTS students (
   student_id BIGSERIAL PRIMARY KEY,
@@ -20,9 +21,11 @@ CREATE TABLE IF NOT EXISTS quest_logs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Index to optimize querying quest logs by student and timestamp.
 CREATE INDEX IF NOT EXISTS idx_quest_logs_student_time
   ON quest_logs (student_id, created_at DESC);
 
+-- Trigger function to automatically update the timestamp on student record modifications.
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -1,4 +1,14 @@
+/**
+ * Exponent World Real-World Word Problems Game.
+ *
+ * Real-world applied word problems featuring exponential growth, computer science
+ * powers of two, geometric dimensions, science formulas, and trivia challenges.
+ */
+
 class ExponentWorldGame {
+    /**
+     * Initialize world problem categories, event handlers, and stats.
+     */
     constructor() {
         this.currentProblem = {};
         this.score = 0;
@@ -43,7 +53,7 @@ class ExponentWorldGame {
         this.explanationContent = document.getElementById('explanation-content');
         this.hintContent = document.getElementById('hint-content');
         
-        // Category count elements
+        // Category count elements.
         this.growthCount = document.getElementById('growth-count');
         this.technologyCount = document.getElementById('technology-count');
         this.constructionCount = document.getElementById('construction-count');

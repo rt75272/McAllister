@@ -1,3 +1,10 @@
+/**
+ * Protected Teacher Management & Gradebook Dashboard.
+ *
+ * Provides teacher authentication gating, real-time analytics aggregation,
+ * classroom roster progress inspection, and CSV grade export functionality.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import {
@@ -6,7 +13,7 @@ import {
 } from 'recharts';
 import { Shield, Users, Download, Lock, CheckCircle2, AlertCircle, FileSpreadsheet, KeyRound, Loader2, Sparkles } from 'lucide-react';
 
-// Curated Mock student metrics for offline simulation or table seed fallback
+// Curated mock student metrics for offline simulation or table seed fallback.
 const fallbackStudents = [
   { id: '1', first_name: 'Sophia', total_points: 120, progress: { completed_stations: [1, 2, 5, 6], star360: { BOY: true, MOY: true, EOY: false }, unit_percentage: 45 } },
   { id: '2', first_name: 'Liam', total_points: 95, progress: { completed_stations: [1, 5], star360: { BOY: true, MOY: false, EOY: false }, unit_percentage: 25 } },
@@ -15,12 +22,6 @@ const fallbackStudents = [
   { id: '5', first_name: 'Emma', total_points: 140, progress: { completed_stations: [1, 2, 5, 6, 7], star360: { BOY: true, MOY: true, EOY: false }, unit_percentage: 60 } }
 ];
 
-/**
- * TeacherDashboard Component
- * 
- * Protected dashboard featuring Supabase educator auth gating,
- * Recharts visualization analytics, and gradebook CSV exporters.
- */
 export default function TeacherDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
@@ -30,11 +31,11 @@ export default function TeacherDashboard() {
   const [errorMsg, setErrorMessage] = useState('');
   const [students, setStudents] = useState([]);
   
-  // Analytics summary figures
+  // Analytics summary figures.
   const [totalClassPoints, setTotalClassPoints] = useState(0);
   const [averageProgress, setAverageProgress] = useState(0);
 
-  // Authenticate Educator
+  // Authenticate educator.
   const handleTeacherLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -42,11 +43,11 @@ export default function TeacherDashboard() {
 
     try {
       if (isRealSupabase) {
-        // Authenticate with Supabase Auth
+        // Authenticate with Supabase Auth.
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Check if role is teacher
+        // Check if role is teacher.
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')

@@ -1,19 +1,19 @@
+/**
+ * Dino Brain Break - Infinite Space Runner Mini-Game.
+ *
+ * An arcade mental break station inspired by Chrome's offline runner.
+ * Features an astronaut leaping over orbiting space rocks to claim bonus quest coins.
+ */
+
 import React, { useRef, useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
 import { Gamepad2, Coins, ArrowRight, RotateCcw, Award, Play, AlertTriangle } from 'lucide-react';
 
-/**
- * DinoBrainBreak - Infinite Space Runner Game
- * 
- * An arcade mental-break station inspired by Chrome's offline T-Rex game.
- * Features an astronaut leaping over space rocks.
- * Awards a flat bonus (+3 coins) after surviving for 45 seconds or achieving 1000 points.
- */
 export default function DinoBrainBreak({ studentSession, onGameFinished }) {
   const canvasRef = useRef(null);
   const requestRef = useRef(null);
 
-  // States
+  // States.
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [secondsSurvived, setSecondsSurvived] = useState(0);
@@ -21,7 +21,7 @@ export default function DinoBrainBreak({ studentSession, onGameFinished }) {
   const [bonusClaimed, setBonusClaimed] = useState(false);
   const [feedback, setFeedback] = useState('');
 
-  // Physics and entity references
+  // Physics and entity references.
   const runnerY = useRef(0);
   const runnerVelocity = useRef(0);
   const isJumping = useRef(false);
@@ -31,13 +31,13 @@ export default function DinoBrainBreak({ studentSession, onGameFinished }) {
 
   const gravity = 0.55;
   const jumpStrength = -10.5;
-  const groundY = 220; // Y pixel baseline on a 300px high canvas
+  const groundY = 220; // Y pixel baseline on a 300px high canvas.
 
-  // Setup Keyboard Listeners for jumping (Spacebar or Up Arrow)
+  // Setup keyboard listeners for jumping (Spacebar or Up Arrow).
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ([' ', 'ArrowUp'].includes(e.key)) {
-        e.preventDefault(); // Prevent standard page jumping
+        e.preventDefault(); // Prevent standard page jumping.
         if (!isJumping.current && isPlaying && !isGameOver) {
           runnerVelocity.current = jumpStrength;
           isJumping.current = true;

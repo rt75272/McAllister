@@ -1,3 +1,7 @@
+"""
+Utility script for updating autocomplete suggestions in chatbot.js.
+"""
+
 import re
 
 new_suggestions = """            const suggestions = [
@@ -73,7 +77,7 @@ new_suggestions = """            const suggestions = [
 with open('static/js/chatbot.js', 'r') as f:
     text = f.read()
 
-# Replace between "const suggestions = [" and "];"
+# Replace between "const suggestions = [" and "];".
 match = re.search(r'            const suggestions = \[.*?\];', text, re.DOTALL)
 if match:
     text = text.replace(match.group(0), new_suggestions)

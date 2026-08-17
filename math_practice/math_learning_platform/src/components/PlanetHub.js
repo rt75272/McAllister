@@ -1,9 +1,16 @@
+/**
+ * Planet Hub Educational Control Component.
+ *
+ * Overlays an interactive 2D constellation trail mapping 12 curriculum learning stations,
+ * assessment check-ins, brain breaks, and challenge proofs for the active planet.
+ */
+
 import React, { useState } from 'react';
 import { Star, CheckCircle, ArrowLeft, Gamepad2, Coins, Rocket, Trophy, Compass, Sparkles, BookOpen } from 'lucide-react';
 
-// Stations mapping templates along a starry constellation path (12 stations total)
+// Stations mapping templates along a starry constellation path (12 stations total).
 const stationsTemplate = [
-  { id: 1, name: "Star 360 Check-In", type: "assessment", desc: "Diagnostic diagnostic gateway to align your local math coordinates." },
+  { id: 1, name: "Star 360 Check-In", type: "assessment", desc: "Diagnostic gateway to align your local math coordinates." },
   { id: 2, name: "Memory Blast Brainbreak", type: "brainbreak", desc: "Keep your processor cool with a rapid patterns sequence mini-game." },
   { id: 3, name: "Asteroid Dodge Brainbreak", type: "brainbreak", desc: "Dodge orbiting debris and speed particles for motor calibration." },
   { id: 4, name: "Supernova Extra Credit", type: "challenge", desc: "A cognitive-grade deep solar flare mathematical proof." },
@@ -17,7 +24,7 @@ const stationsTemplate = [
   { id: 12, name: "Mothership Coordinate Dock", type: "practice", desc: "Plot 4 quadrants of local vector ports on the absolute coordinate grid." }
 ];
 
-// Stylized node offsets mapping a gorgeous curved constellation path (sine curve/zigzag)
+// Stylized node offsets mapping a curved constellation path (sine curve/zigzag).
 const pathCoordinates = [
   { x: 12, y: 55 },
   { x: 20, y: 35 },
@@ -33,21 +40,17 @@ const pathCoordinates = [
   { x: 94, y: 38 }
 ];
 
-/**
- * PlanetHub Component
- * Overlays an educational control hub mapping curriculum stations along a constellation trail.
- */
 export default function PlanetHub({ planet, studentSession, onLaunchStation, onReturnToSpace }) {
-  const [completedStations, setCompletedStations] = useState(['1', '2']); // Seed initial completed checks
+  const [completedStations, setCompletedStations] = useState(['1', '2']); // Seed initial completed checks.
   const [points, setPoints] = useState(studentSession?.total_points || 150);
   const [hoveredStation, setHoveredStation] = useState(null);
 
-  // Station action helper
+  // Station action helper.
   const handleStationClick = (station) => {
-    // All stations are unlocked from day one!
+    // All stations are unlocked from day one.
     const isUnlocked = true;
 
-    // Launch action
+    // Launch action.
     onLaunchStation({
       ...station,
       unit: planet.id,
@@ -161,7 +164,7 @@ export default function PlanetHub({ planet, studentSession, onLaunchStation, onR
                   onMouseLeave={() => setHoveredStation(null)}
                   className={`w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-lg transition-all duration-300 transform cursor-pointer relative z-40 ${
                     getStationStyle(station, isUnlocked, isCompleted)
-                  } ${isUnlocked ? 'hover:scale-115 active:scale-95' : ''}`}
+                  }`}
                 >
                   {getStationIcon(station.type, isCompleted)}
                 </button>

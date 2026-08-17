@@ -4,19 +4,31 @@
 
 {% block extra_styles %}
 <style>
+    html {
+        scrollbar-gutter: stable;
+    }
+
     body {
+        display: block;
+        width: 100%;
         background: #05030d;
         color: #e0e0ed;
         font-family: 'Lexend', 'Quicksand', 'Inter', sans-serif;
         min-height: 100vh;
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
     }
 
     .main-container {
+        width: 100%;
         max-width: 900px;
         margin: 0 auto;
         padding: 24px;
+        box-sizing: border-box;
     }
 
     .nav-header {
@@ -43,7 +55,6 @@
     }
 
     .home-btn:hover {
-        transform: scale(1.05);
         background: #475569;
     }
 
@@ -218,11 +229,10 @@
         font-size: 0.95em;
         cursor: pointer;
         text-decoration: none;
-        transition: transform 0.15s ease;
     }
 
     .submit-btn:hover, .quiz-next-btn:hover, .continue-btn:hover {
-        transform: scale(1.04);
+        background: linear-gradient(to right, #0284c7, #4f46e5);
     }
 
     .quiz-next-btn {

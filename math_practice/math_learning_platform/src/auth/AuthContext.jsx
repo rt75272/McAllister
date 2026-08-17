@@ -1,3 +1,10 @@
+/**
+ * Authentication Context and Session Provider.
+ *
+ * Manages user login, registration, role profiles (student vs. teacher),
+ * and automatic fallback to mock authentication when running offline.
+ */
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from './supabaseClient.js';
 
@@ -10,7 +17,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!isRealSupabase) {
-      // Mock environment setup
+      // Mock environment setup.
       const cachedUser = localStorage.getItem('mock_user');
       const cachedProfile = localStorage.getItem('mock_profile');
       if (cachedUser) {
@@ -21,7 +28,7 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Real Supabase Auth listeners
+    // Real Supabase Auth listeners.
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {

@@ -1,3 +1,12 @@
+"""
+Math Practice Web Application.
+
+A Flask web application that powers Mrs. McAllister's Learning Center.
+Features comprehensive 6th-grade math and ELA interactive games,
+a 3D space flight quest map, curriculum planet stations, Gemini-powered
+support chatbot, and student progress/check-in logging.
+"""
+
 import json
 import os
 import random
@@ -9,16 +18,8 @@ from urllib import error, request as urllib_request
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import psycopg2
-# ########################################################################################################
-# Math Practice Web App.
-#
-# A simple web application using Flask that generates random math questions. Users can answer questions, 
-# receive immediate feedback, and track their score.
-#
-# Usage:
-#      mcallister2.onrender.com
-# ########################################################################################################
-# Flask app setup.
+
+# Flask application setup.
 app = Flask(__name__)
 app.secret_key = 'secure_random_secret_key'
 
@@ -503,7 +504,7 @@ def math_practice():
             is_correct = user_answer_float == correct_answer_float
             if is_correct:
                 result = f"Correct! The correct answer was {correct_answer_float}"
-                # Track hard victories
+                # Track hard victories.
                 if session.get('difficulty') == 'hard':
                     session['hard_victories'] += 1
             else:
@@ -517,7 +518,7 @@ def math_practice():
         else:
             streaks[difficulty] = 0
             
-        # Store previous question information BEFORE updating difficulty
+        # Store previous question information before updating difficulty.
         current_question = request.form.get('current_question', '')
         session['previous_question'] = {
             'question': current_question,
@@ -553,7 +554,7 @@ def math_practice():
         if session.get('hard_victories', 0) >= hard_to_victory:
             victory = True
             result = "Victory! You answered 5 hard questions correctly!"
-            session['hard_victories'] = 0  # Reset for replay
+            session['hard_victories'] = 0  # Reset for replay.
             session['difficulty'] = 'easy'
             session['streaks'] = {'easy': 0, 'medium': 0, 'hard': 0}
             questions_left = easy_to_medium
@@ -571,7 +572,7 @@ def math_practice():
                 'streaks': streaks,
                 'hard_victories': session.get('hard_victories', 0)
             }
-            # Add previous question info if available
+            # Add previous question info if available.
             if 'previous_question' in session:
                 response_data['previous_question'] = session['previous_question']
             return jsonify(response_data)
@@ -640,6 +641,7 @@ def skip():
 
 @app.route('/verb-detective')
 def verb_detective():
+    """Verb Detective ELA game page."""
     return render_template('verb_detective.html')
 
 @app.route('/expression-comparison', methods=['GET'])
@@ -649,6 +651,7 @@ def expression_comparison():
 
 @app.route('/math_adventure')
 def math_adventure():
+    """Math Adventure RPG quest game page."""
     return render_template('math_adventure.html')
 
 # All ten 6th-grade curriculum destinations are available from the Quest Map.
@@ -688,6 +691,7 @@ def solar_system_study():
 
 @app.route('/percentage_quest')
 def percentage_quest():
+    """Percentage Quest boss-battle game page."""
     return render_template('percentage_quest.html')
 
 @app.route('/area-explorer', methods=['GET'])
