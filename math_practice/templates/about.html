@@ -5,9 +5,24 @@
 {% block extra_styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        :root {
+            --ink: #eaf5ff;
+            --muted: #a8b9d4;
+            --panel: rgba(8, 12, 24, .82);
+            --line: rgba(125, 211, 252, .22);
+            --cyan: #67e8f9;
+            --gold: #fbbf24;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
+            background-color: #05030d;
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(103, 232, 249, .16), transparent 26rem),
+                radial-gradient(circle at 85% 80%, rgba(167, 139, 250, .14), transparent 30rem),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23dbeafe' fill-opacity='.35'%3E%3Ccircle cx='16' cy='20' r='1'/%3E%3Ccircle cx='94' cy='31' r='.7'/%3E%3Ccircle cx='146' cy='16' r='1'/%3E%3Ccircle cx='55' cy='112' r='.9'/%3E%3Ccircle cx='169' cy='138' r='.7'/%3E%3Ccircle cx='122' cy='163' r='1'/%3E%3C/g%3E%3C/svg%3E");
+            min-height: 100vh;
+            font-family: 'Lexend', 'Arial', sans-serif;
+            color: var(--ink);
         }
         .main-container {
             max-width: 1000px;
@@ -15,10 +30,11 @@
             padding: 2rem;
         }
         .about-card {
-            background: white;
+            background: var(--panel);
+            border: 1px solid var(--line);
             border-radius: 16px;
             padding: 2.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,.5);
         }
         .about-header {
             text-align: center;
@@ -26,25 +42,32 @@
         }
         .about-title {
             font-size: 2.8rem;
-            color: #4CAF50;
-            font-weight: bold;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--cyan), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .about-subtitle {
             font-size: 1.2rem;
-            color: #555;
+            color: var(--muted) !important;
             margin-top: 0.5rem;
         }
         .about-section {
             line-height: 1.8;
-            color: #333;
+            color: var(--ink);
             margin-bottom: 1.5rem;
         }
         .about-section h3 {
             font-size: 1.5rem;
-            color: #45a049;
+            color: var(--cyan);
             margin-top: 2rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--line);
+        }
+        .about-section p {
+            color: var(--muted) !important;
         }
         .about-section ul {
             list-style: none;
@@ -54,34 +77,45 @@
             padding-left: 2rem;
             position: relative;
             margin-bottom: 0.8rem;
+            color: var(--muted);
         }
         .about-section li::before {
             content: '⭐';
             position: absolute;
             left: 0;
             top: 0;
-            color: #ffc107;
+            color: var(--gold);
         }
         .credits {
             text-align: center;
             margin-top: 2.5rem;
             padding-top: 1.5rem;
+            border-top: 1px solid var(--line);
             font-size: 0.9rem;
-            color: #777;
+            color: var(--muted);
+        }
+        .credits p {
+            color: var(--muted) !important;
+        }
+        .credits a {
+            color: var(--cyan);
         }
         .back-link {
             display: inline-block;
             margin-top: 2rem;
             padding: 0.8rem 1.5rem;
-            background: #667eea;
-            color: white;
+            background: rgba(103, 232, 249, .12);
+            border: 1px solid rgba(103, 232, 249, .4);
+            color: var(--ink);
             text-decoration: none;
             border-radius: 50px;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: background 0.3s, border-color .3s, color .3s;
         }
         .back-link:hover {
-            background: #5a6fd5;
+            background: rgba(103, 232, 249, .28);
+            border-color: var(--cyan);
+            color: var(--cyan);
         }
 
         @media (max-width: 768px) {

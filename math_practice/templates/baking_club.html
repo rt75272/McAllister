@@ -4,6 +4,15 @@
 
 {% block extra_styles %}
     <style>
+        :root {
+            --ink: #eaf5ff;
+            --muted: #a8b9d4;
+            --panel: rgba(8, 12, 24, .82);
+            --line: rgba(125, 211, 252, .22);
+            --cyan: #67e8f9;
+            --pink: #f9a8d4;
+        }
+
         html {
             scrollbar-gutter: stable;
         }
@@ -11,12 +20,17 @@
         body {
             display: block;
             width: 100%;
-            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+            background-color: #05030d;
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(249, 168, 212, .16), transparent 26rem),
+                radial-gradient(circle at 85% 80%, rgba(14, 165, 233, .14), transparent 30rem),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23dbeafe' fill-opacity='.35'%3E%3Ccircle cx='16' cy='20' r='1'/%3E%3Ccircle cx='94' cy='31' r='.7'/%3E%3Ccircle cx='146' cy='16' r='1'/%3E%3Ccircle cx='55' cy='112' r='.9'/%3E%3Ccircle cx='169' cy='138' r='.7'/%3E%3Ccircle cx='122' cy='163' r='1'/%3E%3C/g%3E%3C/svg%3E");
             min-height: 100vh;
             margin: 0;
             padding: 20px 10px;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Lexend', 'Arial', sans-serif;
+            color: var(--ink);
             overflow-x: hidden;
             overflow-y: auto;
             scrollbar-gutter: stable;
@@ -32,58 +46,67 @@
         .back-link {
             display: inline-block;
             margin-bottom: 1em;
-            padding: 0.5em 1em;
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
+            padding: 0.5em 1.1em;
+            background: rgba(255,255,255,.06);
+            border: 1px solid var(--line);
+            color: var(--ink);
             text-decoration: none;
-            border-radius: 0.5em;
+            border-radius: 999px;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: background 0.3s, border-color .3s, color .3s;
         }
         
         .back-link:hover {
-            background: white;
+            background: rgba(103,232,249,.16);
+            border-color: var(--cyan);
+            color: var(--cyan);
         }
         
-        .hero-section {
-            background-color: white;
+        .hero-panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 3em;
             border-radius: 1em;
-            box-shadow: 0 0 2em rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,.5);
             text-align: center;
             margin-bottom: 2em;
         }
         
         .hero-title {
             font-size: 2.5em;
-            color: #d81b60;
+            font-weight: 800;
             margin-bottom: 0.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, var(--pink), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .hero-subtitle {
             font-size: 1.2em;
-            color: #666;
+            color: var(--muted) !important;
             margin-bottom: 1.5em;
         }
 
         .padlet-container {
-            background: white;
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 1em;
             border-radius: 1em;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 14px 34px rgba(0,0,0,.4);
         }
 
         .pdf-section {
-            background: white;
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 1.5em;
             border-radius: 1em;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 14px 34px rgba(0,0,0,.4);
             margin-bottom: 2em;
         }
 
         .pdf-section h2 {
-            color: #d81b60;
+            color: var(--pink);
             margin-top: 0;
             margin-bottom: 0.75em;
             font-size: 1.5em;
@@ -94,29 +117,33 @@
             height: 600px;
             border: none;
             border-radius: 0.5em;
+            background: #f4f4f4;
         }
 
         .pdf-download-link {
             display: inline-block;
             margin-top: 0.75em;
             padding: 0.5em 1em;
-            background: #d81b60;
-            color: white;
+            background: rgba(249, 168, 212, .16);
+            border: 1px solid rgba(249, 168, 212, .5);
+            color: var(--ink);
             text-decoration: none;
             border-radius: 0.5em;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: background 0.3s, border-color .3s, color .3s;
         }
 
         .pdf-download-link:hover {
-            background: #ad1457;
+            background: rgba(249, 168, 212, .3);
+            border-color: var(--pink);
+            color: var(--pink);
         }
 
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 2em;
             }
-            .hero-section {
+            .hero-panel {
                 padding: 2em 1em;
             }
             .pdf-viewer {
@@ -134,7 +161,7 @@
             .hero-title {
                 font-size: 1.6em;
             }
-            .hero-section {
+            .hero-panel {
                 padding: 1.2em 0.8em;
             }
             .pdf-viewer {
@@ -152,7 +179,7 @@
         <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
         
         <!-- Hero Section -->
-        <div class="hero-section">
+        <div class="hero-panel">
             <h1 class="hero-title">🧁 Baking Club</h1>
             <p class="hero-subtitle">Share your favorite recipes, pictures, and tips with other baking enthusiasts!</p>
         </div>

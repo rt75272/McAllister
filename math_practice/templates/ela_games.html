@@ -4,12 +4,26 @@
 
 {% block extra_styles %}
     <style>
+        :root {
+            --ink: #eaf5ff;
+            --muted: #a8b9d4;
+            --panel: rgba(8, 12, 24, .82);
+            --line: rgba(125, 211, 252, .22);
+            --cyan: #67e8f9;
+            --gold: #fbbf24;
+        }
+
         body {
-            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            background-color: #05030d;
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(251, 113, 133, .16), transparent 26rem),
+                radial-gradient(circle at 85% 80%, rgba(14, 165, 233, .14), transparent 30rem),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23dbeafe' fill-opacity='.35'%3E%3Ccircle cx='16' cy='20' r='1'/%3E%3Ccircle cx='94' cy='31' r='.7'/%3E%3Ccircle cx='146' cy='16' r='1'/%3E%3Ccircle cx='55' cy='112' r='.9'/%3E%3Ccircle cx='169' cy='138' r='.7'/%3E%3Ccircle cx='122' cy='163' r='1'/%3E%3C/g%3E%3C/svg%3E");
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Lexend', 'Arial', sans-serif;
+            color: var(--ink);
         }
         
         .main-container {
@@ -20,38 +34,50 @@
         .back-link {
             display: inline-block;
             margin-bottom: 1em;
-            padding: 0.5em 1em;
-            background: rgba(255,255,255,0.9);
-            color: #333;
+            padding: 0.5em 1.1em;
+            background: rgba(255,255,255,.06);
+            border: 1px solid var(--line);
+            color: var(--ink);
             text-decoration: none;
-            border-radius: 0.5em;
-            transition: background 0.3s;
+            border-radius: 999px;
+            font-weight: 600;
+            transition: background 0.3s, border-color .3s, color .3s;
         }
         
         .back-link:hover {
-            background: white;
+            background: rgba(103,232,249,.16);
+            border-color: var(--cyan);
+            color: var(--cyan);
         }
         
-        .hero-section {
-            background-color: white;
+        .hero-panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 3em;
             border-radius: 1em;
-            box-shadow: 0 0 2em rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,.5);
             text-align: center;
             margin-bottom: 2em;
         }
         
         .hero-title {
             font-size: 2.5em;
-            color: #FF6B6B;
+            font-weight: 800;
             margin-bottom: 0.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #fb7185, var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .hero-subtitle {
             font-size: 1.2em;
-            color: #666;
+            color: var(--muted) !important;
             margin-bottom: 1.5em;
+        }
+
+        .hero-panel p {
+            color: var(--muted) !important;
         }
         
         .hero-links {
@@ -61,23 +87,28 @@
         .hero-links a {
             display: inline-block;
             margin: 0 6px;
-            padding: 8px 12px;
-            background: #1f6feb;
-            color: #fff;
-            border-radius: 8px;
+            padding: 8px 16px;
+            background: rgba(103, 232, 249, .12);
+            border: 1px solid rgba(103, 232, 249, .4);
+            color: var(--ink);
+            border-radius: 999px;
             text-decoration: none;
-            transition: background 0.3s;
+            font-weight: 600;
+            transition: background 0.3s, border-color .3s, color .3s;
         }
         
         .hero-links a:hover {
-            background: #0d4fb2;
+            background: rgba(103, 232, 249, .28);
+            border-color: var(--cyan);
+            color: var(--cyan);
         }
         
         .coming-soon-section {
-            background-color: white;
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 3em;
             border-radius: 1em;
-            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            box-shadow: 0 14px 34px rgba(0,0,0,.4);
             text-align: center;
             margin-bottom: 2em;
         }
@@ -89,28 +120,29 @@
         
         .coming-soon-title {
             font-size: 2em;
-            color: #FF6B6B;
+            color: var(--cyan);
             margin-bottom: 0.5em;
         }
         
         .coming-soon-text {
             font-size: 1.1em;
-            color: #666;
+            color: var(--muted) !important;
             line-height: 1.6;
             margin: 1em 0;
         }
         
         .planned-features {
-            background-color: white;
+            background: var(--panel);
+            border: 1px solid var(--line);
             padding: 2em;
             border-radius: 1em;
-            box-shadow: 0 0 1em rgba(0,0,0,0.1);
+            box-shadow: 0 14px 34px rgba(0,0,0,.4);
             margin-bottom: 2em;
         }
         
         .section-title {
             font-size: 1.8em;
-            color: #FF6B6B;
+            color: var(--ink);
             text-align: center;
             margin-bottom: 1em;
         }
@@ -123,11 +155,11 @@
         }
         
         .feature-card {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+            background: rgba(255,255,255,.04);
             padding: 1.5em;
             border-radius: 0.8em;
             text-align: center;
-            border: 2px solid #ffcccc;
+            border: 1px solid var(--line);
         }
         
         .feature-icon {
@@ -138,20 +170,21 @@
         .feature-title {
             font-size: 1.1em;
             font-weight: bold;
-            color: #FF6B6B;
+            color: #fb7185;
             margin-bottom: 0.5em;
         }
         
         .feature-description {
             font-size: 0.95em;
-            color: #666;
+            color: var(--muted) !important;
             line-height: 1.4;
         }
         
         .status-badge {
             display: inline-block;
-            background: #ffc107;
-            color: #333;
+            background: rgba(251,191,36,.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
             padding: 0.5em 1em;
             border-radius: 2em;
             font-weight: bold;
@@ -163,7 +196,7 @@
                 font-size: 2em;
             }
             
-            .hero-section, .coming-soon-section, .planned-features {
+            .hero-panel, .coming-soon-section, .planned-features {
                 padding: 2em 1em;
             }
             
@@ -190,7 +223,7 @@
                 font-size: 1.8em;
             }
             
-            .hero-section, .coming-soon-section, .planned-features {
+            .hero-panel, .coming-soon-section, .planned-features {
                 padding: 1.5em 0.8em;
             }
             
@@ -206,7 +239,7 @@
         <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
         
         <!-- Hero Section -->
-        <div class="hero-section">
+        <div class="hero-panel">
             <h1 class="hero-title">📚 ELA Games</h1>
             <p class="hero-subtitle">English Language Arts Adventures Coming Soon!</p>
             <p>Get ready for exciting games that will help you master reading, writing, vocabulary, and grammar through interactive and engaging activities.</p>
@@ -217,34 +250,34 @@
         </div>
 
         <!-- Games Section -->
-        <div class="games-section" style="background-color: white; padding: 2em; border-radius: 1em; box-shadow: 0 0 1em rgba(0,0,0,0.1); margin-bottom: 2em;">
+        <div class="games-section" style="background: var(--panel); border: 1px solid var(--line); padding: 2em; border-radius: 1em; box-shadow: 0 14px 34px rgba(0,0,0,.4); margin-bottom: 2em;">
             <h2 class="section-title">Available ELA Games</h2>
-            <p style="text-align: center; margin-bottom: 1.5em; color: #666;">
+            <p style="text-align: center; margin-bottom: 1.5em; color: var(--muted) !important;">
                 Click on the game below to start practicing your English Language Arts skills!
             </p>
             
             <div class="activity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5em; margin-top: 1.5em;">
                 <a href="{{ url_for('verb_detective', return_to=url_for('ela_games')) }}" class="activity-card verb-detective-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🕵️ Verb Detective</h3>
-                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Discover the action words! Identify verbs in sentences and learn about action verbs and state-of-being verbs.</p>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1; color: #fff !important;">Discover the action words! Identify verbs in sentences and learn about action verbs and state-of-being verbs.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Parts of Speech</div>
                 </a>
 
                 <a href="{{ url_for('word_match', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🧩 Word Match</h3>
-                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Practice synonyms and antonyms by matching each target word with its best partner.</p>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1; color: #fff !important;">Practice synonyms and antonyms by matching each target word with its best partner.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Vocabulary</div>
                 </a>
 
                 <a href="{{ url_for('sentence_fixer', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #8e44ad 0%, #e056fd 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">✏️ Sentence Fixer</h3>
-                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Fix capitalization and punctuation by choosing the best-written sentence from the choices.</p>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1; color: #fff !important;">Fix capitalization and punctuation by choosing the best-written sentence from the choices.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Writing Mechanics</div>
                 </a>
 
                 <a href="{{ url_for('context_clues', return_to=url_for('ela_games')) }}" class="activity-card" style="text-decoration: none; color: white; border-radius: 1em; padding: 2em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);">
                     <h3 style="margin-top: 0; font-size: 1.5em; margin-bottom: 0.5em;">🔍 Context Clues</h3>
-                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1;">Use clues in the sentence to figure out the meaning of tricky words.</p>
+                    <p style="margin: 0.5em 0; line-height: 1.5; flex-grow: 1; color: #fff !important;">Use clues in the sentence to figure out the meaning of tricky words.</p>
                     <div class="difficulty-badge" style="background-color: rgba(255,255,255,0.3); display: inline-block; padding: 0.3em 0.8em; border-radius: 1em; font-size: 0.8em; margin-top: 0.5em;">Reading Skills</div>
                 </a>
             </div>
@@ -253,7 +286,7 @@
         <!-- Planned Features -->
         <div class="planned-features">
             <h2 class="section-title">What's Coming</h2>
-            <p style="text-align: center; margin-bottom: 2em; color: #666;">
+            <p style="text-align: center; margin-bottom: 2em; color: var(--muted) !important;">
                 Here's a preview of the exciting ELA games we're planning:
             </p>
             

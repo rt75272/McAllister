@@ -16,16 +16,16 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Quicksand:wght@500;700;900&family=Inter:wght@400;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&family=Inter:wght@400;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --brick-red: #7C2A1E;
-            --brick-dark: #4A100B;
-            --wood-dark: #3E1E09;
-            --wood-light: #5C3214;
-            --grid-cream: #F6F4EB;
-            --grid-line: #E5E3D8;
+            --brick-red: #0b1330;
+            --brick-dark: #060a1c;
+            --wood-dark: #1e293b;
+            --wood-light: #334155;
+            --grid-cream: #050814;
+            --grid-line: rgba(103, 232, 249, .14);
             --pastel-cyan: #D0F5FC;
             --pastel-purple: #E2D9F3;
             --pastel-grey: #A0B2B6;
@@ -38,7 +38,10 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f1115;
+            background-color: #05030d;
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(56, 99, 235, .16), transparent 30rem),
+                radial-gradient(circle at 85% 85%, rgba(14, 165, 233, .12), transparent 34rem);
             color: #f3f4f6;
             overflow-x: hidden;
             margin: 0;
@@ -54,30 +57,33 @@
         .brick-wall-bg {
             background-color: var(--brick-red);
             background-image:
-                linear-gradient(335deg, var(--brick-dark) 23px, transparent 23px),
-                linear-gradient(155deg, var(--brick-dark) 23px, transparent 23px),
-                linear-gradient(335deg, var(--brick-dark) 23px, transparent 23px),
-                linear-gradient(155deg, var(--brick-dark) 23px, transparent 23px);
-            background-size: 58px 58px;
-            background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
+                radial-gradient(1px 1px at 10% 20%, #dbeafe 0, transparent 60%),
+                radial-gradient(1px 1px at 80% 15%, #dbeafe 0, transparent 60%),
+                radial-gradient(1.5px 1.5px at 30% 70%, #a5f3fc 0, transparent 60%),
+                radial-gradient(1px 1px at 60% 40%, #dbeafe 0, transparent 60%),
+                radial-gradient(1.5px 1.5px at 90% 60%, #a5f3fc 0, transparent 60%),
+                radial-gradient(1px 1px at 45% 85%, #dbeafe 0, transparent 60%),
+                linear-gradient(180deg, var(--brick-dark), var(--brick-red));
+            background-size: 58px 58px, 58px 58px, 58px 58px, 58px 58px, 58px 58px, 58px 58px, 100% 100%;
         }
 
         .board-grid-paper {
             background-color: var(--grid-cream);
             background-image:
-                linear-gradient(rgba(180,180,180,0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(180,180,180,0.15) 1px, transparent 1px);
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 24px 24px;
             border: 12px solid var(--wood-dark);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.35), 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 24px rgba(0,0,0,0.5), 0 0 30px rgba(103,232,249,0.12), 0 10px 25px rgba(0,0,0,0.5);
             position: relative;
         }
 
         .wizard-text {
-            font-family: 'MedievalSharp', cursive;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 2px 2px 0px var(--wood-dark), 4px 4px 10px rgba(0,0,0,0.3);
+            text-shadow: 0 0 18px rgba(103,232,249,0.6), 0 0 40px rgba(167,139,250,0.35);
         }
 
         .flame-element {
@@ -96,11 +102,11 @@
         }
 
         .string-light {
-            width: 14px;
-            height: 18px;
-            border-radius: 50% 50% 10% 10%;
-            background: radial-gradient(circle at 50% 30%, #fffbf0, #ffd700 70%);
-            box-shadow: 0 4px 15px rgba(255,215,0,0.8);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 30%, #ffffff, #67e8f9 70%);
+            box-shadow: 0 0 15px rgba(103,232,249,0.9);
             animation: bulb-pulse 2s infinite alternate ease-in-out;
             margin-right: 28px;
         }
@@ -108,8 +114,8 @@
         .string-light:nth-child(even) { animation-delay: 0.7s; }
 
         @keyframes bulb-pulse {
-            0%   { opacity: 0.6; box-shadow: 0 2px 6px rgba(255,215,0,0.4); }
-            100% { opacity: 1;   box-shadow: 0 6px 18px rgba(255,215,0,1); }
+            0%   { opacity: 0.5; box-shadow: 0 0 6px rgba(103,232,249,0.4); }
+            100% { opacity: 1;   box-shadow: 0 0 18px rgba(103,232,249,1); }
         }
 
 
@@ -129,7 +135,7 @@
                 <i class="fa-solid fa-calculator"></i> Math Games
             </a>
             <span class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap"></i> 6th Grade Math Finale
+                <i class="fa-solid fa-rocket"></i> 6th Grade Math Finale
             </span>
             <span class="hidden md:inline text-xs bg-gray-800 px-2.5 py-1 rounded-full text-gray-400 border border-gray-700">
                 Teacher: Mrs. McAllister
@@ -278,28 +284,28 @@
 
                         <div class="w-full max-w-3xl board-grid-paper flex-1 mt-6 flex flex-col items-center justify-between p-6">
                             <div class="text-center">
-                                <h1 class="wizard-text text-[#4A100B] text-4xl sm:text-5xl font-extrabold tracking-wider mt-4">Welcome to Math</h1>
-                                <div class="h-1 w-32 bg-[#4A100B] mx-auto my-3 rounded"></div>
+                                <h1 class="wizard-text text-[#67e8f9] text-4xl sm:text-5xl font-extrabold tracking-wider mt-4">Welcome to Math</h1>
+                                <div class="h-1 w-32 bg-[#67e8f9] mx-auto my-3 rounded"></div>
                             </div>
-                            <div class="text-center font-serif text-[#3E1E09] space-y-2">
+                            <div class="text-center font-serif text-[#dbeafe] space-y-2">
                                 <p class="text-2xl font-bold">Mrs. McAllister</p>
                                 <p class="text-base font-semibold underline decoration-wavy">jmcallister@onlineoregon.org</p>
                             </div>
-                            <div class="w-full bg-[#E2D9F3] p-3 rounded-lg border border-[#3E1E09] border-dashed text-center font-bold text-indigo-950 text-xs sm:text-sm">
-                                <i class="fa-solid fa-bell text-indigo-700 animate-bounce mr-2"></i> Join the conversation! Say hello to your table group inside the Table Chat!
+                            <div class="w-full bg-[#0d1730] p-3 rounded-lg border border-[#67e8f9]/40 border-dashed text-center font-bold text-cyan-100 text-xs sm:text-sm">
+                                <i class="fa-solid fa-bell text-cyan-300 animate-bounce mr-2"></i> Join the conversation! Say hello to your table group inside the Table Chat!
                             </div>
                         </div>
 
-                        <div class="absolute bottom-4 right-6 w-32 h-20 bg-[#3E1E09] border-4 border-[#251003] rounded-t-lg hidden sm:block relative overflow-hidden">
-                            <div class="absolute inset-0 bg-yellow-950 opacity-40"></div>
-                            <div class="flame-element bg-rose-600 w-10 h-14 left-[20%]"></div>
-                            <div class="flame-element bg-amber-500 w-12 h-16 left-[35%]"></div>
-                            <div class="flame-element bg-yellow-400 w-10 h-12 left-[50%]"></div>
-                            <div class="absolute bottom-0 inset-x-0 h-4 bg-amber-950 rounded"></div>
+                        <div class="absolute bottom-4 right-6 w-32 h-20 bg-[#0f172a] border-4 border-[#1e293b] rounded-t-lg hidden sm:block relative overflow-hidden">
+                            <div class="absolute inset-0 bg-indigo-950 opacity-40"></div>
+                            <div class="flame-element bg-indigo-400 w-10 h-14 left-[20%]"></div>
+                            <div class="flame-element bg-cyan-400 w-12 h-16 left-[35%]"></div>
+                            <div class="flame-element bg-white w-10 h-12 left-[50%]"></div>
+                            <div class="absolute bottom-0 inset-x-0 h-4 bg-slate-950 rounded"></div>
                         </div>
 
-                        <div class="absolute top-4 left-6 bg-red-800 text-white border border-red-600 font-serif text-xs px-3 py-1.5 rounded-full shadow-lg">
-                            🎓 DAY 1 WELCOME
+                        <div class="absolute top-4 left-6 bg-indigo-900 text-white border border-indigo-600 font-serif text-xs px-3 py-1.5 rounded-full shadow-lg">
+                            🚀 DAY 1 WELCOME
                         </div>
                         <div class="absolute bottom-4 left-6 bg-emerald-600 border border-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-2">
                             <i class="fa-solid fa-table-cells"></i> Collaborate in Table Chat
@@ -706,19 +712,19 @@
                         </div>
                         <div class="w-full max-w-3xl board-grid-paper flex-1 mt-6 flex flex-col items-center justify-between p-6">
                             <div class="text-center">
-                                <h1 class="wizard-text text-[#4A100B] text-4xl sm:text-5xl font-extrabold tracking-wider mt-4">The Grand Finale</h1>
-                                <div class="h-1 w-32 bg-[#4A100B] mx-auto my-3 rounded"></div>
+                                <h1 class="wizard-text text-[#67e8f9] text-4xl sm:text-5xl font-extrabold tracking-wider mt-4">The Grand Finale</h1>
+                                <div class="h-1 w-32 bg-[#67e8f9] mx-auto my-3 rounded"></div>
                             </div>
-                            <div class="text-center font-serif text-[#3E1E09] space-y-2">
+                            <div class="text-center font-serif text-[#dbeafe] space-y-2">
                                 <p class="text-2xl font-bold">Welcome to Day 3 Celebration!</p>
-                                <p class="text-sm font-semibold text-slate-500">We are celebrating your complete 6th-grade math journey today!</p>
+                                <p class="text-sm font-semibold text-slate-400">We are celebrating your complete 6th-grade math journey today!</p>
                             </div>
-                            <div class="w-full bg-[#E2D9F3] p-3 rounded-lg border border-[#3E1E09] border-dashed text-center font-bold text-indigo-950 text-xs sm:text-sm">
-                                <i class="fa-solid fa-star text-amber-500 animate-pulse mr-2"></i> What was your favorite topic or moment from math class this year? Share in the Table Chat!
+                            <div class="w-full bg-[#0d1730] p-3 rounded-lg border border-[#67e8f9]/40 border-dashed text-center font-bold text-cyan-100 text-xs sm:text-sm">
+                                <i class="fa-solid fa-star text-amber-400 animate-pulse mr-2"></i> What was your favorite topic or moment from math class this year? Share in the Table Chat!
                             </div>
                         </div>
-                        <div class="absolute top-4 left-6 bg-red-800 text-white border border-red-600 font-serif text-xs px-3 py-1.5 rounded-full shadow-lg">
-                            🎓 DAY 3 CHAMPIONSHIP
+                        <div class="absolute top-4 left-6 bg-indigo-900 text-white border border-indigo-600 font-serif text-xs px-3 py-1.5 rounded-full shadow-lg">
+                            🌟 DAY 3 CHAMPIONSHIP
                         </div>
                         <div class="absolute bottom-4 left-6 bg-emerald-600 border border-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-2">
                             <i class="fa-solid fa-table-cells"></i> Collaborate in Table Chat
@@ -841,15 +847,15 @@
                     </div>
 
                     <!-- SLIDE 16: Final Reminders / Have a Great Day -->
-                    <div class="slide-pane p-0 flex flex-col h-full w-full absolute inset-0 z-0 opacity-0 transition-opacity duration-300" style="background-color: var(--pastel-purple);" data-time="05:00">
-                        <div class="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative text-indigo-950">
+                    <div class="slide-pane p-0 flex flex-col h-full w-full absolute inset-0 z-0 opacity-0 transition-opacity duration-300" style="background-color: #050814; background-image: radial-gradient(circle at 20% 25%, rgba(103,232,249,.16), transparent 22rem), radial-gradient(circle at 80% 75%, rgba(167,139,250,.16), transparent 26rem);" data-time="05:00">
+                        <div class="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative text-slate-100">
                             <div class="space-y-4">
-                                <div class="bg-white border-4 border-dashed border-indigo-200 rounded-3xl p-6 shadow-2xl max-w-sm mx-auto text-center transform -rotate-2 hover:rotate-0 transition-transform duration-300">
-                                    <h2 class="font-extrabold text-3xl tracking-wide uppercase bg-gradient-to-r from-pink-500 to-indigo-600 bg-clip-text text-transparent" style="font-family: 'Quicksand';">
+                                <div class="bg-slate-900/80 border-4 border-dashed border-cyan-400/40 rounded-3xl p-6 shadow-2xl max-w-sm mx-auto text-center transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                                    <h2 class="font-extrabold text-3xl tracking-wide uppercase bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent" style="font-family: 'Quicksand';">
                                         Have a Great Day!
                                     </h2>
-                                    <div class="h-1 w-24 bg-pink-500/30 mx-auto my-2 rounded"></div>
-                                    <p class="text-xs text-indigo-800 font-bold uppercase tracking-wider">You are officially 7th-grade ready!</p>
+                                    <div class="h-1 w-24 bg-cyan-400/40 mx-auto my-2 rounded"></div>
+                                    <p class="text-xs text-cyan-200 font-bold uppercase tracking-wider">You are officially 7th-grade ready!</p>
                                 </div>
                                 <div class="bg-gray-950 text-slate-200 p-4 rounded-xl border border-gray-800 space-y-2 text-xs font-sans">
                                     <h4 class="font-bold text-amber-400 flex items-center gap-1">
@@ -863,13 +869,13 @@
                                 </div>
                             </div>
                             <div class="flex flex-col gap-4">
-                                <div class="bg-white/60 p-4 rounded-xl border border-indigo-100 shadow-md flex items-center gap-4">
+                                <div class="bg-slate-900/60 p-4 rounded-xl border border-cyan-400/20 shadow-md flex items-center gap-4">
                                     <div class="w-16 h-16 rounded-full bg-slate-900 border-2 border-amber-400 flex items-center justify-center text-white text-lg">
-                                        <i class="fa-solid fa-mountain"></i>
+                                        <i class="fa-solid fa-rocket"></i>
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-slate-800 text-sm">Difficult Doesn't Mean Impossible</h4>
-                                        <p class="text-xs text-slate-500 mt-0.5">Keep climbing, keep asking questions, keep collaborating!</p>
+                                        <h4 class="font-bold text-slate-100 text-sm">Difficult Doesn't Mean Impossible</h4>
+                                        <p class="text-xs text-slate-400 mt-0.5">Keep climbing, keep asking questions, keep collaborating!</p>
                                     </div>
                                 </div>
                                 <div class="bg-indigo-900/50 text-indigo-100 p-4 rounded-xl border border-indigo-800 text-xs font-sans">
@@ -879,7 +885,7 @@
                             </div>
                         </div>
                         <div class="absolute bottom-4 left-6 bg-slate-800 border border-slate-700 text-white font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-2">
-                            🎓 FINAL REMINDERS
+                            🚀 FINAL REMINDERS
                         </div>
                     </div>
 
