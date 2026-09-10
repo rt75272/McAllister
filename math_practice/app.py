@@ -11,6 +11,7 @@ import json
 import os
 import random
 import re
+import time
 from contextlib import closing
 from collections import deque
 from datetime import datetime
@@ -18,6 +19,8 @@ from urllib import error, request as urllib_request
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import psycopg2
+
+import adaptive_difficulty as adaptive
 
 # Flask application setup.
 app = Flask(__name__)
@@ -460,41 +463,49 @@ def d20():
     """A simple page showing a 20-sided (D20) dice."""
     return render_template('d20.html')
 
-@app.route('/math-practice', methods=['GET', 'POST'])
-def math_practice():
-    """Main page for math practice."""
-    # Always reset session state on GET (refresh).
-    if request.method == 'GET':
-        session['perf_records'] = []
-        session['hard_victories'] = 0
-        session['difficulty'] = 'easy'
-    result = None
-    # Track correct streaks per difficulty.
-    if 'streaks' not in session:
-        session['streaks'] = {'easy': 0, 'medium': 0, 'hard': 0}
-    streaks = session['streaks']
-    # Difficulty thresholds.
-    easy_to_medium = easy_num
-    medium_to_hard = medium_num
-    hard_to_victory = hard_num
-    # Determine difficulty.
-    difficulty = session.get('difficulty', 'easy')
-    # Calculate countdowns.
+def _progress_snapshot(ability, difficulty, hard_victories):
+    """Translate the ability score into the streak-style progress numbers the UI expects
+    (so the existing progress bars/templates work unchanged), while the underlying
+    difficulty selection is driven by the adaptive ability estimate."""
+    order = ('easy', 'medium', 'hard')
+    idx_current = order.index(difficulty)
+    totals = {'easy': easy_num, 'medium': medium_num}
+    streaks = {'easy': 0, 'medium': 0, 'hard': hard_victories}
+    for i, tier in enumerate(('easy', 'medium')):
+        if i < idx_current:
+            streaks[tier] = totals[tier]
+        elif i == idx_current:
+            streaks[tier] = round(adaptive.tier_progress(ability, tier) * totals[tier])
+
     if difficulty == 'easy':
-        questions_left = max(0, easy_to_medium - streaks['easy'])
+        questions_left = max(0, easy_num - streaks['easy'])
         next_level = 'medium'
     elif difficulty == 'medium':
-        questions_left = max(0, medium_to_hard - streaks['medium'])
+        questions_left = max(0, medium_num - streaks['medium'])
         next_level = 'hard'
-    elif difficulty == 'hard':
-        questions_left = max(0, hard_to_victory - session['hard_victories'])
-        next_level = 'victory'
     else:
-        questions_left = easy_to_medium
-        next_level = 'medium'
+        questions_left = max(0, hard_num - hard_victories)
+        next_level = 'victory'
+    return streaks, questions_left, next_level
+
+
+@app.route('/math-practice', methods=['GET', 'POST'])
+def math_practice():
+    """Main page for math practice. Difficulty is chosen by an online IRT-style adaptive
+    engine (see adaptive_difficulty.py) that estimates the student's ability from
+    correctness and response time, rather than a fixed correct-answers-in-a-row streak."""
+    # Always reset session state on GET (refresh).
+    if request.method == 'GET':
+        session['hard_victories'] = 0
+        session['ability'] = adaptive.INITIAL_ABILITY
+
+    result = None
+    ability = session.get('ability', adaptive.INITIAL_ABILITY)
+    difficulty = adaptive.ability_to_tier(ability)
     session['difficulty'] = difficulty
-    session['streaks'] = streaks
-    # Calculate countdowns (already handled above with streaks).
+    hard_victories = session.get('hard_victories', 0)
+    streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
+
     if request.method == 'POST':
         user_answer = request.form.get('answer')
         correct_answer = request.form.get('correct_answer')
@@ -504,20 +515,27 @@ def math_practice():
             is_correct = user_answer_float == correct_answer_float
             if is_correct:
                 result = f"Correct! The correct answer was {correct_answer_float}"
-                # Track hard victories.
-                if session.get('difficulty') == 'hard':
-                    session['hard_victories'] += 1
+                if difficulty == 'hard':
+                    hard_victories += 1
             else:
                 result = f"Incorrect. The correct answer was {correct_answer_float}"
         except (ValueError, TypeError):
             result = "Please enter a valid number."
             is_correct = False
-        # Update streaks.
-        if is_correct:
-            streaks[difficulty] += 1
-        else:
-            streaks[difficulty] = 0
-            
+            correct_answer_float = None
+
+        # Update the ability estimate from this result (weighted by how long it took).
+        response_seconds = time.time() - session.get('question_start_time', time.time())
+        ability = adaptive.update_ability(ability, difficulty, is_correct, response_seconds)
+        session['ability'] = ability
+        new_difficulty = adaptive.ability_to_tier(ability)
+        # Falling back out of hard means mastery wasn't sustained; don't carry over partial credit.
+        if difficulty == 'hard' and new_difficulty != 'hard':
+            hard_victories = 0
+        difficulty = new_difficulty
+        session['difficulty'] = difficulty
+        session['hard_victories'] = hard_victories
+
         # Store previous question information before updating difficulty.
         current_question = request.form.get('current_question', '')
         session['previous_question'] = {
@@ -526,51 +544,34 @@ def math_practice():
             'correct_answer': correct_answer_float,
             'was_correct': is_correct
         }
-        
-        # Difficulty progression.
-        if difficulty == 'easy' and streaks['easy'] >= easy_to_medium:
-            difficulty = 'medium'
-            streaks['easy'] = 0
-        elif difficulty == 'medium' and streaks['medium'] >= medium_to_hard:
-            difficulty = 'hard'
-            streaks['medium'] = 0
-        session['difficulty'] = difficulty
-        session['streaks'] = streaks
-        
-        if difficulty == 'easy':
-            questions_left = max(0, easy_to_medium - streaks['easy'])
-            next_level = 'medium'
-        elif difficulty == 'medium':
-            questions_left = max(0, medium_to_hard - streaks['medium'])
-            next_level = 'hard'
-        elif difficulty == 'hard':
-            questions_left = max(0, hard_to_victory - session['hard_victories'])
-            next_level = 'victory'
-        else:
-            questions_left = easy_to_medium
-            next_level = 'medium'
+
         # Victory condition: 5 hard questions answered correctly.
         victory = False
-        if session.get('hard_victories', 0) >= hard_to_victory:
+        if hard_victories >= hard_num:
             victory = True
             result = "Victory! You answered 5 hard questions correctly!"
-            session['hard_victories'] = 0  # Reset for replay.
-            session['difficulty'] = 'easy'
-            session['streaks'] = {'easy': 0, 'medium': 0, 'hard': 0}
-            questions_left = easy_to_medium
-            next_level = 'medium'
-        question, answer = generate_question(session['difficulty'])
+            hard_victories = 0  # Reset for replay.
+            ability = adaptive.INITIAL_ABILITY
+            difficulty = 'easy'
+            session['hard_victories'] = hard_victories
+            session['ability'] = ability
+            session['difficulty'] = difficulty
+
+        streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
+        question, answer = generate_question(difficulty)
+        session['question_start_time'] = time.time()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             response_data = {
                 'result': result,
                 'question': question,
                 'answer': answer,
-                'difficulty': session['difficulty'],
+                'difficulty': difficulty,
                 'victory': victory,
                 'questions_left': questions_left,
                 'next_level': next_level,
                 'streaks': streaks,
-                'hard_victories': session.get('hard_victories', 0)
+                'hard_victories': hard_victories,
+                'ability': round(ability, 2)
             }
             # Add previous question info if available.
             if 'previous_question' in session:
@@ -581,7 +582,7 @@ def math_practice():
                                    question=question, 
                                    answer=answer, 
                                    result=result, 
-                                   difficulty=session['difficulty'],
+                                   difficulty=difficulty,
                                    victory=victory,
                                    questions_left=questions_left,
                                    next_level=next_level,
@@ -589,9 +590,10 @@ def math_practice():
                                    medium_num=medium_num,
                                    hard_num=hard_num,
                                    streaks=streaks,
-                                   hard_victories=session.get('hard_victories', 0))
+                                   hard_victories=hard_victories)
     else:
         question, answer = generate_question(difficulty)
+        session['question_start_time'] = time.time()
         return render_template('math_practice.html', 
                                question=question, 
                                answer=answer, 
@@ -603,33 +605,19 @@ def math_practice():
                                medium_num=medium_num,
                                hard_num=hard_num,
                                streaks=streaks,
-                               hard_victories=session.get('hard_victories', 0))
+                               hard_victories=hard_victories)
 
 @app.route('/skip', methods=['POST'])
 def skip():
-    """Skip the current question."""
-    difficulty = session.get('difficulty', 'easy')
-    # Use same countdown logic as above.
-    # Use streaks for countdowns.
-    if 'streaks' not in session:
-        session['streaks'] = {'easy': 0, 'medium': 0, 'hard': 0}
-    streaks = session['streaks']
-    easy_to_medium = easy_num
-    medium_to_hard = medium_num
-    hard_to_victory = hard_num
-    if difficulty == 'easy':
-        questions_left = max(0, easy_to_medium - streaks['easy'])
-        next_level = 'medium'
-    elif difficulty == 'medium':
-        questions_left = max(0, medium_to_hard - streaks['medium'])
-        next_level = 'hard'
-    elif difficulty == 'hard':
-        questions_left = max(0, hard_to_victory - session.get('hard_victories', 0))
-        next_level = 'victory'
-    else:
-        questions_left = easy_to_medium
-        next_level = 'medium'
+    """Skip the current question. Skipping does not move the ability estimate, since no
+    answer (correct or not) was actually observed."""
+    ability = session.get('ability', adaptive.INITIAL_ABILITY)
+    difficulty = adaptive.ability_to_tier(ability)
+    session['difficulty'] = difficulty
+    hard_victories = session.get('hard_victories', 0)
+    streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
     question, answer = generate_question(difficulty)
+    session['question_start_time'] = time.time()
     return jsonify({
         'question': question,
         'answer': answer,
@@ -637,7 +625,8 @@ def skip():
         'questions_left': questions_left,
         'next_level': next_level,
         'streaks': streaks,
-        'hard_victories': session.get('hard_victories', 0)})
+        'hard_victories': hard_victories,
+        'ability': round(ability, 2)})
 
 @app.route('/verb-detective')
 def verb_detective():
