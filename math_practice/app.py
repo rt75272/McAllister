@@ -272,8 +272,8 @@ def generate_question(difficulty='easy'):
 
 @app.route('/', methods=['GET'])
 def home():
-    """Main home page with Math and ELA sections."""
-    return render_template('home.html')
+    """Redirect the landing page to the quest map."""
+    return redirect(url_for('quest_map'))
 
 @app.route('/math-games', methods=['GET'])
 def math_games():
