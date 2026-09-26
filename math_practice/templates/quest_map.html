@@ -350,9 +350,7 @@
     <p id="proximity-desc" class="text-xs text-slate-300 mt-1 mb-2">Entering gravitational pull. Choose your landing target:</p>
     <div class="flex gap-3 justify-center">
         <button id="descend-planet-btn" class="descend-btn text-xs font-black">Land on Planet 🪐</button>
-        <button id="descend-moon-btn" class="descend-btn text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400">Land on Moon 🌙</button>
-    </div>
-</div>
+
 
 <div id="junk-quiz-modal" class="junk-quiz-modal text-slate-100">
     <div class="flex items-start justify-between gap-3">
@@ -375,19 +373,19 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Data configuration: Curriculum Planets Orbiting in Space with Star 360 Moons.
+        // Data configuration: Curriculum planets orbiting in space.
         const allPlanetsData = [
             { id: 0, name: "Orientation Station", unitLabel: "ORIENTATION", color: 0x38bdf8, size: 1.0, radius: 6, speed: 0.2, icon: "🛰️", specialRoute: "/orientation" },
-            { id: 1, name: "Sky Garden Planet (Number Properties)", color: 0xec4899, size: 1.2, radius: 10, speed: 0.15, icon: "🌸", moon: "BOY Star 360" },
+            { id: 1, name: "Sky Garden Planet (Number Properties)", color: 0xec4899, size: 1.2, radius: 10, speed: 0.15, icon: "🌸" },
             { id: 2, name: "Gorilla Nebula (Fractions & Decimals)", color: 0xa855f7, size: 1.4, radius: 14, speed: 0.12, icon: "🦍" },
             { id: 3, name: "Bathhouse Battle (Rational Numbers)", color: 0x3b82f6, size: 1.1, radius: 18, speed: 0.10, icon: "♨️" },
             { id: 4, name: "Tenting Trouble (Expressions)", color: 0x06b6d4, size: 1.3, radius: 22, speed: 0.08, icon: "⛺" },
-            { id: 5, name: "Construction Canyon (Equations)", color: 0x14b8a6, size: 1.2, radius: 26, speed: 0.07, icon: "🏗️", moon: "MOY Star 360" },
+            { id: 5, name: "Construction Canyon (Equations)", color: 0x14b8a6, size: 1.2, radius: 26, speed: 0.07, icon: "🏗️" },
             { id: 6, name: "Slo-Mo Valley (Ratios & Rates)", color: 0x10b981, size: 1.2, radius: 30, speed: 0.06, icon: "⏳" },
             { id: 7, name: "Dumbo Beat (Percents & Models)", color: 0x84cc16, size: 1.3, radius: 34, speed: 0.05, icon: "🐘" },
             { id: 8, name: "Djinn's Revenge (Area)", color: 0xeab308, size: 1.4, radius: 38, speed: 0.04, icon: "🧞" },
             { id: 9, name: "Safari Park (Surface Area & Volume)", color: 0xf97316, size: 1.1, radius: 42, speed: 0.035, icon: "🦁" },
-            { id: 10, name: "The Mothership (Statistical Graphs)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸", moon: "EOY Star 360" },
+            { id: 10, name: "The Mothership (Statistical Graphs)", color: 0xef4444, size: 1.5, radius: 46, speed: 0.03, icon: "🛸" },
             { id: 11, name: "Pet Land & Character Port", color: 0x22c55e, size: 1.9, radius: 53, speed: 0.024, icon: "🐾", specialRoute: "/pet-land", asteroidRing: true },
             {
                 id: 12,
@@ -523,8 +521,7 @@
         const rotationSpeed = 0.04;
 
         let activeApproachedPlanetId = null;
-        let activeApproachedMoonId = null;
-        let landingTarget = null; // { type: 'planet' | 'moon', id: id, pos: THREE.Vector3 }
+        let landingTarget = null; // { type: 'planet', id: id, pos: THREE.Vector3 }
         let currentCoins = 15;
         let activeJunkQuiz = null;
         let highestUnitVisited = 1;
@@ -716,21 +713,8 @@
 
                 scene.add(planetMesh);
 
-                let moonMesh = null;
-                let moonOrbitRadius = data.size + 1.3;
                 const asteroidMeshes = [];
                 const symbolOrbiters = [];
-                if (data.moon) {
-                    const moonGeo = new THREE.IcosahedronGeometry(data.size * 0.25, 1);
-                    const moonMat = new THREE.MeshStandardMaterial({
-                        color: 0x94a3b8,
-                        flatShading: true,
-                        roughness: 0.8,
-                        metalness: 0.1
-                    });
-                    moonMesh = new THREE.Mesh(moonGeo, moonMat);
-                    scene.add(moonMesh);
-                }
 
                 if (data.asteroidRing) {
                     const asteroidCount = 9;
@@ -776,9 +760,6 @@
                     mesh: planetMesh,
                     angle: startingAngle,
                     data: data,
-                    moonMesh: moonMesh,
-                    moonAngle: Math.random() * Math.PI * 2,
-                    moonOrbitRadius: moonOrbitRadius,
                     asteroidMeshes: asteroidMeshes,
                     symbolOrbiters: symbolOrbiters
                 });
@@ -863,16 +844,8 @@
             window.addEventListener('click', onDocumentClick);
 
             document.getElementById('descend-planet-btn').addEventListener('click', () => {
-                const targetId = activeApproachedPlanetId || activeApproachedMoonId;
-                if (targetId !== null) {
-                    window.location.href = getPlanetRoute(targetId);
-                }
-            });
-
-            document.getElementById('descend-moon-btn').addEventListener('click', () => {
-                const targetId = activeApproachedMoonId || activeApproachedPlanetId;
-                if (targetId !== null) {
-                    window.location.href = `/star360-checkin`;
+                if (activeApproachedPlanetId !== null) {
+                    window.location.href = getPlanetRoute(activeApproachedPlanetId);
                 }
             });
 
@@ -921,7 +894,7 @@
             }
         }
 
-        // Steer clicks raycast to planets & moons
+        // Steer clicks raycast to planets
         function onDocumentClick(event) {
             // Only capture if clicking inside Three.js container
             if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.tagName === 'INPUT') return;
@@ -958,21 +931,6 @@
                     return;
                 }
             }
-
-            // Check moon hits
-            const moonMeshes = planets.filter(p => p.moonMesh).map(p => p.moonMesh);
-            const moonIntersects = raycaster.intersectObjects(moonMeshes);
-
-            if (moonIntersects.length > 0) {
-                const clickedMoonMesh = moonIntersects[0].object;
-                const clickedPlanet = planets.find(p => p.moonMesh === clickedMoonMesh);
-                if (clickedPlanet) {
-                    // Instantly steer ship towards moon and trigger check-in
-                    ship.position.copy(clickedMoonMesh.position);
-                    window.location.href = `/star360-checkin`;
-                    return;
-                }
-            }
         }
 
         function onWindowResize() {
@@ -985,22 +943,13 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // 1. Rotate Planets and Moons in Orbit
+            // 1. Rotate planets in orbit
             planets.forEach((p) => {
                 p.angle += p.data.speed * 0.01;
                 const planetX = Math.cos(p.angle) * p.data.radius;
                 const planetZ = Math.sin(p.angle) * p.data.radius;
                 p.mesh.position.set(planetX, 0, planetZ);
                 p.mesh.rotation.y += 0.015; // Self-rotation
-
-                // Position and orbit the moon relative to its parent planet (slowed orbital speed!)
-                if (p.moonMesh) {
-                    p.moonAngle += 0.012; // Slowed down from 0.03 for easier tracking and clicking!
-                    const moonX = planetX + Math.cos(p.moonAngle) * p.moonOrbitRadius;
-                    const moonZ = planetZ + Math.sin(p.moonAngle) * p.moonOrbitRadius;
-                    p.moonMesh.position.set(moonX, 0.4, moonZ);
-                    p.moonMesh.rotation.y += 0.01;
-                }
 
                 if (p.asteroidMeshes && p.asteroidMeshes.length > 0) {
                     p.asteroidMeshes.forEach((asteroid, index) => {
@@ -1085,10 +1034,9 @@
             camera.position.lerp(targetCamPosition, 0.06);
             camera.lookAt(ship.position);
 
-            // 4. Proximity Checks (Are we landing on a planet or its assessment moon?)
+            // 4. Proximity Checks (Are we landing on a planet?)
             let nearAnyPlanet = false;
-            let nearAnyMoon = false;
-            
+
             planets.forEach((p) => {
                 const distPlanet = ship.position.distanceTo(p.mesh.position);
                 const thresholdPlanet = p.data.size + 2.5;
@@ -1100,34 +1048,17 @@
                     }
                     nearAnyPlanet = true;
                     activeApproachedPlanetId = p.data.id;
-                    activeApproachedMoonId = null;
-                    
+
                     const unitLabel = p.data.unitLabel || `UNIT ${p.data.id}`;
                     document.getElementById('proximity-title').textContent = `APPROACHING PLANET: ${unitLabel}`;
                     document.getElementById('proximity-desc').textContent = `${p.data.icon} You have entered the gravity field of ${p.data.name}!`;
                     document.getElementById('proximity-alert').style.display = 'block';
                 }
-
-                if (p.moonMesh) {
-                    const distMoon = ship.position.distanceTo(p.moonMesh.position);
-                    const thresholdMoon = 2.4; // Slightly increased range from 1.8 to 2.4 for easier targeting on Chromebooks
-
-                    if (distMoon < thresholdMoon) {
-                        nearAnyMoon = true;
-                        activeApproachedMoonId = p.data.id;
-                        activeApproachedPlanetId = null;
-                        
-                        document.getElementById('proximity-title').textContent = `APPROACHING MOON: UNIT ${p.data.id}`;
-                        document.getElementById('proximity-desc').textContent = `🌙 You are near the orbiting ${p.data.moon} Assessment Moon!`;
-                        document.getElementById('proximity-alert').style.display = 'block';
-                    }
-                }
             });
 
-            if (!nearAnyPlanet && !nearAnyMoon) {
+            if (!nearAnyPlanet) {
                 document.getElementById('proximity-alert').style.display = 'none';
                 activeApproachedPlanetId = null;
-                activeApproachedMoonId = null;
             }
 
             renderer.render(scene, camera);
