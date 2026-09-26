@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='context_clues.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
 </head>
 <body>
     <div class="nav-header">
@@ -80,5 +81,7 @@
 
     <script src="{{ url_for('static', filename='context_clues.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+    <script>if (typeof createCalculatorHTML === 'function') createCalculatorHTML();</script>
 </body>
 </html>

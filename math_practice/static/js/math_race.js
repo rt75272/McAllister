@@ -98,6 +98,7 @@ function showNewQuestion() {
     gameState.currentQuestion = problem.question;
     gameState.currentAnswer = problem.answer;
     gameState.totalQuestions++;
+    gameState.questionStartTime = Date.now();
     
     elements.question.textContent = problem.question;
     elements.answerInput.value = '';
@@ -129,6 +130,14 @@ function checkAnswer() {
         gameState.streak = 0;
         elements.feedback.textContent = `✗ Wrong! Answer was ${gameState.currentAnswer}`;
         elements.feedback.className = 'feedback incorrect';
+    }
+    
+    // Adapt difficulty based on the ML-style ability estimate (correctness + response time).
+    if (typeof AdaptiveDifficulty !== 'undefined') {
+        const responseSeconds = (Date.now() - gameState.questionStartTime) / 1000;
+        const adapted = AdaptiveDifficulty.recordAnswer('math_race', gameState.difficulty, correct, responseSeconds);
+        gameState.difficulty = adapted.tier;
+        if (elements.difficultySelect) elements.difficultySelect.value = adapted.tier;
     }
     
     updateDisplay();
@@ -165,7 +174,8 @@ function startGame() {
         difficulty: elements.difficultySelect.value,
         totalQuestions: 0,
         correctAnswers: 0,
-        timer: null
+        timer: null,
+        questionStartTime: null
     };
     
     elements.startScreen.classList.add('hidden');
@@ -211,6 +221,11 @@ function endGame() {
     `;
     
     elements.gameOverScreen.classList.remove('hidden');
+}
+
+// Seed the difficulty dropdown with the student's saved adaptive skill level, if any.
+if (typeof AdaptiveDifficulty !== 'undefined' && elements.difficultySelect) {
+    elements.difficultySelect.value = AdaptiveDifficulty.getTier('math_race');
 }
 
 // Event listeners

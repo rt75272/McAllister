@@ -280,6 +280,16 @@ def math_games():
     """Math games selection page."""
     return render_template('math_games.html')
 
+@app.route('/skill-assessment', methods=['GET'])
+def skill_assessment():
+    """Short adaptive placement quiz that seeds every math game's starting difficulty.
+
+    The quiz itself runs client-side (see adaptive_difficulty.js), using the same
+    IRT-style ability model the games use to adapt afterward; the resulting ability
+    score is stored in localStorage so each game can read it as its starting point.
+    """
+    return render_template('skill_assessment.html')
+
 @app.route('/ela-games', methods=['GET'])
 def ela_games():
     """ELA games selection page."""
@@ -497,7 +507,13 @@ def math_practice():
     # Always reset session state on GET (refresh).
     if request.method == 'GET':
         session['hard_victories'] = 0
-        session['ability'] = adaptive.INITIAL_ABILITY
+        # A skill-assessment result (?seed_ability=...) seeds the starting ability instead
+        # of the default, so students don't have to re-earn their way up from easy.
+        seed_ability = request.args.get('seed_ability', type=float)
+        if seed_ability is not None:
+            session['ability'] = max(adaptive.MIN_ABILITY, min(adaptive.MAX_ABILITY, seed_ability))
+        else:
+            session['ability'] = adaptive.INITIAL_ABILITY
 
     result = None
     ability = session.get('ability', adaptive.INITIAL_ABILITY)

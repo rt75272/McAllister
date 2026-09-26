@@ -34,11 +34,6 @@ p, .section-description, .instructions, .message-content, .card-text {
     background-color: #fbfbf8 !important; /* Soft off-white/cream */
 }
 
-/* Avoid pure black text for better contrast without glare */
-body, p, .section-description, .instructions, .message-content {
-    color: #2b2b2b !important;
-}
-
 /* Convert italics to bold, as italics are often hard for dyslexic users to read */
 em, i {
     font-style: normal !important;

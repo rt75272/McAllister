@@ -13,7 +13,8 @@
     font-size: 1.2em;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    opacity: 0.82;
     z-index: 1001;
     width: 60px;
     height: 60px;
@@ -34,6 +35,7 @@
 .calculator-toggle:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    opacity: 1;
 }
 
 /* Calculator Popup - container that holds the floating calculator */

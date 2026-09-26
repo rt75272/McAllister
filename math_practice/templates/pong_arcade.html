@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pong Arcade - Mrs. McAllister's Learning Center</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculator.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
     <style>
         body {
             margin: 0;
@@ -232,5 +234,8 @@
     step();
 })();
 </script>
+<script src="{{ url_for('static', filename='js/calculator.js') }}"></script>
+<script>if (typeof createCalculatorHTML === 'function') createCalculatorHTML();</script>
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
 </body>
 </html>

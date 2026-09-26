@@ -120,6 +120,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+    <script src="{{ url_for('static', filename='js/adaptive_difficulty.js') }}"></script>
     <script src="{{ url_for('static', filename='js/area_explorer.js') }}"></script>
     <script>
         let game;

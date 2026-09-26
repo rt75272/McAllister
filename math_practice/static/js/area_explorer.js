@@ -77,6 +77,22 @@ class AreaExplorer {
 
         this.canvas = document.getElementById('shape-canvas');
         this.ctx = this.canvas.getContext('2d');
+        this.problemStartTime = null;
+        this.recommendDifficulty();
+    }
+
+    // Highlight the difficulty card matching the student's saved adaptive ability.
+    recommendDifficulty() {
+        if (typeof AdaptiveDifficulty === 'undefined') return;
+        const tier = AdaptiveDifficulty.getTier('area_explorer');
+        const card = document.querySelector(`.diff-card.diff-${tier}`);
+        if (card && !card.querySelector('.diff-recommended-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'diff-recommended-badge';
+            badge.textContent = '⭐ Recommended for you';
+            badge.style.cssText = 'display:block;margin-top:6px;font-size:.75em;font-weight:700;';
+            card.appendChild(badge);
+        }
     }
 
     /* ══════════ Difficulty / Start ══════════ */
@@ -213,6 +229,7 @@ class AreaExplorer {
         const level = levels[this.currentLevel - 1];
         const pool = level.pool;
         const type = pool[this.randInt(0, pool.length - 1)];
+        this.problemStartTime = Date.now();
 
         switch (type) {
             case 'rectangle':      this.genRectangle(); break;
@@ -725,10 +742,20 @@ class AreaExplorer {
         }
 
         if (Math.abs(userAnswer - this.currentAnswer) <= this.tolerance) {
+            this.recordAdaptiveAnswer(true);
             this.handleCorrect();
         } else {
+            this.recordAdaptiveAnswer(false);
             this.handleIncorrect();
         }
+    }
+
+    // Feed this answer's correctness + response time into the shared ability estimate
+    // (used to recommend a starting difficulty next time, without disrupting this session's level flow).
+    recordAdaptiveAnswer(wasCorrect) {
+        if (typeof AdaptiveDifficulty === 'undefined') return;
+        const responseSeconds = (Date.now() - this.problemStartTime) / 1000;
+        AdaptiveDifficulty.recordAnswer('area_explorer', this.difficulty, wasCorrect, responseSeconds);
     }
 
     handleCorrect() {

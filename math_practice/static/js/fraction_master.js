@@ -10,13 +10,14 @@ class FractionMaster {
      * Initialize levels, scoring, streak counters, and event listeners.
      */
     constructor() {
-        this.currentLevel = 1;
+        this.currentLevel = this.pickStartingLevel();
         this.maxLevel = 8;
         this.score = 0;
         this.streak = 0;
         this.questionsCompleted = 0;
-        this.questionsPerLevel = 10;
+        this.questionsPerLevel = this.calcQuestionsPerLevel();
         this.currentProblem = null;
+        this.problemStartTime = null;
         this.levelStats = {
             correct: 0,
             incorrect: 0,
@@ -38,6 +39,36 @@ class FractionMaster {
         this.initializeElements();
         this.bindEvents();
         this.updateDisplay();
+    }
+
+    // Maps the 1-8 hardcoded levels onto the shared easy/medium/hard ability bands.
+    tierForLevel(level) {
+        if (level <= 3) return 'easy';
+        if (level <= 6) return 'medium';
+        return 'hard';
+    }
+
+    // A student whose saved ability is already ahead of the assessment page never played yet
+    // starts a few levels in instead of re-doing levels they've already demonstrated mastery of.
+    pickStartingLevel() {
+        if (typeof AdaptiveDifficulty === 'undefined') return 1;
+        const tier = AdaptiveDifficulty.getTier('fraction_master');
+        if (tier === 'hard') return 7;
+        if (tier === 'medium') return 4;
+        return 1;
+    }
+
+    // Shorten a level for a student whose ability is already ahead of it; lengthen it
+    // (more practice) if they're still behind, instead of a fixed 10 questions for everyone.
+    calcQuestionsPerLevel() {
+        if (typeof AdaptiveDifficulty === 'undefined') return 10;
+        const order = ['easy', 'medium', 'hard'];
+        const abilityTier = AdaptiveDifficulty.getTier('fraction_master');
+        const levelTier = this.tierForLevel(this.currentLevel);
+        const diff = order.indexOf(abilityTier) - order.indexOf(levelTier);
+        if (diff > 0) return 6;
+        if (diff < 0) return 14;
+        return 10;
     }
 
     initializeElements() {
@@ -135,6 +166,7 @@ class FractionMaster {
         this.clearInputs();
         this.clearFeedback();
         this.hideHint();
+        this.problemStartTime = Date.now();
     }
 
     generateSimplifyProblem() {
@@ -407,6 +439,12 @@ class FractionMaster {
         
         const isCorrect = userNum === this.currentProblem.answerNum && userDen === this.currentProblem.answerDen;
         
+        // Update the ML-style ability estimate from correctness + response time.
+        if (typeof AdaptiveDifficulty !== 'undefined') {
+            const responseSeconds = (Date.now() - this.problemStartTime) / 1000;
+            AdaptiveDifficulty.recordAnswer('fraction_master', this.tierForLevel(this.currentLevel), isCorrect, responseSeconds);
+        }
+        
         if (isCorrect) {
             this.handleCorrectAnswer();
         } else {
@@ -514,6 +552,7 @@ class FractionMaster {
     nextLevel() {
         this.currentLevel++;
         this.questionsCompleted = 0;
+        this.questionsPerLevel = this.calcQuestionsPerLevel();
         this.resetLevelStats();
         this.elements.levelCompleteModal.style.display = 'none';
         this.updateDisplay();

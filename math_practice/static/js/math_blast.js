@@ -18,6 +18,13 @@ function getDifficultyLevel() {
     return Math.floor(score / 50) + 1; // Level increases every 50 points.
 }
 
+// Maps the score-derived level onto the shared easy/medium/hard ability bands.
+function tierForLevel(lvl) {
+    if (lvl <= 2) return 'easy';
+    if (lvl <= 5) return 'medium';
+    return 'hard';
+}
+
 // Get speed multiplier based on level and user setting.
 function getSpeedMultiplier() {
     const baseSpeed = 0.3; // Very slow starting speed.
@@ -33,8 +40,14 @@ function getSpeedMultiplier() {
 function randomProblem() {
     // Update level based on current score.
     level = getDifficultyLevel();
-    // Adjust number range based on level for increased difficulty.
-    const maxNumber = Math.min(5 + level * 2, 15); // Start with 1-7, max at 1-15.
+    // Adjust number range based on level for increased difficulty, nudged by the student's
+    // ML-style ability estimate so the range isn't purely score-gated.
+    let maxNumber = Math.min(5 + level * 2, 15); // Start with 1-7, max at 1-15.
+    if (typeof AdaptiveDifficulty !== 'undefined') {
+        const ability = AdaptiveDifficulty.getAbility('math_blast');
+        const abilityBonus = Math.round((ability - AdaptiveDifficulty.INITIAL_ABILITY) * 3);
+        maxNumber = Math.max(5, Math.min(maxNumber + abilityBonus, 20));
+    }
     let a = Math.floor(Math.random() * maxNumber) + 1;
     let b = Math.floor(Math.random() * maxNumber) + 1;
     let op = ["+", "-", "*"][Math.floor(Math.random() * 3)];
@@ -52,7 +65,8 @@ function randomProblem() {
         y: 0, 
         text: `${a}${op}${b}`, 
         ans: ans, 
-        speed: finalSpeed
+        speed: finalSpeed,
+        spawnTime: Date.now()
     };
 }
 
@@ -89,6 +103,10 @@ function update() {
         ctx.shadowOffsetY = 0;
         // If problem hits the ground
         if(p.y>570){
+            if (typeof AdaptiveDifficulty !== 'undefined') {
+                const responseSeconds = (Date.now() - p.spawnTime) / 1000;
+                AdaptiveDifficulty.recordAnswer('math_blast', tierForLevel(level), false, responseSeconds);
+            }
             problems.splice(i,1);
             lives--;
             document.getElementById("lives").innerText="Lives: "+lives;
@@ -112,6 +130,10 @@ document.getElementById("answerInput").addEventListener("keydown", e=>{
         let val = parseInt(e.target.value);
         for(let i=0;i<problems.length;i++){
             if(problems[i].ans===val){
+                if (typeof AdaptiveDifficulty !== 'undefined') {
+                    const responseSeconds = (Date.now() - problems[i].spawnTime) / 1000;
+                    AdaptiveDifficulty.recordAnswer('math_blast', tierForLevel(level), true, responseSeconds);
+                }
                 problems.splice(i,1);
                 score+=10;
                 document.getElementById("score").innerText="Score: "+score;

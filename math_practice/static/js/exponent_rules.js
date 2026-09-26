@@ -15,7 +15,8 @@ class ExponentRulesGame {
         this.totalAttempts = 0;
         this.correctAnswers = 0;
         this.problemsSolved = 0;
-        this.difficulty = 'easy';
+        this.difficulty = (typeof AdaptiveDifficulty !== 'undefined') ? AdaptiveDifficulty.getTier('exponent_rules') : 'easy';
+        this.problemStartTime = null;
         
         this.currentProblem = null;
         this.achievements = [];
@@ -39,6 +40,7 @@ class ExponentRulesGame {
         this.skipBtn = document.getElementById('skip-btn');
         this.feedback = document.getElementById('feedback');
         this.difficultySelect = document.getElementById('difficulty');
+        if (this.difficultySelect) this.difficultySelect.value = this.difficulty;
         
         // Stats elements.
         this.scoreDisplay = document.getElementById('score');
@@ -127,6 +129,7 @@ class ExponentRulesGame {
         this.feedback.textContent = '';
         this.feedback.className = 'feedback neutral';
         this.answerInput.focus();
+        this.problemStartTime = Date.now();
     }
     
     checkAnswer() {
@@ -157,6 +160,14 @@ class ExponentRulesGame {
             this.showFeedback(`Incorrect. The answer is ${this.currentProblem.answer}`, 'incorrect');
             
             setTimeout(() => this.newProblem(), 2500);
+        }
+        
+        // Adapt difficulty based on the ML-style ability estimate (correctness + response time).
+        if (typeof AdaptiveDifficulty !== 'undefined') {
+            const responseSeconds = (Date.now() - this.problemStartTime) / 1000;
+            const adapted = AdaptiveDifficulty.recordAnswer('exponent_rules', this.difficulty, isCorrect, responseSeconds);
+            this.difficulty = adapted.tier;
+            if (this.difficultySelect) this.difficultySelect.value = adapted.tier;
         }
         
         this.updateDisplay();

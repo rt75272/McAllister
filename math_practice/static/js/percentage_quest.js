@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentQuestion = {};
     let bossLevel = 1;
     let playerDamage = 20;
+    let questionStartTime = null;
 
     // Elements.
     const bossHealthBar = document.getElementById('boss-health-bar');
@@ -39,11 +40,19 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function initGame() {
-        bossLevel = 1;
+        bossLevel = (typeof AdaptiveDifficulty !== 'undefined') ? recommendedBossLevel() : 1;
         loadBoss();
         generateQuestion();
         updateUI();
         log("Welcome to the dungeon! Defeat the monsters with your math skills!");
+    }
+
+    // Translate the student's saved ability into a starting boss level/gold scale.
+    function recommendedBossLevel() {
+        const tier = AdaptiveDifficulty.getTier('percentage_quest');
+        if (tier === 'hard') return 6;
+        if (tier === 'medium') return 3;
+        return 1;
     }
 
     function loadBoss() {
@@ -67,8 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let qText = "";
         let answer = 0;
         
-        // Difficulty scaling
+        // Difficulty scaling: boss level plus the student's ML-style ability estimate.
         let maxNum = 100 + (bossLevel * 50);
+        if (typeof AdaptiveDifficulty !== 'undefined') {
+            const ability = AdaptiveDifficulty.getAbility('percentage_quest');
+            maxNum += Math.max(0, Math.round((ability - AdaptiveDifficulty.INITIAL_ABILITY) * 40));
+        }
 
         if (type === 0) {
             // Find Part: What is X% of Y?
@@ -114,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mathProblemText.textContent = currentQuestion.text;
         answerInput.value = '';
         answerInput.focus();
+        questionStartTime = Date.now();
     }
 
     function checkAnswer() {
@@ -125,7 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Allow small margin of error for float stuff
-        if (Math.abs(userVal - currentQuestion.answer) < 0.01) {
+        const isCorrect = Math.abs(userVal - currentQuestion.answer) < 0.01;
+        if (typeof AdaptiveDifficulty !== 'undefined') {
+            const responseSeconds = (Date.now() - questionStartTime) / 1000;
+            const tier = AdaptiveDifficulty.getTier('percentage_quest');
+            AdaptiveDifficulty.recordAnswer('percentage_quest', tier, isCorrect, responseSeconds);
+        }
+        if (isCorrect) {
             // Correct
             handleHit();
         } else {

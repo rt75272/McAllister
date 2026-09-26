@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Assessment - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --ink: #eaf5ff;
+        --muted: #a8b9d4;
+        --panel: rgba(8, 12, 24, .82);
+        --line: rgba(125, 211, 252, .22);
+        --cyan: #67e8f9;
+        --gold: #fbbf24;
+    }
+    body {
+        background-color: #05030d;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        font-family: 'Lexend', 'Arial', sans-serif;
+        color: var(--ink);
+    }
+    .assess-shell { max-width: 720px; margin: 0 auto; }
+    .assess-shell p { color: var(--muted) !important; }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 1em;
+        padding: 0.5em 1.1em;
+        background: rgba(255,255,255,.06);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        text-decoration: none;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+    .assess-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 1em;
+        padding: 2.5em;
+        box-shadow: 0 20px 50px rgba(0,0,0,.5);
+        text-align: center;
+    }
+    .assess-title {
+        font-size: 2em;
+        font-weight: 800;
+        margin-bottom: 0.3em;
+        background: linear-gradient(135deg, #34d399, var(--cyan));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .assess-progress {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.08);
+        overflow: hidden;
+        margin: 1.5em 0;
+    }
+    .assess-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #34d399, var(--cyan));
+        transition: width .3s ease;
+    }
+    .assess-question {
+        font-size: 1.8em;
+        font-weight: 700;
+        margin: 1em 0;
+    }
+    .assess-input {
+        font-size: 1.3em;
+        padding: 0.5em 0.8em;
+        border-radius: .6em;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,.05);
+        color: var(--ink);
+        width: 60%;
+        text-align: center;
+        margin-bottom: 1em;
+    }
+    .assess-btn {
+        display: inline-block;
+        padding: 0.7em 1.6em;
+        border-radius: 999px;
+        border: none;
+        font-weight: 700;
+        font-size: 1em;
+        cursor: pointer;
+        background: linear-gradient(135deg, #34d399, var(--cyan));
+        color: #05030d;
+        margin: 0.3em;
+        text-decoration: none;
+    }
+    .assess-btn.secondary {
+        background: rgba(255,255,255,.08);
+        color: var(--ink);
+        border: 1px solid var(--line);
+    }
+    .assess-feedback { min-height: 1.6em; font-weight: 600; margin-bottom: .5em; }
+    .assess-feedback.correct { color: #34d399; }
+    .assess-feedback.incorrect { color: #f87171; }
+    .assess-result-tier {
+        display: inline-block;
+        padding: .4em 1em;
+        border-radius: 999px;
+        font-weight: 800;
+        margin: .5em 0 1em;
+    }
+    .assess-result-tier.easy { background: rgba(52,211,153,.18); color: #34d399; }
+    .assess-result-tier.medium { background: rgba(251,191,36,.18); color: var(--gold); }
+    .assess-result-tier.hard { background: rgba(248,113,113,.18); color: #f87171; }
+    #assess-intro, #assess-quiz, #assess-result { display: none; }
+    #assess-intro.active, #assess-quiz.active, #assess-result.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="assess-shell">
+    <a href="{{ url_for('math_games') }}" class="back-link">← Back to Math Games</a>
+
+    <div class="assess-panel">
+        <h1 class="assess-title">🧭 Skill Assessment</h1>
+
+        <div id="assess-intro" class="active">
+            <p>Answer a handful of quick math questions and our adaptive engine will figure out a great
+               starting difficulty for every math game on this site — no more starting too easy or too hard!</p>
+            <p>The quiz adjusts as you go, just like the games do, so it only takes about 8 questions.</p>
+            <button class="assess-btn" id="assess-start-btn">Start Assessment</button>
+        </div>
+
+        <div id="assess-quiz">
+            <div class="assess-progress"><div class="assess-progress-fill" id="assess-progress-fill"></div></div>
+            <p id="assess-step-label">Question 1 of 8</p>
+            <div class="assess-question" id="assess-question-text"></div>
+            <input type="text" id="assess-answer-input" class="assess-input" inputmode="decimal" autocomplete="off" placeholder="Your answer">
+            <div class="assess-feedback" id="assess-feedback"></div>
+            <div>
+                <button class="assess-btn" id="assess-submit-btn">Submit</button>
+            </div>
+        </div>
+
+        <div id="assess-result">
+            <p>Based on your answers, we recommend you start at:</p>
+            <div class="assess-result-tier" id="assess-result-tier">Medium</div>
+            <p id="assess-result-detail"></p>
+            <a href="{{ url_for('math_practice') }}" class="assess-btn" id="assess-goto-practice">Start Math Practice</a>
+            <a href="{{ url_for('math_games') }}" class="assess-btn secondary">Browse All Games</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/adaptive_difficulty.js') }}"></script>
+<script>
+(function () {
+    const TOTAL_QUESTIONS = 8;
+    const NUM_ROUNDED = 2;
+
+    const introEl = document.getElementById('assess-intro');
+    const quizEl = document.getElementById('assess-quiz');
+    const resultEl = document.getElementById('assess-result');
+    const startBtn = document.getElementById('assess-start-btn');
+    const submitBtn = document.getElementById('assess-submit-btn');
+    const answerInput = document.getElementById('assess-answer-input');
+    const questionText = document.getElementById('assess-question-text');
+    const stepLabel = document.getElementById('assess-step-label');
+    const progressFill = document.getElementById('assess-progress-fill');
+    const feedback = document.getElementById('assess-feedback');
+
+    // Start neutral (not easy/hard-biased) so the assessment converges on a fair estimate.
+    let ability = 0.0;
+    let tier = AdaptiveDifficulty.abilityToTier(ability);
+    let questionIndex = 0;
+    let currentAnswer = null;
+    let questionStart = null;
+
+    const RANGES = {
+        easy: { num1: [5, 10], num2: [1, 5] },
+        medium: { num1: [1, 100], num2: [1, 50] },
+        hard: { num1: [1, 1000], num2: [1, 500] }
+    };
+
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion(currentTier) {
+        const ops = ['+', '-', '*', '/'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        const range = RANGES[currentTier];
+        const num1 = randInt(range.num1[0], range.num1[1]);
+        const num2 = randInt(range.num2[0], range.num2[1]);
+        let text, answer;
+        if (op === '/') {
+            text = `${num1} ÷ ${num2}`;
+            answer = Math.round((num1 / num2) * Math.pow(10, NUM_ROUNDED)) / Math.pow(10, NUM_ROUNDED);
+        } else if (op === '+') {
+            text = `${num1} + ${num2}`;
+            answer = num1 + num2;
+        } else if (op === '-') {
+            text = `${num1} - ${num2}`;
+            answer = num1 - num2;
+        } else {
+            text = `${num1} × ${num2}`;
+            answer = num1 * num2;
+        }
+        return { text, answer };
+    }
+
+    function showQuestion() {
+        const q = generateQuestion(tier);
+        currentAnswer = q.answer;
+        questionText.textContent = q.text;
+        stepLabel.textContent = `Question ${questionIndex + 1} of ${TOTAL_QUESTIONS}`;
+        progressFill.style.width = `${(questionIndex / TOTAL_QUESTIONS) * 100}%`;
+        feedback.textContent = '';
+        feedback.className = 'assess-feedback';
+        answerInput.value = '';
+        answerInput.focus();
+        questionStart = Date.now();
+    }
+
+    function submitAnswer() {
+        const userVal = parseFloat(answerInput.value);
+        if (isNaN(userVal)) {
+            feedback.textContent = 'Please enter a number.';
+            feedback.className = 'assess-feedback incorrect';
+            return;
+        }
+        const responseSeconds = (Date.now() - questionStart) / 1000;
+        const wasCorrect = Math.abs(userVal - currentAnswer) < 0.01;
+        feedback.textContent = wasCorrect ? '✓ Correct!' : `✗ The answer was ${currentAnswer}`;
+        feedback.className = 'assess-feedback ' + (wasCorrect ? 'correct' : 'incorrect');
+
+        ability = AdaptiveDifficulty.updateAbility(ability, tier, wasCorrect, responseSeconds);
+        tier = AdaptiveDifficulty.abilityToTier(ability);
+        questionIndex++;
+
+        if (questionIndex >= TOTAL_QUESTIONS) {
+            setTimeout(finishAssessment, 700);
+        } else {
+            setTimeout(showQuestion, 700);
+        }
+    }
+
+    function finishAssessment() {
+        progressFill.style.width = '100%';
+        AdaptiveDifficulty.recordAssessmentResult(ability);
+
+        quizEl.classList.remove('active');
+        resultEl.classList.add('active');
+
+        const tierEl = document.getElementById('assess-result-tier');
+        tierEl.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+        tierEl.className = 'assess-result-tier ' + tier;
+
+        document.getElementById('assess-result-detail').textContent =
+            'Every math game will now start near this level and keep adapting from there as you play.';
+
+        const practiceLink = document.getElementById('assess-goto-practice');
+        practiceLink.href = practiceLink.href.split('?')[0] + '?seed_ability=' + encodeURIComponent(ability.toFixed(2));
+    }
+
+    startBtn.addEventListener('click', () => {
+        introEl.classList.remove('active');
+        quizEl.classList.add('active');
+        showQuestion();
+    });
+
+    submitBtn.addEventListener('click', submitAnswer);
+    answerInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitAnswer();
+    });
+})();
+</script>
+{% endblock %}

@@ -14,7 +14,8 @@ class ExpressionComparisonGame {
         this.streak = 0;
         this.correct = 0;
         this.total = 0;
-        this.difficulty = 'easy';
+        this.difficulty = (typeof AdaptiveDifficulty !== 'undefined') ? AdaptiveDifficulty.getTier('expression_comparison') : 'easy';
+        this.problemStartTime = null;
         this.currentProblem = null;
         this.achievements = {
             firstCompare: false,
@@ -29,7 +30,9 @@ class ExpressionComparisonGame {
     }
 
     setupEventListeners() {
-        document.getElementById('difficulty').addEventListener('change', (e) => {
+        const difficultySelect = document.getElementById('difficulty');
+        difficultySelect.value = this.difficulty;
+        difficultySelect.addEventListener('change', (e) => {
             this.difficulty = e.target.value;
             this.generateNewProblem();
         });
@@ -188,6 +191,8 @@ class ExpressionComparisonGame {
             btn.disabled = false;
             btn.classList.remove('correct', 'incorrect');
         });
+
+        this.problemStartTime = Date.now();
     }
 
     checkAnswer(userChoice) {
@@ -201,6 +206,17 @@ class ExpressionComparisonGame {
         const equalBtn = document.getElementById('equalBtn');
         const rightBtn = document.getElementById('rightBtn');
         
+        const isCorrect = userChoice === correct;
+
+        // Adapt difficulty based on the ML-style ability estimate (correctness + response time).
+        if (typeof AdaptiveDifficulty !== 'undefined') {
+            const responseSeconds = (Date.now() - this.problemStartTime) / 1000;
+            const adapted = AdaptiveDifficulty.recordAnswer('expression_comparison', this.difficulty, isCorrect, responseSeconds);
+            this.difficulty = adapted.tier;
+            const difficultySelect = document.getElementById('difficulty');
+            if (difficultySelect) difficultySelect.value = adapted.tier;
+        }
+
         if (userChoice === correct) {
             this.correct++;
             this.streak++;
