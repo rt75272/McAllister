@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}Decimal Life Planet - Mrs. McAllister's Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+        --life-ink: #091c24;
+        --life-panel: #102c35;
+        --life-panel-soft: #173a43;
+        --life-text: #f1f7eb;
+        --life-muted: #aec5bd;
+        --life-lime: #d6f36a;
+        --life-coral: #ff8c70;
+        --life-aqua: #72d9cc;
+        --life-border: rgba(214, 243, 106, 0.2);
+    }
+
+    html { min-height: 100%; background: var(--life-ink); }
+    body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        color: var(--life-text) !important;
+        background:
+            radial-gradient(ellipse at 78% 8%, rgba(20, 184, 166, 0.2), transparent 30rem),
+            radial-gradient(ellipse at 4% 80%, rgba(255, 140, 112, 0.1), transparent 26rem),
+            radial-gradient(rgba(255,255,255,.12) .7px, transparent .7px) 0 0 / 28px 28px,
+            var(--life-ink);
+        font-family: 'Space Grotesk', 'Lexend', sans-serif;
+        letter-spacing: 0;
+    }
+
+    [hidden] { display: none !important; }
+    .calculator-toggle, .calculator-popup { display: none !important; }
+    .life-shell { max-width: 1240px; margin: 0 auto; padding: 20px 28px 56px; overflow-x: clip; }
+    .life-shell p { color: var(--life-muted) !important; }
+    .life-topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding: 4px 0 20px; }
+    .life-back, .life-link { color:var(--life-text); text-decoration:none; font-size:.92rem; font-weight:600; }
+    .life-back:hover, .life-link:hover { color:var(--life-lime); }
+    .life-kicker { color:var(--life-aqua); font-size:.73rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .life-hero { display:flex; align-items:center; justify-content:space-between; gap:32px; padding: 8px 0 26px; }
+    .life-hero h1 { margin:8px 0 6px; max-width:700px; color:var(--life-text); font-size:3.2rem; line-height:1.05; }
+    .life-hero p { max-width:650px; margin:0; line-height:1.6; }
+    .planet-mark { position:relative; flex:0 0 148px; width:148px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 27%, #e9f58f 0 5%, #75d8c8 6% 15%, #197d78 46%, #103e4c 70%); box-shadow:inset -18px -17px 22px rgba(2,15,24,.7), 0 0 42px rgba(114,217,204,.25); }
+    .planet-mark::before { content:""; position:absolute; width:190px; height:38px; left:-22px; top:54px; border:5px solid rgba(255,140,112,.85); border-left-color:rgba(255,140,112,.32); border-right-color:rgba(255,140,112,.4); border-radius:50%; transform:rotate(-22deg); }
+    .planet-mark::after { content:""; position:absolute; inset:33% 24%; border-radius:48% 42% 54% 35%; background:rgba(214,243,106,.28); transform:rotate(24deg); }
+    .life-panel { border:1px solid var(--life-border); border-radius:8px; background:linear-gradient(145deg, rgba(16,44,53,.94), rgba(10,31,40,.96)); box-shadow:0 24px 70px rgba(0,0,0,.22); }
+    .setup-panel { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:30px; padding:28px; }
+    .panel-heading { margin:0 0 8px; color:var(--life-text); font-size:1.25rem; }
+    .panel-copy { margin:0 0 22px; line-height:1.55; }
+    .field-label { display:block; margin:18px 0 8px; color:var(--life-text); font-size:.88rem; font-weight:700; }
+    .player-count { display:flex; flex-wrap:wrap; gap:8px; }
+    .count-button, .life-button { min-height:44px; border:1px solid rgba(241,247,235,.22); border-radius:5px; padding:10px 15px; color:var(--life-text); background:#173a43; font:600 .92rem 'Space Grotesk',sans-serif; cursor:pointer; transition:background .18s ease, transform .18s ease, border-color .18s ease; }
+    .count-button:hover, .life-button:hover { transform:translateY(-1px); border-color:var(--life-aqua); }
+    .count-button[aria-pressed="true"] { color:var(--life-ink); background:var(--life-lime); border-color:var(--life-lime); }
+    .name-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .name-field label { display:block; margin-bottom:6px; color:var(--life-muted); font-size:.8rem; }
+    .name-field input, .answer-input { width:100%; box-sizing:border-box; min-height:46px; border:1px solid rgba(241,247,235,.25); border-radius:5px; padding:10px 12px; color:var(--life-text); background:#091c24; font:600 1rem 'Space Grotesk',sans-serif; }
+    .name-field input:focus, .answer-input:focus { outline:3px solid rgba(114,217,204,.32); border-color:var(--life-aqua); }
+    .start-button { margin-top:20px; min-height:48px; padding:12px 20px; color:var(--life-ink); background:var(--life-lime); border:0; border-radius:5px; font:700 1rem 'Space Grotesk',sans-serif; cursor:pointer; }
+    .start-button:hover { background:#e4f99a; }
+    .life-rules { border-left:1px solid var(--life-border); padding-left:26px; }
+    .life-rules h2 { margin:2px 0 14px; color:var(--life-aqua); font-size:1rem; }
+    .rule-line { display:flex; gap:12px; margin:12px 0; line-height:1.5; color:var(--life-muted); font-size:.9rem; }
+    .rule-num { flex:0 0 24px; height:24px; display:grid; place-items:center; border-radius:50%; color:var(--life-ink); background:var(--life-lime); font-size:.78rem; font-weight:700; }
+    .game-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:4px 0 14px; }
+    .game-head h2 { margin:0; color:var(--life-text); font-size:1.25rem; }
+    .game-actions { display:flex; align-items:center; gap:10px; }
+    .small-button { min-height:38px; padding:8px 12px; font-size:.82rem; }
+    .life-layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(290px,.8fr); gap:16px; align-items:start; }
+    .board-panel { padding:20px; }
+    .board-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .board-top h3 { margin:0; color:var(--life-text); font-size:1rem; }
+    .board-top span { color:var(--life-muted); font-size:.78rem; }
+    .life-board { position:relative; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; padding:8px; isolation:isolate; }
+    .board-route { position:absolute; inset:0; z-index:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+    .board-route-shadow { fill:none; stroke:rgba(5,19,23,.86); stroke-width:16; stroke-linecap:round; stroke-linejoin:round; }
+    .board-route-line { fill:none; stroke:rgba(214,243,106,.6); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:2 10; }
+    .life-space { position:relative; z-index:1; display:flex; min-height:104px; flex-direction:column; justify-content:space-between; overflow:hidden; padding:10px; border:1px solid rgba(241,247,235,.22); border-radius:8px; background:linear-gradient(145deg,#1a4148,#102d37); box-shadow:0 4px 12px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.08); }
+    .life-space[data-kind="start"], .life-space[data-kind="finish"] { border-color:var(--life-lime); background:linear-gradient(145deg,#496129,#24391e); }
+    .life-space[data-kind="income"] { border-top:3px solid var(--life-aqua); }
+    .life-space[data-kind="expense"] { border-top:3px solid var(--life-coral); }
+    .space-number { color:var(--life-muted); font-size:.68rem; font-weight:700; }
+    .space-name { margin-top:8px; color:var(--life-text); font-size:.8rem; font-weight:700; line-height:1.2; }
+    .space-kind { margin-top:8px; color:var(--life-aqua); font-size:.62rem; font-weight:700; text-transform:uppercase; }
+    .life-space[data-kind="expense"] .space-kind { color:var(--life-coral); }
+    .tokens { display:flex; flex-wrap:wrap; gap:4px; min-height:20px; margin-top:6px; }
+    .player-token { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; color:var(--life-ink); background:var(--life-lime); font-size:.65rem; font-weight:700; box-shadow:0 0 0 2px rgba(9,28,36,.7); }
+    .player-token:nth-child(2) { background:#ff8c70; }
+    .player-token:nth-child(3) { background:#81b9ff; }
+    .player-token:nth-child(4) { background:#dda5ff; }
+    .space-arrived { box-shadow:inset 0 0 0 1px var(--life-lime), 0 0 16px rgba(214,243,106,.13); }
+    .legend { display:flex; flex-wrap:wrap; gap:16px; margin-top:13px; color:var(--life-muted); font-size:.76rem; }
+    .legend i { display:inline-block; width:8px; height:8px; margin-right:6px; border-radius:50%; background:var(--life-aqua); }
+    .legend .expense-dot { background:var(--life-coral); }
+    .side-column { display:grid; gap:14px; }
+    .turn-panel, .money-panel { padding:18px; }
+    .turn-label { color:var(--life-aqua); font-size:.73rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
+    .turn-player { margin:5px 0 12px; color:var(--life-text); font-size:1.35rem; }
+    .turn-copy { margin:0; line-height:1.5; }
+    .dice-result { display:flex; align-items:center; gap:12px; margin:14px 0; }
+    .die-face { display:grid; place-items:center; width:52px; height:52px; border-radius:9px; color:var(--life-ink); background:var(--life-lime); font-size:1.7rem; font-weight:700; }
+    .dice-result span { color:var(--life-muted); font-size:.85rem; }
+    .roll-button { width:100%; margin-top:14px; }
+    .event-title { margin:14px 0 4px; color:var(--life-text); font-size:1rem; }
+    .event-description { margin:0; color:var(--life-muted); line-height:1.45; font-size:.85rem; }
+    .equation { margin:17px 0 12px; padding:14px 10px; border-radius:5px; color:var(--life-lime); background:#081a21; text-align:center; font-size:1.15rem; font-weight:700; white-space:nowrap; }
+    .answer-row { display:flex; gap:8px; align-items:stretch; }
+    .answer-input { min-width:0; }
+    .money-list { display:grid; gap:0; margin-top:10px; }
+    .money-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-top:1px solid rgba(241,247,235,.1); }
+    .money-row strong { color:var(--life-text); font-size:.88rem; }
+    .money-row span { color:var(--life-lime); font-size:.9rem; font-weight:700; white-space:nowrap; }
+    .money-row.is-active strong::before { content:"NOW  "; color:var(--life-aqua); font-size:.65rem; }
+    .money-row.is-finished { opacity:.58; }
+    .feedback { min-height:22px; margin:10px 0 0; font-size:.85rem; font-weight:600; line-height:1.4; }
+    .feedback.success { color:var(--life-aqua) !important; }
+    .feedback.error { color:var(--life-coral) !important; }
+    .feedback.hint { color:var(--life-lime) !important; }
+    .end-panel { padding:25px; }
+    .end-top { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
+    .end-top h2 { margin:5px 0 8px; color:var(--life-text); font-size:1.8rem; }
+    .winner-badge { padding:10px 13px; border:1px solid rgba(214,243,106,.4); border-radius:5px; color:var(--life-lime); font-size:.85rem; font-weight:700; }
+    .standings { width:100%; border-collapse:collapse; margin:20px 0; }
+    .standings th, .standings td { padding:13px 10px; border-bottom:1px solid rgba(241,247,235,.12); text-align:left; }
+    .standings th { color:var(--life-muted); font-size:.73rem; letter-spacing:.08em; text-transform:uppercase; }
+    .standings td { color:var(--life-text); font-size:.94rem; }
+    .standings td:last-child { color:var(--life-lime); font-weight:700; text-align:right; }
+    .standings th:last-child { text-align:right; }
+    .end-actions { display:flex; flex-wrap:wrap; gap:10px; }
+    .outline-button { color:var(--life-text); background:transparent; }
+    @media (max-width: 850px) {
+        .setup-panel { grid-template-columns:1fr; }
+        .life-rules { border-left:0; border-top:1px solid var(--life-border); padding:20px 0 0; }
+        .life-layout { grid-template-columns:1fr; }
+        .side-column { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .life-board { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    }
+    @media (max-width: 580px) {
+        .life-shell { padding:14px 14px 36px; }
+        .life-hero { padding:8px 0 20px; }
+        .life-hero h1 { font-size:2.2rem; }
+        .planet-mark { flex-basis:78px; width:78px; }
+        .planet-mark::before { width:100px; height:20px; left:-12px; top:29px; border-width:3px; }
+        .setup-panel, .board-panel, .turn-panel, .money-panel, .end-panel { padding:16px; }
+        .name-fields { grid-template-columns:1fr; }
+        .side-column { grid-template-columns:1fr; }
+        .life-board { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:5px; }
+        .life-space { min-height:88px; padding:7px; }
+        .space-name { font-size:.72rem; }
+        .game-head { align-items:flex-start; }
+        .equation { font-size:1rem; }
+        .end-top { flex-direction:column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="life-shell">
+    <nav class="life-topbar" aria-label="Planet navigation">
+        <a class="life-back" href="{{ url_for('quest_map') }}">← Quest Map</a>
+        <a class="life-link" href="{{ url_for('math_games') }}">Math Games</a>
+    </nav>
+
+    <header class="life-hero">
+        <div>
+            <div class="life-kicker">Special Planet · Decimal Operations</div>
+            <h1>Decimal Life</h1>
+            <p>Roll through a whole life of paydays, plans, and surprise expenses. Make every money move count.</p>
+        </div>
+        <div class="planet-mark" aria-hidden="true"></div>
+    </header>
+
+    <section id="setupView" class="life-panel setup-panel">
+        <div>
+            <div class="life-kicker">Start a new journey</div>
+            <h2 class="panel-heading">Who is playing?</h2>
+                <p class="panel-copy">Play solo or take turns around the life path. Everyone starts with $500.00, and multiplayer games are won by the player with the most at retirement.</p>
+            <span class="field-label">Number of players</span>
+            <div id="playerCount" class="player-count" role="group" aria-label="Number of players">
+                <button type="button" class="count-button" data-count="1" aria-pressed="false">1 player</button>
+                <button type="button" class="count-button" data-count="2" aria-pressed="true">2 players</button>
+                <button type="button" class="count-button" data-count="3" aria-pressed="false">3 players</button>
+                <button type="button" class="count-button" data-count="4" aria-pressed="false">4 players</button>
+            </div>
+            <div id="nameFields" class="name-fields" aria-live="polite"></div>
+            <button id="startButton" class="start-button" type="button">Begin the journey</button>
+        </div>
+        <aside class="life-rules">
+            <h2>How this life works</h2>
+            <div class="rule-line"><span class="rule-num">1</span><span>Roll 1, 2, or 3 spaces along the milestone trail.</span></div>
+            <div class="rule-line"><span class="rule-num">2</span><span>Add a paycheck or subtract a life expense. Line up decimal points.</span></div>
+            <div class="rule-line"><span class="rule-num">3</span><span>Finish at Retirement. In solo mode, see how much you can save.</span></div>
+            <div class="rule-line"><span class="rule-num">$</span><span>Balances are saved on this device so you can resume after a refresh.</span></div>
+        </aside>
+    </section>
+
+    <section id="gameView" hidden>
+        <div class="game-head">
+            <div>
+                <div class="life-kicker">Your life path</div>
+                <h2 id="journeyTitle">Journey in progress</h2>
+            </div>
+            <div class="game-actions">
+                <button id="newGameButton" class="life-button small-button" type="button" title="Start a fresh game">New game</button>
+            </div>
+        </div>
+        <div class="life-layout">
+            <section class="life-panel board-panel" aria-label="Life milestone board">
+                <div class="board-top"><h3>Milestone trail</h3><span>Launch → Retirement</span></div>
+                <div id="lifeBoard" class="life-board"></div>
+                <div class="legend"><span><i></i> Money in</span><span><i class="expense-dot"></i> Money out</span></div>
+            </section>
+            <div class="side-column">
+                <section class="life-panel turn-panel" aria-live="polite">
+                    <div class="turn-label">Current turn</div>
+                    <h3 id="turnPlayer" class="turn-player">Player</h3>
+                    <p id="turnCopy" class="turn-copy">Ready to roll?</p>
+                    <div id="diceResult" class="dice-result" hidden><div id="dieFace" class="die-face">1</div><span id="moveCopy"></span></div>
+                    <button id="rollButton" class="start-button roll-button" type="button">Roll the die</button>
+                    <div id="questionArea" hidden>
+                        <h4 id="eventTitle" class="event-title"></h4>
+                        <p id="eventDescription" class="event-description"></p>
+                        <div id="equation" class="equation"></div>
+                        <form id="answerForm" class="answer-row">
+                            <label class="sr-only" for="answerInput">New balance in dollars and cents</label>
+                            <input id="answerInput" class="answer-input" inputmode="decimal" autocomplete="off" placeholder="Your answer" aria-describedby="answerFeedback" required>
+                            <button class="life-button" type="submit">Check</button>
+                        </form>
+                        <p id="answerFeedback" class="feedback" role="status" aria-live="polite"></p>
+                        <button id="nextTurnButton" class="life-button roll-button" type="button" hidden>Pass the die</button>
+                    </div>
+                </section>
+                <section class="life-panel money-panel">
+                    <div class="turn-label">Player balances</div>
+                    <div id="moneyList" class="money-list"></div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section id="endView" class="life-panel end-panel" hidden aria-live="polite">
+        <div class="end-top">
+            <div><div class="life-kicker">Life complete</div><h2 id="endTitle">Retirement looks good</h2><p id="endCopy"></p></div>
+            <div id="winnerBadge" class="winner-badge"></div>
+        </div>
+        <table class="standings">
+            <thead><tr><th scope="col">Place</th><th scope="col">Player</th><th scope="col">Final balance</th></tr></thead>
+            <tbody id="standingsBody"></tbody>
+        </table>
+        <div class="end-actions">
+            <button id="playAgainButton" class="start-button" type="button">Play again</button>
+            <a class="life-button outline-button" href="{{ url_for('quest_map') }}">Return to Quest Map</a>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.calculator-toggle, #calculatorPopup').forEach((calculator) => calculator.remove());
+
+(() => {
+    const SAVE_KEY = 'decimal_life_match_v1';
+    const STARTING_CENTS = 50000;
+    const spaces = [
+        { name: 'First paycheck', kind: 'income', description: 'Your first job pays for a week of hard work.', low: 1850, high: 5840 },
+        { name: 'Apartment deposit', kind: 'expense', description: 'Pay the deposit to get your first place.', low: 1235, high: 3875 },
+        { name: 'Grocery run', kind: 'expense', description: 'Stock the kitchen for the week.', low: 425, high: 1840 },
+        { name: 'Overtime shift', kind: 'income', description: 'Extra hours add a little more to payday.', low: 675, high: 2190 },
+        { name: 'Career course', kind: 'expense', description: 'Invest in training for your next big step.', low: 860, high: 2460 },
+        { name: 'Payday bonus', kind: 'income', description: 'A great project earns you a bonus.', low: 2475, high: 7250 },
+        { name: 'Car repair', kind: 'expense', description: 'A surprise repair gets you back on the road.', low: 675, high: 3190 },
+        { name: 'Side-gig earnings', kind: 'income', description: 'Your weekend project brings in extra cash.', low: 1575, high: 4935 },
+        { name: 'Birthday gift', kind: 'income', description: 'A thoughtful gift gives your savings a boost.', low: 2500, high: 8500 },
+        { name: 'Phone bill', kind: 'expense', description: 'Your monthly phone and data bill is due.', low: 425, high: 1280 },
+        { name: 'Home supplies', kind: 'expense', description: 'Restock the things your household needs.', low: 525, high: 1840 },
+        { name: 'Promotion', kind: 'income', description: 'Your new role comes with a well-earned raise.', low: 3675, high: 9840 },
+        { name: 'Celebration trip', kind: 'expense', description: 'A memorable trip costs a little from your travel fund.', low: 925, high: 4260 },
+        { name: 'Tax refund', kind: 'income', description: 'Your tax refund lands right on time.', low: 1275, high: 4650 },
+        { name: 'Medical visit', kind: 'expense', description: 'Pay your share of an unexpected health bill.', low: 725, high: 2780 },
+        { name: 'Community project', kind: 'income', description: 'Your neighborhood project earns a small grant.', low: 1280, high: 3650 },
+        { name: 'Moving costs', kind: 'expense', description: 'A new opportunity means paying to move.', low: 1875, high: 5275 },
+        { name: 'Payday', kind: 'income', description: 'Your steady work brings another paycheck.', low: 2850, high: 7850 },
+        { name: 'Home repair', kind: 'expense', description: 'Fix a leaky pipe before it causes more trouble.', low: 925, high: 3420 },
+        { name: 'Project reward', kind: 'income', description: 'A long project wraps up with a reward.', low: 2275, high: 6875 },
+        { name: 'Family celebration', kind: 'expense', description: 'Chip in to make a family celebration special.', low: 875, high: 3275 },
+        { name: 'Final paycheck', kind: 'income', description: 'One last paycheck arrives before retirement.', low: 3250, high: 9250 },
+        { name: 'Retirement bills', kind: 'expense', description: 'Settle the final bills before your new chapter.', low: 625, high: 2675 },
+        { name: 'Retirement payout', kind: 'income', description: 'Your steady saving earns a final account bonus.', low: 4250, high: 12350 }
+    ];
+    const setupView = document.getElementById('setupView');
+    const gameView = document.getElementById('gameView');
+    const endView = document.getElementById('endView');
+    const nameFields = document.getElementById('nameFields');
+    const playerCount = document.getElementById('playerCount');
+    let selectedCount = 2;
+    let match = null;
+
+    const formatMoney = (cents) => `${cents < 0 ? '-$' : '$'}${(Math.abs(cents) / 100).toFixed(2)}`;
+    const randomCents = (low, high) => Math.floor(Math.random() * (high - low + 1)) + low;
+    const saveMatch = () => localStorage.setItem(SAVE_KEY, JSON.stringify(match));
+
+    function renderNameFields(count) {
+        nameFields.innerHTML = '';
+        for (let index = 0; index < count; index += 1) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'name-field';
+            const label = document.createElement('label');
+            label.htmlFor = `playerName${index}`;
+            label.textContent = `Player ${index + 1}`;
+            const input = document.createElement('input');
+            input.id = label.htmlFor;
+            input.maxLength = 18;
+            input.value = `Player ${index + 1}`;
+            input.autocomplete = 'off';
+            wrapper.append(label, input);
+            nameFields.append(wrapper);
+        }
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('lifeBoard');
+        board.innerHTML = '';
+        const columns = window.matchMedia('(max-width: 580px)').matches ? 3 : window.matchMedia('(max-width: 850px)').matches ? 4 : 6;
+        spaces.forEach((space, index) => {
+            const cell = document.createElement('div');
+            cell.className = `life-space${index === spaces.length - 1 ? ' is-finish' : ''}`;
+            cell.dataset.kind = index === 0 ? 'start' : index === spaces.length - 1 ? 'finish' : space.kind;
+            cell.dataset.space = String(index);
+            const row = Math.floor(index / columns);
+            const columnInRow = index % columns;
+            const column = row % 2 === 0 ? columnInRow : columns - 1 - columnInRow;
+            cell.style.gridRow = String(row + 1);
+            cell.style.gridColumn = String(column + 1);
+            const number = document.createElement('span');
+            number.className = 'space-number';
+            number.textContent = index === 0 ? 'START' : index === spaces.length - 1 ? 'FINISH' : `STOP ${String(index + 1).padStart(2, '0')}`;
+            const title = document.createElement('strong');
+            title.className = 'space-name';
+            title.textContent = space.name;
+            const kind = document.createElement('span');
+            kind.className = 'space-kind';
+            kind.textContent = space.kind === 'income' ? 'Money in +' : 'Money out −';
+            const tokens = document.createElement('div');
+            tokens.className = 'tokens';
+            tokens.dataset.tokens = String(index);
+            cell.append(number, title, kind, tokens);
+            board.append(cell);
+        });
+        const route = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        route.setAttribute('class', 'board-route');
+        route.setAttribute('aria-hidden', 'true');
+        const points = spaces.map((space, index) => {
+            const cell = board.querySelector(`[data-space="${index}"]`);
+            return `${cell.offsetLeft + cell.offsetWidth / 2},${cell.offsetTop + cell.offsetHeight / 2}`;
+        }).join(' ');
+        ['board-route-shadow', 'board-route-line'].forEach((className) => {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            path.setAttribute('class', className);
+            path.setAttribute('points', points);
+            route.append(path);
+        });
+        route.setAttribute('viewBox', `0 0 ${board.clientWidth} ${board.clientHeight}`);
+        route.setAttribute('preserveAspectRatio', 'none');
+        board.prepend(route);
+    }
+
+    function renderMoneyList() {
+        const list = document.getElementById('moneyList');
+        list.innerHTML = '';
+        match.players.forEach((player, index) => {
+            const row = document.createElement('div');
+            row.className = `money-row${player.finished ? ' is-finished' : ''}${index === match.activePlayer ? ' is-active' : ''}`;
+            const name = document.createElement('strong');
+            name.textContent = player.name;
+            const balance = document.createElement('span');
+            balance.textContent = formatMoney(player.cents);
+            row.append(name, balance);
+            list.append(row);
+        });
+    }
+
+    function renderTokens() {
+        document.querySelectorAll('[data-tokens]').forEach((slot) => { slot.innerHTML = ''; });
+        match.players.forEach((player, index) => {
+            if (player.position < 0) return;
+            const slot = document.querySelector(`[data-tokens="${player.position}"]`);
+            const cell = document.querySelector(`[data-space="${player.position}"]`);
+            if (!slot || !cell) return;
+            cell.classList.add('space-arrived');
+            const token = document.createElement('span');
+            token.className = 'player-token';
+            token.textContent = player.name.trim().charAt(0).toUpperCase();
+            token.title = player.name;
+            token.setAttribute('aria-label', player.name);
+            slot.append(token);
+        });
+    }
+
+    function activePlayer() { return match.players[match.activePlayer]; }
+
+    function renderTurn() {
+        const player = activePlayer();
+        const hasQuestion = Boolean(match.question);
+        document.getElementById('turnPlayer').textContent = player.name;
+        document.getElementById('turnCopy').textContent = player.finished ? 'This journey is complete.' : hasQuestion ? 'Work out the new balance to complete this stop.' : 'Roll to travel to your next life milestone.';
+        document.getElementById('rollButton').hidden = hasQuestion || player.finished;
+        document.getElementById('questionArea').hidden = !hasQuestion;
+        document.getElementById('diceResult').hidden = !match.lastRoll;
+        if (match.lastRoll) {
+            document.getElementById('dieFace').textContent = String(match.lastRoll);
+            document.getElementById('moveCopy').textContent = `${player.name} moved ${match.lastRoll} ${match.lastRoll === 1 ? 'space' : 'spaces'}.`;
+        }
+        if (hasQuestion) {
+            const { event, before, amount, sign } = match.question;
+            document.getElementById('eventTitle').textContent = event.name;
+            document.getElementById('eventDescription').textContent = event.description;
+            document.getElementById('equation').textContent = `${formatMoney(before)} ${sign} ${formatMoney(amount)} = ?`;
+            document.getElementById('nextTurnButton').hidden = !match.question.solved;
+            document.getElementById('answerInput').disabled = match.question.solved;
+            document.querySelector('#answerForm button[type="submit"]').disabled = match.question.solved;
+        }
+        renderMoneyList();
+        renderTokens();
+    }
+
+    function showGame() {
+        setupView.hidden = true;
+        endView.hidden = true;
+        gameView.hidden = false;
+        document.getElementById('answerInput').value = '';
+        document.getElementById('answerFeedback').textContent = match.question?.solved ? 'Correct. Balance updated.' : '';
+        document.getElementById('answerFeedback').className = 'feedback';
+        renderBoard();
+        renderTurn();
+    }
+
+    function showResults() {
+        gameView.hidden = true;
+        setupView.hidden = true;
+        endView.hidden = false;
+        const ranked = [...match.players].sort((first, second) => second.cents - first.cents);
+        const leaders = ranked.filter((player) => player.cents === ranked[0].cents);
+        const isSolo = ranked.length === 1;
+        document.getElementById('winnerBadge').textContent = isSolo ? 'Solo finish' : leaders.length > 1 ? 'It is a tie!' : `${leaders[0].name} wins`;
+        document.getElementById('endTitle').textContent = isSolo ? `${ranked[0].name} reaches retirement` : leaders.length > 1 ? 'A shared first place' : `${leaders[0].name} finishes on top`;
+        document.getElementById('endCopy').textContent = isSolo
+            ? `You finished with ${formatMoney(ranked[0].cents)}. Play again and see if you can finish with more.`
+            : 'Everyone reached retirement. Final balances are ranked from highest to lowest.';
+        const body = document.getElementById('standingsBody');
+        body.innerHTML = '';
+        ranked.forEach((player, index) => {
+            const row = document.createElement('tr');
+            [isSolo ? 'Solo' : index === 0 ? '1st' : index === 1 ? '2nd' : index === 2 ? '3rd' : '4th', player.name, formatMoney(player.cents)].forEach((value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.append(cell);
+            });
+            body.append(row);
+        });
+        saveMatch();
+    }
+
+    function nextPlayer() {
+        const remaining = match.players.findIndex((player, offset) => {
+            const index = (match.activePlayer + offset + 1) % match.players.length;
+            return !match.players[index].finished;
+        });
+        if (remaining < 0 || match.players.every((player) => player.finished)) {
+            match.complete = true;
+            saveMatch();
+            showResults();
+            return;
+        }
+        match.activePlayer = (match.activePlayer + remaining + 1) % match.players.length;
+        match.question = null;
+        match.lastRoll = null;
+        saveMatch();
+        showGame();
+    }
+
+    playerCount.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-count]');
+        if (!button) return;
+        selectedCount = Number(button.dataset.count);
+        playerCount.querySelectorAll('[data-count]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        renderNameFields(selectedCount);
+    });
+
+    document.getElementById('startButton').addEventListener('click', () => {
+        const names = [...nameFields.querySelectorAll('input')].map((input, index) => input.value.trim() || `Player ${index + 1}`);
+        match = {
+            players: names.map((name) => ({ name, cents: STARTING_CENTS, position: -1, finished: false })),
+            activePlayer: 0,
+            question: null,
+            lastRoll: null,
+            complete: false
+        };
+        saveMatch();
+        showGame();
+    });
+
+    document.getElementById('rollButton').addEventListener('click', () => {
+        const player = activePlayer();
+        const roll = randomCents(1, 3);
+        player.position = Math.min(player.position + roll, spaces.length - 1);
+        player.finished = player.position === spaces.length - 1;
+        const event = spaces[player.position];
+        const amount = randomCents(event.low, event.high);
+        const sign = event.kind === 'income' ? '+' : '−';
+        match.lastRoll = roll;
+        match.question = { event, amount, sign, before: player.cents, answer: player.cents + (event.kind === 'income' ? amount : -amount), solved: false };
+        saveMatch();
+        showGame();
+        if (player.finished) document.getElementById('turnCopy').textContent = `${player.name} reached retirement. Solve the final balance.`;
+        document.getElementById('answerInput').focus();
+    });
+
+    document.getElementById('answerForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!match?.question || match.question.solved) return;
+        const input = document.getElementById('answerInput');
+        const normalized = input.value.trim().replace(/^\$/, '').replace(/,/g, '');
+        const feedback = document.getElementById('answerFeedback');
+        const parsed = /^-?\d+(?:\.\d{1,2})?$/.test(normalized) ? Math.round(Number(normalized) * 100) : NaN;
+        if (parsed === match.question.answer) {
+            activePlayer().cents = match.question.answer;
+            match.question.solved = true;
+            feedback.textContent = `Correct. New balance: ${formatMoney(activePlayer().cents)}.`;
+            feedback.className = 'feedback success';
+            saveMatch();
+            renderTurn();
+        } else {
+            feedback.textContent = 'Not quite. Line up the decimal points, then try again.';
+            feedback.className = 'feedback error';
+            input.select();
+        }
+    });
+
+    document.getElementById('nextTurnButton').addEventListener('click', nextPlayer);
+    document.getElementById('newGameButton').addEventListener('click', () => {
+        if (window.confirm('Start a new game? This will replace the saved match.')) {
+            localStorage.removeItem(SAVE_KEY);
+            match = null;
+            gameView.hidden = true;
+            endView.hidden = true;
+            setupView.hidden = false;
+        }
+    });
+    document.getElementById('playAgainButton').addEventListener('click', () => {
+        localStorage.removeItem(SAVE_KEY);
+        match = null;
+        endView.hidden = true;
+        setupView.hidden = false;
+    });
+    window.addEventListener('resize', () => {
+        if (!match || gameView.hidden) return;
+        window.requestAnimationFrame(() => {
+            renderBoard();
+            renderTurn();
+        });
+    });
+
+    renderNameFields(selectedCount);
+    try {
+        const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+        if (saved && Array.isArray(saved.players) && saved.players.length > 0) {
+            match = saved;
+            if (match.complete) showResults();
+            else if (Number.isInteger(match.activePlayer) && match.players[match.activePlayer]) showGame();
+        }
+    } catch (error) {
+        localStorage.removeItem(SAVE_KEY);
+    }
+})();
+</script>
+{% endblock %}

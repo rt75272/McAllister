@@ -654,6 +654,11 @@ def expression_comparison():
     """Expression Comparison game page."""
     return render_template('expression_comparison.html')
 
+@app.route('/decimal-life')
+def decimal_life():
+    """Turn-based life journey game with decimal money math."""
+    return render_template('decimal_life.html')
+
 @app.route('/math_adventure')
 def math_adventure():
     """Math Adventure RPG quest game page."""
