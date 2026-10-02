@@ -418,7 +418,8 @@
             },
             { id: 15, name: "Earth Science Planet", unitLabel: "SPECIAL PLANET", color: 0x16a34a, size: 1.4, radius: 78, speed: 0.017, icon: "🌍", specialRoute: "/earth-science-planet" },
             { id: 16, name: "Black Hole: Solar System Portal", unitLabel: "OPEN EXPLORATION", color: 0x000000, size: 2.7, radius: 86, speed: 0.016, icon: "🕳️", specialRoute: "/solar-system", blackHole: true },
-            { id: 17, name: "Decimal Life Planet", unitLabel: "SPECIAL PLANET", color: 0x14b8a6, size: 1.65, radius: 133, speed: 0.009, icon: "💸", specialRoute: "/decimal-life", asteroidRing: true }
+            { id: 17, name: "Decimal Life Planet", unitLabel: "SPECIAL PLANET", color: 0x14b8a6, size: 1.65, radius: 133, speed: 0.009, icon: "💸", specialRoute: "/decimal-life", asteroidRing: true },
+            { id: 18, name: "Natural Selection Planet", unitLabel: "EARTH SCIENCE", color: 0x84cc16, size: 1.8, radius: 148, speed: 0.008, icon: "🪲", specialRoute: "/natural-selection-planet", asteroidRing: true }
         ];
 
         const planetsData = allPlanetsData;
@@ -504,7 +505,7 @@
         }
 
         // Three.js and Flight Engine
-        let scene, camera, renderer, raycaster, mouse;
+        let scene, camera, renderer, raycaster, mouse, planetField;
         let ship;
         let planets = [];
         let spaceJunk = [];
@@ -516,10 +517,25 @@
         const forwardAxis = new THREE.Vector3(0, 0, -1);
         const backwardAxis = new THREE.Vector3(0, 0, 1);
         const upAxis = new THREE.Vector3(0, 1, 0);
-        const maxSpeed = 0.25;
-        const acceleration = 0.005;
+        const maxSpeed = 0.6;
+        const acceleration = 0.012;
         const drag = 0.98;
         const rotationSpeed = 0.04;
+        const minimumFrameInterval = 1000 / 60;
+        let lastFrameTime = 0;
+        const cameraOffset = new THREE.Vector3();
+        const targetCameraPosition = new THREE.Vector3();
+        const cameraUpAxis = new THREE.Vector3(0, 1, 0);
+        const asteroidTransform = new THREE.Object3D();
+        const planetTransform = new THREE.Object3D();
+        const orbitPositions = [];
+        const planetMeshesForClick = [];
+        const planetRaySphere = new THREE.Sphere(new THREE.Vector3(), 0);
+        const planetRayHit = new THREE.Vector3();
+        let lastHudUpdate = 0;
+        let lastProximityCheck = 0;
+        let lastSpeedText = '';
+        let lastProximityPlanetId = null;
 
         let activeApproachedPlanetId = null;
         let landingTarget = null; // { type: 'planet', id: id, pos: THREE.Vector3 }
@@ -628,7 +644,7 @@
             // 2. WebGL Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Optimized performance
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
             container.appendChild(renderer.domElement);
 
             raycaster = new THREE.Raycaster();
@@ -664,26 +680,67 @@
             const starField = new THREE.Points(starsGeo, starsMat);
             scene.add(starField);
 
-            // 6. Draw Orbit Paths and spawn Low-poly Planets
-            planetsData.forEach((data, index) => {
-                // Orbit line helper
-                const orbitGeo = new THREE.RingGeometry(data.radius - 0.05, data.radius + 0.05, 64);
-                const orbitMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide });
-                const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
-                orbitMesh.rotation.x = Math.PI / 2;
-                scene.add(orbitMesh);
+            const asteroidGeometry = new THREE.DodecahedronGeometry(0.24, 0);
+            const asteroidMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8c8982,
+                flatShading: true,
+                roughness: 1,
+                metalness: 0.02
+            });
+            const regularPlanets = planetsData.filter((data) => !data.blackHole);
+            const planetGeometry = new THREE.DodecahedronGeometry(1, 1);
+            const planetMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                flatShading: true,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            planetField = new THREE.InstancedMesh(planetGeometry, planetMaterial, regularPlanets.length);
+            planetField.frustumCulled = false;
+            scene.add(planetField);
 
-                // Planet mesh (dodecahedron for low-poly look, with a distinct black-hole portal)
-                const planetGeo = data.blackHole
-                    ? new THREE.SphereGeometry(data.size, 28, 20)
-                    : new THREE.DodecahedronGeometry(data.size, 1);
-                const planetMat = new THREE.MeshStandardMaterial({
-                    color: data.color,
-                    flatShading: true,
-                    roughness: 0.8,
-                    metalness: data.blackHole ? 0 : 0.1
-                });
-                const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+            const orbitSegments = 64;
+            planetsData.forEach((data) => {
+                const innerRadius = data.radius - 0.05;
+                const outerRadius = data.radius + 0.05;
+                for (let segment = 0; segment < orbitSegments; segment += 1) {
+                    const angle1 = (segment / orbitSegments) * Math.PI * 2;
+                    const angle2 = ((segment + 1) / orbitSegments) * Math.PI * 2;
+                    const outer1 = [Math.cos(angle1) * outerRadius, 0, Math.sin(angle1) * outerRadius];
+                    const inner1 = [Math.cos(angle1) * innerRadius, 0, Math.sin(angle1) * innerRadius];
+                    const outer2 = [Math.cos(angle2) * outerRadius, 0, Math.sin(angle2) * outerRadius];
+                    const inner2 = [Math.cos(angle2) * innerRadius, 0, Math.sin(angle2) * innerRadius];
+                    orbitPositions.push(...outer1, ...inner1, ...outer2, ...outer2, ...inner1, ...inner2);
+                }
+            });
+            const orbitGeometry = new THREE.BufferGeometry();
+            orbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(orbitPositions, 3));
+            orbitGeometry.computeBoundingSphere();
+            scene.add(new THREE.Mesh(orbitGeometry, new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide })));
+
+            // 6. Draw Orbit Paths and spawn Low-poly Planets
+            let regularPlanetIndex = 0;
+            planetsData.forEach((data, index) => {
+                let planetMesh = null;
+                let instanceIndex = -1;
+                const planetPosition = new THREE.Vector3();
+                const planetSpin = { value: 0 };
+
+                if (data.blackHole) {
+                    const planetGeo = new THREE.SphereGeometry(data.size, 28, 20);
+                    const planetMat = new THREE.MeshStandardMaterial({
+                        color: 0x010208,
+                        flatShading: true,
+                        roughness: 1,
+                        metalness: 0
+                    });
+                    planetMesh = new THREE.Mesh(planetGeo, planetMat);
+                } else {
+                    instanceIndex = regularPlanetIndex;
+                    planetField.setColorAt(instanceIndex, new THREE.Color(data.color));
+                    planetRaySphere.radius = data.size;
+                    regularPlanetIndex += 1;
+                }
 
                 if (data.blackHole) {
                     // A transparent, cool-toned texture lets the portal fade naturally into
@@ -698,42 +755,46 @@
                     }));
                     portalHalo.scale.set(data.size * 4.7, data.size * 4.7, 1);
                     planetMesh.add(portalHalo);
-                    planetMat.color.set(0x010208);
-                    planetMat.roughness = 1;
                     const portalGlow = new THREE.PointLight(0x60a5fa, 1.35, 12);
                     planetMesh.add(portalGlow);
                 }
                 
                 // Starting angles distributed
                 const startingAngle = (index * Math.PI * 2) / planetsData.length;
-                planetMesh.position.set(
+                planetPosition.set(
                     Math.cos(startingAngle) * data.radius,
                     0,
                     Math.sin(startingAngle) * data.radius
                 );
-
-                scene.add(planetMesh);
+                if (planetMesh) {
+                    planetMesh.position.copy(planetPosition);
+                    scene.add(planetMesh);
+                } else {
+                    planetTransform.position.copy(planetPosition);
+                    planetTransform.rotation.set(0, 0, 0);
+                    planetTransform.scale.setScalar(data.size);
+                    planetTransform.updateMatrix();
+                    planetField.setMatrixAt(instanceIndex, planetTransform.matrix);
+                }
 
                 const asteroidMeshes = [];
                 const symbolOrbiters = [];
+                let asteroidField = null;
 
                 if (data.asteroidRing) {
                     const asteroidCount = 9;
+                    asteroidField = new THREE.InstancedMesh(asteroidGeometry, asteroidMaterial, asteroidCount);
+                    asteroidField.frustumCulled = false;
+                    scene.add(asteroidField);
                     for (let index = 0; index < asteroidCount; index += 1) {
-                        const asteroidGeo = new THREE.DodecahedronGeometry(0.16 + Math.random() * 0.14, 0);
-                        const asteroidMat = new THREE.MeshStandardMaterial({
-                            color: index % 2 === 0 ? 0xa3a3a3 : 0x78716c,
-                            flatShading: true,
-                            roughness: 1,
-                            metalness: 0.05
-                        });
-                        const asteroidMesh = new THREE.Mesh(asteroidGeo, asteroidMat);
-                        scene.add(asteroidMesh);
                         asteroidMeshes.push({
-                            mesh: asteroidMesh,
+                            index,
+                            scale: 0.72 + Math.random() * 0.52,
                             angle: (index * Math.PI * 2) / asteroidCount,
                             orbitRadius: data.size + 1.4 + Math.random() * 0.55,
                             yOffset: (Math.random() - 0.5) * 0.5,
+                            rotationX: 0,
+                            rotationY: 0,
                             spinX: 0.01 + Math.random() * 0.01,
                             spinY: 0.008 + Math.random() * 0.01,
                         });
@@ -759,12 +820,18 @@
                 
                 planets.push({
                     mesh: planetMesh,
+                    position: planetPosition,
+                    spin: planetSpin,
+                    instanceIndex: instanceIndex,
                     angle: startingAngle,
                     data: data,
+                    asteroidField: asteroidField,
                     asteroidMeshes: asteroidMeshes,
                     symbolOrbiters: symbolOrbiters
                 });
             });
+            planetField.instanceMatrix.needsUpdate = true;
+            if (planetField.instanceColor) planetField.instanceColor.needsUpdate = true;
 
             // 6b. Drifting space junk far beyond the planets for exploration bonuses
             spaceJunkData.forEach((data, index) => {
@@ -918,19 +985,32 @@
                 }
             }
 
-            // Check planet hits
-            const planetMeshes = planets.map(p => p.mesh);
-            const planetIntersects = raycaster.intersectObjects(planetMeshes);
-
-            if (planetIntersects.length > 0) {
-                const clickedMesh = planetIntersects[0].object;
-                const clickedPlanet = planets.find(p => p.mesh === clickedMesh);
-                if (clickedPlanet) {
-                    // Instantly steer ship towards planet and trigger descent
-                    ship.position.copy(clickedMesh.position);
-                    window.location.href = getPlanetRoute(clickedPlanet.data.id);
-                    return;
+            // Check batched planet instances and the separate black-hole portal.
+            planetRaySphere.radius = 0;
+            let clickedPlanet = null;
+            let closestPlanetHit = Infinity;
+            planets.forEach((planet) => {
+                if (planet.data.blackHole) return;
+                planetRaySphere.center.copy(planet.position);
+                planetRaySphere.radius = planet.data.size;
+                if (raycaster.ray.intersectSphere(planetRaySphere, planetRayHit)) {
+                    const hitDistance = raycaster.ray.origin.distanceToSquared(planetRayHit);
+                    if (hitDistance < closestPlanetHit) {
+                        closestPlanetHit = hitDistance;
+                        clickedPlanet = planet;
+                    }
                 }
+            });
+            const blackHole = planets.find((planet) => planet.data.blackHole);
+            if (blackHole) {
+                const portalHit = raycaster.intersectObject(blackHole.mesh);
+                if (portalHit.length && portalHit[0].distance * portalHit[0].distance < closestPlanetHit) {
+                    clickedPlanet = blackHole;
+                }
+            }
+            if (clickedPlanet) {
+                ship.position.copy(clickedPlanet.position);
+                window.location.href = getPlanetRoute(clickedPlanet.data.id);
             }
         }
 
@@ -941,33 +1021,52 @@
         }
 
         // Main WebGL Game Render Tick
-        function animate() {
+        function animate(now = performance.now()) {
             requestAnimationFrame(animate);
+            if (lastFrameTime && now - lastFrameTime < minimumFrameInterval) return;
+            const deltaSeconds = lastFrameTime ? Math.min((now - lastFrameTime) / 1000, 0.05) : 1 / 60;
+            lastFrameTime = now;
+            const frameScale = deltaSeconds * 60;
 
             // 1. Rotate planets in orbit
             planets.forEach((p) => {
-                p.angle += p.data.speed * 0.01;
+                p.angle += p.data.speed * 0.01 * frameScale;
                 const planetX = Math.cos(p.angle) * p.data.radius;
                 const planetZ = Math.sin(p.angle) * p.data.radius;
-                p.mesh.position.set(planetX, 0, planetZ);
-                p.mesh.rotation.y += 0.015; // Self-rotation
+                p.position.set(planetX, 0, planetZ);
+                if (p.mesh) {
+                    p.mesh.position.copy(p.position);
+                    p.mesh.rotation.y += 0.015 * frameScale;
+                } else {
+                    p.spin.value += 0.015 * frameScale;
+                    planetTransform.position.copy(p.position);
+                    planetTransform.rotation.set(0, p.spin.value, 0);
+                    planetTransform.scale.setScalar(p.data.size);
+                    planetTransform.updateMatrix();
+                    planetField.setMatrixAt(p.instanceIndex, planetTransform.matrix);
+                }
 
-                if (p.asteroidMeshes && p.asteroidMeshes.length > 0) {
+                if (p.asteroidField && p.asteroidMeshes.length > 0) {
                     p.asteroidMeshes.forEach((asteroid, index) => {
-                        asteroid.angle += 0.02 + (index * 0.0007);
-                        asteroid.mesh.position.set(
+                        asteroid.angle += (0.02 + (index * 0.0007)) * frameScale;
+                        asteroidTransform.position.set(
                             planetX + Math.cos(asteroid.angle) * asteroid.orbitRadius,
                             asteroid.yOffset,
                             planetZ + Math.sin(asteroid.angle) * asteroid.orbitRadius
                         );
-                        asteroid.mesh.rotation.x += asteroid.spinX;
-                        asteroid.mesh.rotation.y += asteroid.spinY;
+                        asteroid.rotationX += asteroid.spinX * frameScale;
+                        asteroid.rotationY += asteroid.spinY * frameScale;
+                        asteroidTransform.rotation.set(asteroid.rotationX, asteroid.rotationY, 0);
+                        asteroidTransform.scale.setScalar(asteroid.scale);
+                        asteroidTransform.updateMatrix();
+                        p.asteroidField.setMatrixAt(index, asteroidTransform.matrix);
                     });
+                    p.asteroidField.instanceMatrix.needsUpdate = true;
                 }
 
                 if (p.symbolOrbiters && p.symbolOrbiters.length > 0) {
                     p.symbolOrbiters.forEach((orbiter, index) => {
-                        orbiter.angle += orbiter.orbitSpeed + (index * 0.00045);
+                        orbiter.angle += (orbiter.orbitSpeed + (index * 0.00045)) * frameScale;
                         orbiter.mesh.position.set(
                             planetX + Math.cos(orbiter.angle) * orbiter.orbitRadius,
                             orbiter.yOffset,
@@ -976,17 +1075,18 @@
                     });
                 }
             });
+            planetField.instanceMatrix.needsUpdate = true;
 
             // 1b. Drift the outer-ring space junk
             spaceJunk.forEach((junk) => {
-                junk.angle += junk.data.speed * 0.01;
+                junk.angle += junk.data.speed * 0.01 * frameScale;
                 junk.mesh.position.set(
                     Math.cos(junk.angle) * junk.data.radius,
                     Math.sin(junk.angle * 1.8 + junk.bobOffset) * 1.8,
                     Math.sin(junk.angle) * junk.data.radius
                 );
-                junk.mesh.rotation.x += 0.01;
-                junk.mesh.rotation.y += 0.014;
+                junk.mesh.rotation.x += 0.01 * frameScale;
+                junk.mesh.rotation.y += 0.014 * frameScale;
             });
 
             // 2. Spaceship Movement Control
@@ -996,25 +1096,25 @@
             let goBackward = keys['s'] || keys['arrowdown'];
 
             // Steering rotation
-            if (steerLeft) shipRotationY += rotationSpeed;
-            if (steerRight) shipRotationY -= rotationSpeed;
+            if (steerLeft) shipRotationY += rotationSpeed * frameScale;
+            if (steerRight) shipRotationY -= rotationSpeed * frameScale;
             ship.rotation.y = shipRotationY;
 
             // Calculating acceleration vector
             if (goForward) {
                 const forwardVec = forwardAxis.clone().applyAxisAngle(upAxis, shipRotationY);
-                shipVelocity.addScaledVector(forwardVec, acceleration);
+                shipVelocity.addScaledVector(forwardVec, acceleration * frameScale);
             } else if (goBackward) {
                 const backwardVec = backwardAxis.clone().applyAxisAngle(upAxis, shipRotationY);
-                shipVelocity.addScaledVector(backwardVec, acceleration * 0.5);
+                shipVelocity.addScaledVector(backwardVec, acceleration * 0.5 * frameScale);
             }
 
             // Vertical thrust to mirror Solar Flight controls.
-            if (keys[' ']) shipVelocity.y += acceleration;
-            if (keys.shift) shipVelocity.y -= acceleration;
+            if (keys[' ']) shipVelocity.y += acceleration * frameScale;
+            if (keys.shift) shipVelocity.y -= acceleration * frameScale;
 
             // Apply friction drag deceleration
-            shipVelocity.multiplyScalar(drag);
+            shipVelocity.multiplyScalar(Math.pow(drag, frameScale));
 
             // Velocity clamping
             if (shipVelocity.length() > maxSpeed) {
@@ -1022,44 +1122,56 @@
             }
 
             // Apply calculated vectors to player coordinates
-            ship.position.add(shipVelocity);
+            ship.position.addScaledVector(shipVelocity, frameScale);
             ship.position.y = THREE.MathUtils.clamp(ship.position.y, -28, 35);
 
             // Speed HUD read-out
-            const currentKms = (shipVelocity.length() * 100).toFixed(1);
-            document.getElementById('speed-meter').textContent = `${currentKms} km/s`;
+            if (now - lastHudUpdate >= 100) {
+                const currentKms = `${(shipVelocity.length() * 100).toFixed(1)} km/s`;
+                if (currentKms !== lastSpeedText) {
+                    document.getElementById('speed-meter').textContent = currentKms;
+                    lastSpeedText = currentKms;
+                }
+                lastHudUpdate = now;
+            }
 
             // 3. Dynamic Camera Tracking (Behind & Above the Ship)
-            const cameraOffset = new THREE.Vector3(0, 3, 6).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipRotationY);
-            const targetCamPosition = ship.position.clone().add(cameraOffset);
-            camera.position.lerp(targetCamPosition, 0.06);
+            cameraOffset.set(0, 3, 6).applyAxisAngle(cameraUpAxis, shipRotationY);
+            targetCameraPosition.copy(ship.position).add(cameraOffset);
+            camera.position.lerp(targetCameraPosition, 1 - Math.pow(1 - 0.06, frameScale));
             camera.lookAt(ship.position);
 
             // 4. Proximity Checks (Are we landing on a planet?)
-            let nearAnyPlanet = false;
-
-            planets.forEach((p) => {
-                const distPlanet = ship.position.distanceTo(p.mesh.position);
+            if (now - lastProximityCheck >= 75) {
+                let approachedPlanet = null;
+                lastProximityCheck = now;
+                for (const p of planets) {
+                const distPlanet = ship.position.distanceToSquared(p.position);
                 const thresholdPlanet = p.data.size + 2.5;
 
-                if (distPlanet < thresholdPlanet) {
+                if (distPlanet < thresholdPlanet * thresholdPlanet) {
                     if (p.data.blackHole) {
                         window.location.href = p.data.specialRoute;
-                        return;
+                        break;
                     }
-                    nearAnyPlanet = true;
-                    activeApproachedPlanetId = p.data.id;
-
-                    const unitLabel = p.data.unitLabel || `UNIT ${p.data.id}`;
-                    document.getElementById('proximity-title').textContent = `APPROACHING PLANET: ${unitLabel}`;
-                    document.getElementById('proximity-desc').textContent = `${p.data.icon} You have entered the gravity field of ${p.data.name}!`;
-                    document.getElementById('proximity-alert').style.display = 'block';
+                    approachedPlanet = p;
+                    break;
                 }
-            });
+                }
 
-            if (!nearAnyPlanet) {
-                document.getElementById('proximity-alert').style.display = 'none';
-                activeApproachedPlanetId = null;
+                activeApproachedPlanetId = approachedPlanet ? approachedPlanet.data.id : null;
+                if (activeApproachedPlanetId !== lastProximityPlanetId) {
+                    const alert = document.getElementById('proximity-alert');
+                    if (approachedPlanet) {
+                        const unitLabel = approachedPlanet.data.unitLabel || `UNIT ${approachedPlanet.data.id}`;
+                        document.getElementById('proximity-title').textContent = `APPROACHING PLANET: ${unitLabel}`;
+                        document.getElementById('proximity-desc').textContent = `${approachedPlanet.data.icon} You have entered the gravity field of ${approachedPlanet.data.name}!`;
+                        alert.style.display = 'block';
+                    } else {
+                        alert.style.display = 'none';
+                    }
+                    lastProximityPlanetId = activeApproachedPlanetId;
+                }
             }
 
             renderer.render(scene, camera);

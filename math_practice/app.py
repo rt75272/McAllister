@@ -334,6 +334,11 @@ def earth_science_planet():
     """Earth Science Planet with 10 content stations."""
     return render_template('earth_science_planet.html')
 
+@app.route('/natural-selection-planet', methods=['GET'])
+def natural_selection_planet():
+    """Interactive natural selection and population-change simulation."""
+    return render_template('natural_selection_planet.html')
+
 @app.route('/context-clues', methods=['GET'])
 def context_clues():
     """Context Clues game page (infer word meanings)."""

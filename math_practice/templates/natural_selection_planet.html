@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Natural Selection Planet - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --evo-ink: #132d27;
+        --evo-moss: #406b48;
+        --evo-leaf: #a8cf72;
+        --evo-copper: #bd7650;
+        --evo-paper: #f3f3e8;
+        --evo-muted: #5d7163;
+        --evo-line: rgba(19, 45, 39, .16);
+    }
+    html { min-height: 100%; background: var(--evo-paper); }
+    body { min-height: 100vh; margin: 0; padding: 0; color: var(--evo-ink) !important; background: radial-gradient(ellipse at 76% 6%, rgba(168,207,114,.2), transparent 28rem), repeating-linear-gradient(0deg, transparent 0 31px, rgba(19,45,39,.035) 32px), var(--evo-paper); font-family: 'Lexend', sans-serif; letter-spacing: 0; }
+    [hidden] { display: none !important; }
+    .evo-shell { max-width: 1240px; margin: 0 auto; padding: 20px 28px 56px; overflow-x:clip; }
+    .evo-topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:4px 0 20px; }
+    .evo-topbar a { color:var(--evo-ink); text-decoration:none; font-size:.9rem; font-weight:700; }
+    .evo-topbar a:hover { color:var(--evo-moss); }
+    .evo-hero { display:grid; grid-template-columns:minmax(0,1fr) 190px; align-items:center; gap:30px; padding:8px 0 26px; }
+    .evo-kicker { color:var(--evo-moss); font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    .evo-hero h1 { margin:8px 0; font-size:3.1rem; line-height:1.05; color:var(--evo-ink); }
+    .evo-hero p { max-width:680px; margin:0; color:var(--evo-muted) !important; line-height:1.65; }
+    .evo-world { position:relative; width:172px; height:150px; margin:auto; }
+    .evo-world-sun { position:absolute; top:0; right:12px; width:40px; height:40px; border-radius:50%; background:#e9be63; box-shadow:0 0 25px rgba(233,190,99,.38); }
+    .evo-world-hill { position:absolute; left:0; right:0; bottom:4px; height:90px; border-radius:60% 60% 12px 12px; background:linear-gradient(150deg,#8fb36a,#3f7351); }
+    .evo-world-hill::before { content:""; position:absolute; left:25px; bottom:17px; width:95px; height:38px; border-radius:50%; background:rgba(213,188,127,.72); transform:rotate(-12deg); }
+    .evo-world-beetle { position:absolute; left:69px; bottom:45px; z-index:1; width:40px; height:25px; border-radius:55% 55% 42% 42%; background:#b97550; box-shadow:inset -6px -5px rgba(47,43,32,.18); transform:rotate(-18deg); }
+    .evo-world-beetle::before { content:""; position:absolute; top:-6px; left:4px; width:8px; height:12px; border-top:2px solid #263d2c; transform:rotate(-28deg); }
+    .evo-world-beetle::after { content:""; position:absolute; top:-5px; right:4px; width:8px; height:12px; border-top:2px solid #263d2c; transform:rotate(28deg); }
+    .evo-panel { border:1px solid var(--evo-line); border-radius:8px; background:rgba(255,255,255,.78); box-shadow:0 14px 38px rgba(27,55,37,.08); }
+    .evo-layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr); gap:16px; align-items:start; }
+    .evo-main-panel { padding:20px; }
+    .evo-panel-head { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+    .evo-panel-head h2, .evo-side-panel h2 { margin:0; font-size:1.08rem; color:var(--evo-ink); }
+    .generation-tag { padding:7px 10px; border-radius:4px; background:#e4edda; color:#315b3b; font-size:.78rem; font-weight:700; white-space:nowrap; }
+    .habitat-canvas-wrap { overflow:hidden; border:1px solid rgba(19,45,39,.2); border-radius:6px; background:#e4ead5; }
+    #habitatCanvas { display:block; width:100%; height:280px; }
+    .habitat-caption { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; color:var(--evo-muted); font-size:.78rem; }
+    .trait-legend { display:flex; gap:14px; flex-wrap:wrap; }
+    .trait-key { display:inline-flex; align-items:center; gap:6px; }
+    .trait-dot { width:11px; height:11px; border:1px solid rgba(19,45,39,.24); border-radius:50%; }
+    .trait-dot.green { background:#72a854; }
+    .trait-dot.brown { background:#a96747; }
+    .chart-block { margin-top:22px; }
+    .chart-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:8px; }
+    .chart-heading h3 { margin:0; font-size:.94rem; }
+    .chart-heading span { color:var(--evo-muted); font-size:.73rem; }
+    .chart-frame { height:210px; border:1px solid var(--evo-line); border-radius:5px; background:#fbfcf6; }
+    #frequencyChart { display:block; width:100%; height:100%; }
+    .evo-side { display:grid; gap:14px; }
+    .evo-side-panel { padding:18px; }
+    .control-label { display:block; margin:15px 0 7px; color:var(--evo-muted); font-size:.78rem; font-weight:700; }
+    .option-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+    .option-button, .evo-button { min-height:40px; border:1px solid var(--evo-line); border-radius:5px; padding:8px 10px; background:#fff; color:var(--evo-ink); font:600 .8rem 'Lexend',sans-serif; cursor:pointer; }
+    .option-button[aria-pressed="true"] { border-color:var(--evo-moss); background:#e7efdf; color:#294c31; box-shadow:inset 0 0 0 1px var(--evo-moss); }
+    .option-button:hover, .evo-button:hover { border-color:var(--evo-moss); }
+    .pressure-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px; }
+    .pressure-row input { width:100%; accent-color:var(--evo-moss); }
+    .pressure-value { min-width:48px; color:var(--evo-moss); font-size:.8rem; font-weight:700; text-align:right; }
+    .evo-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:18px; }
+    .evo-button { background:var(--evo-moss); border-color:var(--evo-moss); color:white; font-size:.84rem; }
+    .evo-button.secondary { background:transparent; color:var(--evo-ink); border-color:var(--evo-line); }
+    .evo-button:disabled { cursor:not-allowed; opacity:.55; }
+    .evo-status { min-height:43px; margin:13px 0 0; color:var(--evo-muted) !important; font-size:.78rem; line-height:1.5; }
+    .trait-stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .trait-stat { padding:11px; border-radius:5px; background:#f4f5ee; }
+    .trait-stat span { display:block; color:var(--evo-muted); font-size:.72rem; }
+    .trait-stat strong { display:block; margin-top:3px; font-size:1.22rem; font-variant-numeric:tabular-nums; }
+    .trait-stat.green strong { color:#4f813e; }
+    .trait-stat.brown strong { color:#96593d; }
+    .concept-list { display:grid; gap:12px; margin-top:14px; }
+    .concept { display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:start; }
+    .concept-number { display:grid; width:26px; height:26px; place-items:center; border-radius:50%; background:#e0ebd7; color:#315b3b; font-size:.72rem; font-weight:700; }
+    .concept strong { display:block; font-size:.8rem; }
+    .concept span { display:block; margin-top:3px; color:var(--evo-muted); font-size:.74rem; line-height:1.45; }
+    .takeaway { margin:16px 0 0; padding:12px; border-left:3px solid #d39859; background:#faf1df; color:#58462b; font-size:.76rem; line-height:1.5; }
+    .evo-footer { margin-top:16px; color:var(--evo-muted); font-size:.72rem; line-height:1.5; }
+    @media (max-width:850px) { .evo-layout { grid-template-columns:1fr; } .evo-side { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:580px) {
+        .evo-shell { padding:14px 14px 36px; }
+        .evo-hero { grid-template-columns:1fr 94px; gap:10px; }
+        .evo-hero h1 { font-size:2.15rem; }
+        .evo-world { transform:scale(.68); transform-origin:center right; width:100px; }
+        .evo-main-panel, .evo-side-panel { padding:14px; }
+        .evo-side { grid-template-columns:1fr; }
+        #habitatCanvas { height:220px; }
+        .chart-frame { height:190px; }
+        .evo-panel-head { align-items:flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="evo-shell">
+    <nav class="evo-topbar" aria-label="Planet navigation">
+        <a href="{{ url_for('quest_map') }}">← Quest Map</a>
+        <a href="{{ url_for('math_games') }}">Math Games</a>
+    </nav>
+    <header class="evo-hero">
+        <div>
+            <div class="evo-kicker">Earth Science · Life Over Time</div>
+            <h1>Natural Selection</h1>
+            <p>Watch a population change as inherited traits help some beetles survive and reproduce in a changing habitat.</p>
+        </div>
+        <div class="evo-world" aria-hidden="true"><span class="evo-world-sun"></span><span class="evo-world-hill"></span><span class="evo-world-beetle"></span></div>
+    </header>
+
+    <div class="evo-layout">
+        <section class="evo-panel evo-main-panel" aria-label="Natural selection visual simulation">
+            <div class="evo-panel-head"><h2>Beetle population</h2><span id="generationTag" class="generation-tag">Generation 0</span></div>
+            <div class="habitat-canvas-wrap"><canvas id="habitatCanvas" role="img" aria-label="Beetles living in their habitat"></canvas></div>
+            <div class="habitat-caption">
+                <span id="habitatCaption">Leaf litter habitat · predators can spot green beetles more easily</span>
+                <div class="trait-legend"><span class="trait-key"><i class="trait-dot green"></i>Green shell</span><span class="trait-key"><i class="trait-dot brown"></i>Brown shell</span></div>
+            </div>
+            <div class="trait-stats" aria-live="polite">
+                <div class="trait-stat green"><span>Green-shell beetles</span><strong id="greenCount">20 / 40</strong></div>
+                <div class="trait-stat brown"><span>Brown-shell beetles</span><strong id="brownCount">20 / 40</strong></div>
+            </div>
+            <div class="chart-block">
+                <div class="chart-heading"><h3>Trait frequency across generations</h3><span>Each line shows % of the population</span></div>
+                <div class="chart-frame"><canvas id="frequencyChart" role="img" aria-label="Chart of green-shell and brown-shell beetles across generations"></canvas></div>
+            </div>
+            <p class="evo-footer">This simplified model keeps the population at 40 beetles so it is easy to compare trait frequencies. Real populations are more complex, and evolution happens across many generations.</p>
+        </section>
+
+        <aside class="evo-side">
+            <section class="evo-panel evo-side-panel">
+                <h2>Change the conditions</h2>
+                <label class="control-label">Habitat</label>
+                <div id="habitatOptions" class="option-row" role="group" aria-label="Choose habitat">
+                    <button type="button" class="option-button" data-habitat="leaf" aria-pressed="true">🍂 Leaf litter</button>
+                    <button type="button" class="option-button" data-habitat="meadow" aria-pressed="false">🌿 Green meadow</button>
+                </div>
+                <label class="control-label" for="pressureInput">Predation pressure</label>
+                <div class="pressure-row"><input id="pressureInput" type="range" min="1" max="3" value="2" step="1"><output id="pressureValue" class="pressure-value" for="pressureInput">Steady</output></div>
+                <div class="evo-actions">
+                    <button id="advanceButton" class="evo-button" type="button">Next generation</button>
+                    <button id="autoButton" class="evo-button secondary" type="button">▶ Run</button>
+                    <button id="resetButton" class="evo-button secondary" type="button">↺ Reset</button>
+                    <button id="randomizeButton" class="evo-button secondary" type="button">Shuffle traits</button>
+                </div>
+                <p id="simulationStatus" class="evo-status" role="status" aria-live="polite">Start with variation: this population has both green and brown inherited shell colors.</p>
+            </section>
+            <section class="evo-panel evo-side-panel">
+                <h2>Natural selection, step by step</h2>
+                <div class="concept-list">
+                    <div class="concept"><b class="concept-number">1</b><div><strong>Variation</strong><span>Individuals in a population have different inherited traits.</span></div></div>
+                    <div class="concept"><b class="concept-number">2</b><div><strong>Selection</strong><span>In this habitat, predators catch more beetles that are easier to see.</span></div></div>
+                    <div class="concept"><b class="concept-number">3</b><div><strong>Inheritance</strong><span>Survivors reproduce, passing shell-color traits to offspring.</span></div></div>
+                    <div class="concept"><b class="concept-number">4</b><div><strong>Population change</strong><span>Across generations, helpful traits can become more common.</span></div></div>
+                </div>
+                <p class="takeaway">Individual beetles do not change color to adapt. The population’s trait frequencies shift over generations because some inherited traits lead to more surviving offspring.</p>
+            </section>
+        </aside>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(() => {
+    'use strict';
+    const POPULATION_SIZE = 40;
+    const habitats = {
+        leaf: { label: 'Leaf litter', background: '#b99a6b', accent: '#8c704c', favorable: 'brown', caption: 'Leaf litter habitat · predators can spot green beetles more easily' },
+        meadow: { label: 'Green meadow', background: '#91b66d', accent: '#5d8c50', favorable: 'green', caption: 'Green meadow habitat · predators can spot brown beetles more easily' }
+    };
+    let population = [];
+    let habitatKey = 'leaf';
+    let generation = 0;
+    let history = [];
+    let timer = null;
+    const $ = (id) => document.getElementById(id);
+    const habitatCanvas = $('habitatCanvas');
+    const chartCanvas = $('frequencyChart');
+
+    function makePopulation(greenCount = POPULATION_SIZE / 2) {
+        return Array.from({ length: POPULATION_SIZE }, (_, index) => index < greenCount ? 'green' : 'brown').sort(() => Math.random() - 0.5);
+    }
+
+    function recordGeneration() {
+        const green = population.filter((trait) => trait === 'green').length;
+        history.push({ generation, green, brown: population.length - green });
+    }
+
+    function resizeCanvas(canvas, context) {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.round(rect.width * ratio);
+        canvas.height = Math.round(rect.height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        return { width: rect.width, height: rect.height };
+    }
+
+    function drawBeetle(context, x, y, trait, scale = 1) {
+        const color = trait === 'green' ? '#72a854' : '#a96747';
+        context.save();
+        context.translate(x, y);
+        context.scale(scale, scale);
+        context.strokeStyle = '#382f27';
+        context.lineWidth = 1.4;
+        for (const offset of [-6, 0, 6]) {
+            context.beginPath();
+            context.moveTo(-2, offset / 2);
+            context.lineTo(-9, offset);
+            context.moveTo(2, offset / 2);
+            context.lineTo(9, offset);
+            context.stroke();
+        }
+        context.fillStyle = '#332d25';
+        context.beginPath();
+        context.arc(-8, 0, 4, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = color;
+        context.beginPath();
+        context.ellipse(2, 0, 11, 8, 0, 0, Math.PI * 2);
+        context.fill();
+        context.strokeStyle = 'rgba(255,255,255,.55)';
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(2, -7);
+        context.lineTo(2, 7);
+        context.stroke();
+        context.restore();
+    }
+
+    function drawHabitat() {
+        const context = habitatCanvas.getContext('2d');
+        const { width, height } = resizeCanvas(habitatCanvas, context);
+        const world = habitats[habitatKey];
+        context.fillStyle = world.background;
+        context.fillRect(0, 0, width, height);
+        context.globalAlpha = .22;
+        context.fillStyle = '#fff2ce';
+        for (let index = 0; index < 12; index += 1) {
+            const x = (index * 97 + 31) % width;
+            const y = (index * 53 + 18) % height;
+            context.beginPath();
+            context.ellipse(x, y, 22 + index % 4 * 5, 4 + index % 3, -.2 + index % 4 * .12, 0, Math.PI * 2);
+            context.fill();
+        }
+        context.globalAlpha = 1;
+        context.fillStyle = world.accent;
+        context.beginPath();
+        context.moveTo(0, height * .79);
+        context.quadraticCurveTo(width * .28, height * .63, width * .55, height * .81);
+        context.quadraticCurveTo(width * .82, height * .67, width, height * .8);
+        context.lineTo(width, height);
+        context.lineTo(0, height);
+        context.closePath();
+        context.fill();
+        context.strokeStyle = 'rgba(41,71,43,.45)';
+        context.lineWidth = 2;
+        for (let index = 0; index < 20; index += 1) {
+            const x = (index * 83 + 17) % width;
+            const y = height * (.77 + (index % 5) * .045);
+            context.beginPath();
+            context.moveTo(x, y + 8);
+            context.quadraticCurveTo(x - 7, y, x - 4, y - 9);
+            context.moveTo(x + 4, y + 9);
+            context.quadraticCurveTo(x + 10, y + 2, x + 8, y - 5);
+            context.stroke();
+        }
+        const marginX = 24;
+        const marginY = 25;
+        const usableWidth = Math.max(1, width - marginX * 2);
+        const usableHeight = Math.max(1, height - marginY * 2);
+        const columns = Math.max(5, Math.floor(usableWidth / 43));
+        const rows = Math.ceil(population.length / columns);
+        population.forEach((trait, index) => {
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+            const x = marginX + (col + .5) * (usableWidth / columns) + Math.sin(index * 12.3) * 5;
+            const y = marginY + (row + .5) * (usableHeight / rows) + Math.cos(index * 8.1) * 4;
+            drawBeetle(context, x, y, trait, .78);
+        });
+        context.fillStyle = 'rgba(15,36,27,.78)';
+        context.fillRect(12, 12, 150, 25);
+        context.fillStyle = '#fff';
+        context.font = '600 12px Lexend, sans-serif';
+        context.fillText(`${world.label} · ${population.length} beetles`, 21, 29);
+    }
+
+    function drawChart() {
+        const context = chartCanvas.getContext('2d');
+        const { width, height } = resizeCanvas(chartCanvas, context);
+        const pad = { top: 16, right: 18, bottom: 30, left: 38 };
+        const chartWidth = width - pad.left - pad.right;
+        const chartHeight = height - pad.top - pad.bottom;
+        context.clearRect(0, 0, width, height);
+        context.font = '11px Lexend, sans-serif';
+        context.textAlign = 'right';
+        for (let value = 0; value <= 100; value += 25) {
+            const y = pad.top + chartHeight * (1 - value / 100);
+            context.strokeStyle = '#e0e5d8';
+            context.lineWidth = 1;
+            context.beginPath();
+            context.moveTo(pad.left, y);
+            context.lineTo(width - pad.right, y);
+            context.stroke();
+            context.fillStyle = '#647365';
+            context.fillText(`${value}%`, pad.left - 6, y + 4);
+        }
+        context.textAlign = 'center';
+        context.fillStyle = '#647365';
+        context.fillText('Generation', pad.left + chartWidth / 2, height - 5);
+        const maxGeneration = Math.max(8, history.length - 1);
+        const xAt = (index) => pad.left + (index / maxGeneration) * chartWidth;
+        const yAt = (count) => pad.top + (1 - count / POPULATION_SIZE) * chartHeight;
+        function drawSeries(key, color) {
+            context.beginPath();
+            history.forEach((item, index) => {
+                const x = xAt(item.generation);
+                const y = yAt(item[key]);
+                if (index === 0) context.moveTo(x, y);
+                else context.lineTo(x, y);
+            });
+            context.strokeStyle = color;
+            context.lineWidth = 3;
+            context.lineJoin = 'round';
+            context.stroke();
+            history.forEach((item) => {
+                context.beginPath();
+                context.arc(xAt(item.generation), yAt(item[key]), 3.5, 0, Math.PI * 2);
+                context.fillStyle = color;
+                context.fill();
+            });
+        }
+        drawSeries('green', '#5d9447');
+        drawSeries('brown', '#a96747');
+        context.textAlign = 'left';
+        context.fillStyle = '#647365';
+        for (let generationTick = 0; generationTick <= maxGeneration; generationTick += maxGeneration <= 8 ? 2 : 4) {
+            context.fillText(String(generationTick), xAt(generationTick) - 3, height - 17);
+        }
+    }
+
+    function render() {
+        const greens = population.filter((trait) => trait === 'green').length;
+        $('generationTag').textContent = `Generation ${generation}`;
+        $('greenCount').textContent = `${greens} / ${population.length}`;
+        $('brownCount').textContent = `${population.length - greens} / ${population.length}`;
+        $('habitatCaption').textContent = habitats[habitatKey].caption;
+        drawHabitat();
+        drawChart();
+    }
+
+    function nextGeneration() {
+        const world = habitats[habitatKey];
+        const pressure = Number($('pressureInput').value);
+        const survivors = population.filter((trait) => {
+            const favorable = trait === world.favorable;
+            const chance = favorable ? .94 - pressure * .035 : .84 - pressure * .19;
+            return Math.random() < chance;
+        });
+        if (survivors.length === 0) survivors.push(population[Math.floor(Math.random() * population.length)]);
+        const greenSurvivors = survivors.filter((trait) => trait === 'green').length;
+        const brownSurvivors = survivors.length - greenSurvivors;
+        const offspring = Array.from({ length: POPULATION_SIZE }, () => {
+            let trait = survivors[Math.floor(Math.random() * survivors.length)];
+            if (Math.random() < .025) trait = trait === 'green' ? 'brown' : 'green';
+            return trait;
+        });
+        population = offspring;
+        generation += 1;
+        recordGeneration();
+        $('simulationStatus').textContent = `${survivors.length} beetles survived predation (${greenSurvivors} green, ${brownSurvivors} brown). They reproduced, passing shell-color traits to the next generation. Some variation remains because inheritance and survival are not perfectly predictable.`;
+        render();
+    }
+
+    function stopAuto() {
+        if (timer) window.clearInterval(timer);
+        timer = null;
+        $('autoButton').textContent = '▶ Run';
+        $('advanceButton').disabled = false;
+    }
+
+    function reset() {
+        stopAuto();
+        generation = 0;
+        population = makePopulation();
+        history = [];
+        recordGeneration();
+        $('simulationStatus').textContent = 'Start with variation: this population has both green and brown inherited shell colors.';
+        render();
+    }
+
+    $('habitatOptions').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-habitat]');
+        if (!button) return;
+        habitatKey = button.dataset.habitat;
+        $('habitatOptions').querySelectorAll('[data-habitat]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
+        $('simulationStatus').textContent = `Habitat changed to ${habitats[habitatKey].label}. Watch which shell color is harder for predators to see in this environment.`;
+        render();
+    });
+    $('pressureInput').addEventListener('input', () => {
+        $('pressureValue').textContent = ['Mild', 'Steady', 'Strong'][Number($('pressureInput').value) - 1];
+    });
+    $('advanceButton').addEventListener('click', nextGeneration);
+    $('autoButton').addEventListener('click', () => {
+        if (timer) { stopAuto(); return; }
+        $('autoButton').textContent = 'Ⅱ Pause';
+        $('advanceButton').disabled = true;
+        timer = window.setInterval(nextGeneration, 1100);
+    });
+    $('resetButton').addEventListener('click', reset);
+    $('randomizeButton').addEventListener('click', () => {
+        stopAuto();
+        const greens = Math.floor(POPULATION_SIZE * (.2 + Math.random() * .6));
+        population = makePopulation(greens);
+        generation = 0;
+        history = [];
+        recordGeneration();
+        $('simulationStatus').textContent = 'The starting population has new variation. Run generations to see which inherited color becomes more common.';
+        render();
+    });
+    window.addEventListener('resize', () => window.requestAnimationFrame(render));
+    if ('ResizeObserver' in window) new ResizeObserver(() => render()).observe(habitatCanvas.parentElement);
+    population = makePopulation();
+    recordGeneration();
+    render();
+})();
+</script>
+{% endblock %}
