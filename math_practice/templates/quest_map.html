@@ -329,9 +329,10 @@
                 <p><span class="console-key">Space</span>: <span class="console-action">Rise</span></p>
                 <p><span class="console-key">Shift</span>: <span class="console-action">Descend</span></p>
                 <p><span class="console-key">R</span>: <span class="console-action">Reset Flight</span></p>
+                <p><span class="console-key">Enter</span>: <span class="console-action">Land when near a planet</span></p>
             </div>
             <div class="border-t border-slate-800/80 pt-1.5 console-note">
-                Fly your ship close to any planet, or left-click on it to descend and land!
+                Turn with A/D, accelerate with W, then press Enter when near a planet to land.
             </div>
         </div>
 
@@ -347,7 +348,7 @@
 <!-- Dynamic Proximity Descend Overlay banner -->
 <div id="proximity-alert" class="proximity-banner text-slate-100">
     <h3 id="proximity-title" class="font-black text-sm text-yellow-400 tracking-wide">APPROACHING PLANET</h3>
-    <p id="proximity-desc" class="text-xs text-slate-300 mt-1 mb-2">Entering gravitational pull. Choose your landing target:</p>
+    <p id="proximity-desc" class="text-xs text-slate-300 mt-1 mb-2">Press Enter or choose the landing button to enter this planet.</p>
     <div class="flex gap-3 justify-center">
         <button id="descend-planet-btn" class="descend-btn text-xs font-black">Land on Planet 🪐</button>
 
@@ -519,9 +520,10 @@
         const backwardAxis = new THREE.Vector3(0, 0, 1);
         const upAxis = new THREE.Vector3(0, 1, 0);
         const maxSpeed = 0.6;
-        const acceleration = 0.012;
+        const acceleration = 0.018;
         const drag = 0.98;
-        const rotationSpeed = 0.04;
+        const coastDrag = 0.94;
+        const rotationSpeed = 0.05;
         const minimumFrameInterval = 1000 / 60;
         let lastFrameTime = 0;
         const cameraOffset = new THREE.Vector3();
@@ -545,6 +547,11 @@
         let highestUnitVisited = 1;
         let recentJunkQuizIds = [];
         let lastJunkQuizCategory = null;
+
+        function enterApproachedPlanet() {
+            if (activeApproachedPlanetId === null) return;
+            window.location.href = getPlanetRoute(activeApproachedPlanetId);
+        }
 
         function resetShipFlightState() {
             if (!ship) return;
@@ -904,6 +911,11 @@
                 }
                 keys[e.key.toLowerCase()] = true;
 
+                if (e.key === 'Enter' && activeJunkQuiz === null && activeApproachedPlanetId !== null) {
+                    e.preventDefault();
+                    enterApproachedPlanet();
+                }
+
                 if (e.key.toLowerCase() === 'r') {
                     resetShipFlightState();
                 }
@@ -913,9 +925,7 @@
             window.addEventListener('click', onDocumentClick);
 
             document.getElementById('descend-planet-btn').addEventListener('click', () => {
-                if (activeApproachedPlanetId !== null) {
-                    window.location.href = getPlanetRoute(activeApproachedPlanetId);
-                }
+                enterApproachedPlanet();
             });
 
             document.getElementById('junk-quiz-close').addEventListener('click', closeJunkQuiz);
@@ -1091,14 +1101,16 @@
             });
 
             // 2. Spaceship Movement Control
-            let steerLeft = keys['a'] || keys['arrowleft'];
-            let steerRight = keys['d'] || keys['arrowright'];
-            let goForward = keys['w'] || keys['arrowup'];
-            let goBackward = keys['s'] || keys['arrowdown'];
+            let steerLeft = Boolean(keys['a'] || keys['arrowleft']);
+            let steerRight = Boolean(keys['d'] || keys['arrowright']);
+            let goForward = Boolean(keys['w'] || keys['arrowup']);
+            let goBackward = Boolean(keys['s'] || keys['arrowdown']);
 
-            // Steering rotation
-            if (steerLeft) shipRotationY += rotationSpeed * frameScale;
-            if (steerRight) shipRotationY -= rotationSpeed * frameScale;
+            // Turn the ship and gently guide its momentum in the same direction.
+            const turnDirection = Number(steerLeft) - Number(steerRight);
+            const rotationDelta = turnDirection * rotationSpeed * frameScale;
+            shipRotationY += rotationDelta;
+            if (rotationDelta !== 0) shipVelocity.applyAxisAngle(upAxis, rotationDelta * 0.75);
             ship.rotation.y = shipRotationY;
 
             // Calculating acceleration vector
@@ -1114,8 +1126,9 @@
             if (keys[' ']) shipVelocity.y += acceleration * frameScale;
             if (keys.shift) shipVelocity.y -= acceleration * frameScale;
 
-            // Apply friction drag deceleration
-            shipVelocity.multiplyScalar(Math.pow(drag, frameScale));
+            // Stronger drag without thrust makes it easier to stop and line up with a planet.
+            const isThrusting = goForward || goBackward || keys[' '] || keys.shift;
+            shipVelocity.multiplyScalar(Math.pow(isThrusting ? drag : coastDrag, frameScale));
 
             // Velocity clamping
             if (shipVelocity.length() > maxSpeed) {
@@ -1166,7 +1179,7 @@
                     if (approachedPlanet) {
                         const unitLabel = approachedPlanet.data.unitLabel || `UNIT ${approachedPlanet.data.id}`;
                         document.getElementById('proximity-title').textContent = `APPROACHING PLANET: ${unitLabel}`;
-                        document.getElementById('proximity-desc').textContent = `${approachedPlanet.data.icon} You have entered the gravity field of ${approachedPlanet.data.name}!`;
+                        document.getElementById('proximity-desc').textContent = `${approachedPlanet.data.icon} ${approachedPlanet.data.name} is in range. Press Enter or choose the landing button to enter.`;
                         alert.style.display = 'block';
                     } else {
                         alert.style.display = 'none';
