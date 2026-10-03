@@ -339,6 +339,11 @@ def natural_selection_planet():
     """Interactive natural selection and population-change simulation."""
     return render_template('natural_selection_planet.html')
 
+@app.route('/chess-planet', methods=['GET'])
+def chess_planet():
+    """Single-player chess game against a computer opponent."""
+    return render_template('chess_planet.html')
+
 @app.route('/context-clues', methods=['GET'])
 def context_clues():
     """Context Clues game page (infer word meanings)."""
