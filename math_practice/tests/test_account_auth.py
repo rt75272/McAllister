@@ -167,7 +167,6 @@ class FakeCursor:
                         account['profile_color'],
                     )
             else:
-                excluded_id = params[0]
                 self.result = [
                     (
                         account['id'], account['display_name'], account['bio'],
@@ -175,7 +174,7 @@ class FakeCursor:
                         account['profile_color'],
                     )
                     for account in self.database.accounts.values()
-                    if account['profile_public'] and account['id'] != excluded_id
+                    if account['profile_public']
                 ]
         elif normalized.startswith('INSERT INTO ACCOUNT_MATH_ATTEMPTS'):
             account_id, difficulty, was_correct, ability_after, ability_peak = params
@@ -546,6 +545,10 @@ def test_public_profiles_are_opt_in_and_require_login():
                 'profile_public': 'yes',
             },
         )
+        owner_community = owner.get('/community')
+        assert owner_community.status_code == 200
+        assert b'Private Learner' in owner_community.data
+
         response = other_learner.get(f'/users/{owner_id}')
         assert response.status_code == 200
         assert b'Private Learner' in response.data

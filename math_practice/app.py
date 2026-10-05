@@ -1517,11 +1517,10 @@ def community_profiles():
                     """
                     SELECT id, display_name, bio, favorite_subject, learning_goal, profile_color
                     FROM learning_accounts
-                    WHERE profile_public = TRUE AND id != %s
+                    WHERE profile_public = TRUE
                     ORDER BY LOWER(display_name)
                     LIMIT 100
-                    """,
-                    (session['account_id'],),
+                    """
                 )
                 profiles = cur.fetchall()
     except Exception:
