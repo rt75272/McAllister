@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Create account' if mode == 'register' else 'Log in' }} - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body { min-height:100vh; margin:0; padding:24px; background:#f3f6f2; color:#18352b; font-family:'Lexend',sans-serif; }
+    .account-auth-shell { width:min(100%,460px); margin:7vh auto; }
+    .account-auth-card { padding:28px; border:1px solid #d5e1d5; border-radius:16px; background:#fff; box-shadow:0 16px 38px rgba(26,55,38,.1); }
+    .account-auth-card h1 { margin:0 0 8px; font-size:1.8rem; }
+    .account-auth-card > p { color:#52665a; line-height:1.55; }
+    .account-auth-card label { display:block; margin:16px 0 6px; font-size:.88rem; font-weight:700; }
+    .account-auth-card input:not([type=hidden]) { box-sizing:border-box; width:100%; min-height:44px; border:1px solid #b7c7b9; border-radius:8px; padding:10px 12px; font:inherit; }
+    .account-auth-card button { width:100%; min-height:44px; margin-top:20px; border:0; border-radius:8px; background:#376b48; color:white; font:700 1rem 'Lexend',sans-serif; cursor:pointer; }
+    .account-auth-card button:hover { background:#2c573a; }
+    .account-error { padding:10px 12px; border-radius:8px; background:#fff0ee; color:#8b2f25; line-height:1.45; }
+    .account-auth-links { display:flex; justify-content:space-between; gap:12px; margin-top:18px; font-size:.85rem; }
+    .account-auth-links a { color:#315f43; font-weight:700; }
+    .account-privacy-note { margin-top:18px; font-size:.78rem; color:#66766b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="account-auth-shell">
+    <section class="account-auth-card">
+        {% if mode == 'register' %}
+            <h1>Create your account</h1>
+            <p>Sign up to save your Math Practice progress and view it whenever you log in.</p>
+        {% else %}
+            <h1>Welcome back</h1>
+            <p>Log in to view your saved account and learning progress.</p>
+        {% endif %}
+
+        {% if error_message %}<p class="account-error" role="alert">{{ error_message }}</p>{% endif %}
+
+        <form method="post" action="{{ url_for('account_register' if mode == 'register' else 'account_login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if mode == 'register' %}
+                <label for="display-name">Name</label>
+                <input id="display-name" name="display_name" value="{{ display_name }}" maxlength="80" autocomplete="name" required>
+            {% endif %}
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="{{ email }}" maxlength="254" autocomplete="email" required>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" minlength="10" maxlength="1024" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required>
+            {% if mode == 'register' %}
+                <label for="password-confirm">Confirm password</label>
+                <input id="password-confirm" name="password_confirm" type="password" minlength="10" maxlength="1024" autocomplete="new-password" required>
+            {% endif %}
+            <button type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }}</button>
+        </form>
+
+        <div class="account-auth-links">
+            {% if mode == 'register' %}
+                <span>Already have an account? <a href="{{ url_for('account_login') }}">Log in</a></span>
+            {% else %}
+                <span>New here? <a href="{{ url_for('account_register') }}">Create an account</a></span>
+            {% endif %}
+            <a href="{{ url_for('quest_map') }}">Back to learning</a>
+        </div>
+        <p class="account-privacy-note">Use an email address you can access, and never reuse a password you use for school or other important accounts.</p>
+    </section>
+</main>
+{% endblock %}

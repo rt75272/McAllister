@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}My Account - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root { --account-ink:#19352a; --account-muted:#5b6f62; --account-line:#d6e1d6; --account-green:#3c704a; }
+    body { min-height:100vh; margin:0; background:#f3f6f2; color:var(--account-ink); font-family:'Lexend',sans-serif; }
+    .account-shell { max-width:1000px; margin:0 auto; padding:30px 24px 60px; }
+    .account-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:24px 0; }
+    .account-top a { color:#315f43; font-weight:700; text-decoration:none; }
+    .account-top h1 { margin:0; font-size:clamp(1.7rem,4vw,2.5rem); }
+    .account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .account-card { padding:20px; border:1px solid var(--account-line); border-radius:12px; background:white; box-shadow:0 10px 26px rgba(26,55,38,.06); }
+    .account-card h2 { margin:0 0 16px; font-size:1.1rem; }
+    .account-details { display:grid; grid-template-columns:1fr auto; gap:12px; margin:0; font-size:.9rem; }
+    .account-details dt { color:var(--account-muted); }
+    .account-details dd { margin:0; text-align:right; font-weight:600; overflow-wrap:anywhere; }
+    .account-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .account-stat { padding:12px; border-radius:8px; background:#f2f6ef; }
+    .account-stat span { display:block; color:var(--account-muted); font-size:.76rem; }
+    .account-stat strong { display:block; margin-top:4px; font-size:1.35rem; }
+    .account-note { margin:14px 0 0; color:var(--account-muted); font-size:.8rem; line-height:1.5; }
+    .account-wide { grid-column:1/-1; }
+    .attempt-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .attempt-table th, .attempt-table td { padding:10px 8px; border-bottom:1px solid #e4ebe3; text-align:left; }
+    .attempt-table th { color:var(--account-muted); font-size:.76rem; }
+    .result-correct { color:#28633d; font-weight:700; }
+    .result-incorrect { color:#9a3e35; font-weight:700; }
+    .account-error { padding:12px; border-radius:8px; background:#fff0ee; color:#8b2f25; }
+    .account-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+    .account-actions a { display:inline-block; padding:10px 14px; border-radius:8px; background:var(--account-green); color:white; font-weight:700; text-decoration:none; }
+    @media(max-width:700px) { .account-shell { padding:22px 14px 40px; } .account-grid { grid-template-columns:1fr; } .account-wide { grid-column:auto; } .account-top { align-items:flex-start; flex-direction:column; } .attempt-table { font-size:.76rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="account-shell">
+    <div class="account-top">
+        <div>
+            <a href="{{ url_for('quest_map') }}">← Back to Learning Center</a>
+            <h1>My Account</h1>
+        </div>
+        {% if account %}<p>Welcome, {{ account.display_name }}!</p>{% endif %}
+    </div>
+
+    {% if error_message %}
+        <p class="account-error" role="alert">{{ error_message }}</p>
+    {% elif account and progress %}
+        <div class="account-grid">
+            <section class="account-card">
+                <h2>Account details</h2>
+                <dl class="account-details">
+                    <dt>Name</dt><dd>{{ account.display_name }}</dd>
+                    <dt>Email</dt><dd>{{ account.email }}</dd>
+                    <dt>Member since</dt><dd>{{ account.created_at.strftime('%b %d, %Y') }}</dd>
+                    <dt>Last login</dt><dd>{{ account.last_login_at.strftime('%b %d, %Y at %I:%M %p UTC') }}</dd>
+                </dl>
+            </section>
+            <section class="account-card">
+                <h2>Math Practice progress</h2>
+                <div class="account-stats">
+                    <div class="account-stat"><span>Questions answered</span><strong>{{ progress.attempt_count }}</strong></div>
+                    <div class="account-stat"><span>Correct</span><strong>{{ progress.correct_count }}</strong></div>
+                    <div class="account-stat"><span>Accuracy</span><strong>{{ progress.accuracy }}%</strong></div>
+                    <div class="account-stat"><span>Current level</span><strong>{{ progress.current_tier|capitalize }}</strong></div>
+                    <div class="account-stat"><span>Highest level reached</span><strong>{{ progress.peak_tier|capitalize }}</strong></div>
+                </div>
+                {% if progress.last_activity %}
+                    <p class="account-note">Last Math Practice activity: {{ progress.last_activity.strftime('%b %d, %Y at %I:%M %p UTC') }}.</p>
+                {% else %}
+                    <p class="account-note">Your signed-in Math Practice answers will appear here as you play.</p>
+                {% endif %}
+            </section>
+            <section class="account-card account-wide">
+                <h2>Recent Math Practice answers</h2>
+                {% if recent_attempts %}
+                    <div style="overflow-x:auto;">
+                        <table class="attempt-table">
+                            <thead><tr><th>When</th><th>Level</th><th>Result</th></tr></thead>
+                            <tbody>
+                                {% for attempt in recent_attempts %}
+                                    <tr>
+                                        <td>{{ attempt[2].strftime('%b %d, %Y at %I:%M %p UTC') }}</td>
+                                        <td>{{ attempt[0]|capitalize }}</td>
+                                        <td class="{{ 'result-correct' if attempt[1] else 'result-incorrect' }}">{{ 'Correct' if attempt[1] else 'Needs practice' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="account-note">No Math Practice answers are saved yet. Sign in while practicing to build your progress history.</p>
+                {% endif %}
+                <div class="account-actions">
+                    <a href="{{ url_for('math_practice') }}">Practice math</a>
+                    <a href="{{ url_for('quest_map') }}">Explore the planets</a>
+                </div>
+            </section>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

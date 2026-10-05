@@ -52,6 +52,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             document.querySelector('h2')?.remove();
+            document.querySelector('.account-progress-warning')?.remove();
+            if (data.progress_warning) {
+                const warning = document.createElement('p');
+                warning.className = 'account-progress-warning';
+                warning.setAttribute('role', 'status');
+                warning.textContent = data.progress_warning;
+                form.parentNode.insertBefore(warning, form);
+            }
             if (data.result) {
                 const resultElem = document.createElement('h2');
                 resultElem.textContent = data.result;
@@ -89,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     skipBtn.addEventListener('click', function() {
-        const formData = new FormData();
+        const formData = new FormData(form);
         fetch('/skip', {
             method: 'POST',
             body: formData,
@@ -100,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('h2')?.remove();
             form.querySelector('strong').textContent = data.question;
             form.querySelector('input[name="correct_answer"]').value = data.answer;
+            form.querySelector('input[name="current_question"]').value = data.question;
             form.querySelector('input[name="answer"]').value = '';
             if (typeof data.questions_left !== 'undefined' && typeof data.next_level !== 'undefined') {
                 updateQuestionsLeft(data.questions_left, data.next_level);

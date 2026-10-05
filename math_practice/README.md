@@ -35,6 +35,11 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Beetle Natural Selection** - Collect moving beetles in a timed hunt with natural selection running every five seconds; shell colors collected less often, or camouflaged against the habitat when collection rates tie, become more common in the next generation.
 - **Moth Camouflage** - Collect moving moths in a timed hunt with natural selection running every five seconds; colors collected less often, or camouflaged against the habitat when collection rates are tied, become more common in the next generation.
 
+### 👤 Learner Accounts
+- **Sign up, log in, and log out** - Passwords are salted and hashed; account sessions use secure, HTTP-only cookies.
+- **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
+- **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
+
 ### 🪐 3D Space Flight & Quest Map
 - **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.
 - **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.
@@ -150,6 +155,7 @@ math_practice/
 3. **Configure Environment Variables**:
    ```bash
    export GEMINI_API_KEY="your-gemini-api-key"
+   export SECRET_KEY="replace-with-a-strong-random-secret"
    export DATABASE_URL="postgresql://user:pass@localhost:5432/math_practice"
    ```
 
@@ -178,6 +184,8 @@ The app is configured for deployment with Gunicorn:
 ```bash
 uv run gunicorn app:app
 ```
+
+For Render, configure `DATABASE_URL` to the PostgreSQL database connection string and set a strong, persistent `SECRET_KEY` environment variable. Account tables are created automatically when account features are used. Store the database in managed PostgreSQL rather than relying on an application disk for database persistence.
 
 ## 🎮 Game Descriptions
 

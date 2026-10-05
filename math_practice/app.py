@@ -8,23 +8,37 @@ support chatbot, and student progress/check-in logging.
 """
 
 import json
+import base64
+import hashlib
+import hmac
 import os
 import random
 import re
+import secrets
 import time
 from contextlib import closing
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import wraps
 from urllib import error, request as urllib_request
 
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, abort, render_template, request, jsonify, session, redirect, url_for
 import psycopg2
 
 import adaptive_difficulty as adaptive
 
 # Flask application setup.
 app = Flask(__name__)
-app.secret_key = 'secure_random_secret_key'
+configured_secret_key = os.environ.get('SECRET_KEY')
+if os.environ.get('RENDER', '').lower() == 'true' and not configured_secret_key:
+    raise RuntimeError('SECRET_KEY must be configured for the Render deployment.')
+app.secret_key = configured_secret_key or secrets.token_hex(32)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=os.environ.get('RENDER', '').lower() == 'true',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+)
 
 GEMINI_MODEL = 'gemini-2.5-flash'
 GEMINI_API_URL = (
@@ -233,6 +247,15 @@ def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
 def inject_current_year():
     """Inject current year into all templates as `current_year`."""
     return {'current_year': datetime.now().year}
+
+
+@app.context_processor
+def inject_account_navigation():
+    """Provide account links and the session-bound form token to templates."""
+    return {
+        'current_account_name': session.get('account_name'),
+        'csrf_token': issue_csrf_token(),
+    }
 
 # Difficulty progression settings. 
 easy_num = 4      # Number of consecutive easy questions to answer correctly to reach medium.
@@ -518,7 +541,9 @@ def _progress_snapshot(ability, difficulty, hard_victories):
 def math_practice():
     """Main page for math practice. Difficulty is chosen by an online IRT-style adaptive
     engine (see adaptive_difficulty.py) that estimates the student's ability from
-    correctness and response time, rather than a fixed correct-answers-in-a-row streak."""
+    correctness and response time, rather than a fixed correct-answers-in-a-row streak.
+    Signed-in learners also have their attempts saved to their account."""
+    progress_warning = None
     # Always reset session state on GET (refresh).
     if request.method == 'GET':
         session['hard_victories'] = 0
@@ -527,6 +552,16 @@ def math_practice():
         seed_ability = request.args.get('seed_ability', type=float)
         if seed_ability is not None:
             session['ability'] = max(adaptive.MIN_ABILITY, min(adaptive.MAX_ABILITY, seed_ability))
+        elif session.get('account_id'):
+            try:
+                saved_ability = get_latest_account_ability(session['account_id'])
+                session['ability'] = (
+                    saved_ability if saved_ability is not None else adaptive.INITIAL_ABILITY
+                )
+            except Exception:
+                app.logger.exception('Failed restoring learner Math Practice ability.')
+                session['ability'] = adaptive.INITIAL_ABILITY
+                progress_warning = 'Your saved Math Practice level could not be loaded right now.'
         else:
             session['ability'] = adaptive.INITIAL_ABILITY
 
@@ -538,8 +573,13 @@ def math_practice():
     streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
 
     if request.method == 'POST':
+        if not valid_csrf_token(request.form.get('csrf_token', '')):
+            abort(400, description='This form expired. Please refresh and try again.')
+        answered_difficulty = difficulty
         user_answer = request.form.get('answer')
-        correct_answer = request.form.get('correct_answer')
+        correct_answer = session.get('current_answer')
+        if correct_answer is None:
+            abort(400, description='This question expired. Please load a new question.')
         try:
             user_answer_float = float(user_answer)
             correct_answer_float = float(correct_answer)
@@ -558,6 +598,7 @@ def math_practice():
         # Update the ability estimate from this result (weighted by how long it took).
         response_seconds = time.time() - session.get('question_start_time', time.time())
         ability = adaptive.update_ability(ability, difficulty, is_correct, response_seconds)
+        ability_peak = ability
         session['ability'] = ability
         new_difficulty = adaptive.ability_to_tier(ability)
         # Falling back out of hard means mastery wasn't sustained; don't carry over partial credit.
@@ -568,7 +609,7 @@ def math_practice():
         session['hard_victories'] = hard_victories
 
         # Store previous question information before updating difficulty.
-        current_question = request.form.get('current_question', '')
+        current_question = session.get('current_question', '')
         session['previous_question'] = {
             'question': current_question,
             'user_answer': user_answer,
@@ -588,8 +629,23 @@ def math_practice():
             session['ability'] = ability
             session['difficulty'] = difficulty
 
+        if session.get('account_id'):
+            try:
+                save_account_math_attempt(
+                    session['account_id'],
+                    answered_difficulty,
+                    is_correct,
+                    ability,
+                    ability_peak,
+                )
+            except Exception:
+                app.logger.exception('Failed saving learner Math Practice progress.')
+                progress_warning = 'Your answer was processed, but this attempt could not be saved to your account.'
+
         streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
         question, answer = generate_question(difficulty)
+        session['current_question'] = question
+        session['current_answer'] = answer
         session['question_start_time'] = time.time()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             response_data = {
@@ -604,6 +660,8 @@ def math_practice():
                 'hard_victories': hard_victories,
                 'ability': round(ability, 2)
             }
+            if progress_warning:
+                response_data['progress_warning'] = progress_warning
             # Add previous question info if available.
             if 'previous_question' in session:
                 response_data['previous_question'] = session['previous_question']
@@ -621,9 +679,12 @@ def math_practice():
                                    medium_num=medium_num,
                                    hard_num=hard_num,
                                    streaks=streaks,
-                                   hard_victories=hard_victories)
+                                   hard_victories=hard_victories,
+                                   progress_warning=progress_warning)
     else:
         question, answer = generate_question(difficulty)
+        session['current_question'] = question
+        session['current_answer'] = answer
         session['question_start_time'] = time.time()
         return render_template('math_practice.html', 
                                question=question, 
@@ -636,18 +697,23 @@ def math_practice():
                                medium_num=medium_num,
                                hard_num=hard_num,
                                streaks=streaks,
-                               hard_victories=hard_victories)
+                               hard_victories=hard_victories,
+                               progress_warning=progress_warning)
 
 @app.route('/skip', methods=['POST'])
 def skip():
     """Skip the current question. Skipping does not move the ability estimate, since no
     answer (correct or not) was actually observed."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
     ability = session.get('ability', adaptive.INITIAL_ABILITY)
     difficulty = adaptive.ability_to_tier(ability)
     session['difficulty'] = difficulty
     hard_victories = session.get('hard_victories', 0)
     streaks, questions_left, next_level = _progress_snapshot(ability, difficulty, hard_victories)
     question, answer = generate_question(difficulty)
+    session['current_question'] = question
+    session['current_answer'] = answer
     session['question_start_time'] = time.time()
     return jsonify({
         'question': question,
@@ -751,6 +817,360 @@ def get_db_connection():
     if not database_url:
         raise RuntimeError('DATABASE_URL is not configured.')
     return psycopg2.connect(database_url)
+
+
+def ensure_account_tables():
+    """Create account and per-account math progress tables when needed."""
+    with closing(get_db_connection()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS learning_accounts (
+                    id SERIAL PRIMARY KEY,
+                    email TEXT NOT NULL UNIQUE,
+                    display_name TEXT NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    last_login_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_math_attempts (
+                    id BIGSERIAL PRIMARY KEY,
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    difficulty TEXT NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
+                    was_correct BOOLEAN NOT NULL,
+                    ability_after DOUBLE PRECISION NOT NULL,
+                    ability_peak DOUBLE PRECISION NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS account_math_attempts_account_created_idx
+                ON account_math_attempts (account_id, created_at DESC)
+                """
+            )
+            conn.commit()
+
+
+def hash_account_password(password):
+    """Hash a password with a unique salt using PBKDF2-HMAC-SHA256."""
+    iterations = 600_000
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
+    return '$'.join((
+        'pbkdf2_sha256',
+        str(iterations),
+        base64.urlsafe_b64encode(salt).decode('ascii'),
+        base64.urlsafe_b64encode(digest).decode('ascii'),
+    ))
+
+
+def verify_account_password(password, stored_hash):
+    """Compare a password with its encoded PBKDF2 hash in constant time."""
+    try:
+        algorithm, iterations_text, salt_text, digest_text = stored_hash.split('$')
+        iterations = int(iterations_text)
+        if algorithm != 'pbkdf2_sha256' or not 1 <= iterations <= 2_000_000:
+            return False
+        salt = base64.urlsafe_b64decode(salt_text.encode('ascii'))
+        expected = base64.urlsafe_b64decode(digest_text.encode('ascii'))
+    except (AttributeError, ValueError):
+        return False
+    actual = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
+    return hmac.compare_digest(actual, expected)
+
+
+def issue_csrf_token():
+    """Return the random CSRF token bound to the current signed session."""
+    token = session.get('csrf_token')
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session['csrf_token'] = token
+    return token
+
+
+def valid_csrf_token(candidate):
+    """Check a submitted CSRF token against the current session token."""
+    token = session.get('csrf_token')
+    return bool(token and candidate and hmac.compare_digest(token, candidate))
+
+
+def login_required(view_function):
+    """Redirect anonymous visitors to sign in before showing private account data."""
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if not session.get('account_id'):
+            return redirect(url_for('account_login'))
+        return view_function(*args, **kwargs)
+    return wrapped_view
+
+
+def save_account_math_attempt(account_id, difficulty, was_correct, ability_after, ability_peak):
+    """Persist one signed-in Math Practice answer without storing the answer text."""
+    with closing(get_db_connection()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO account_math_attempts
+                    (account_id, difficulty, was_correct, ability_after, ability_peak)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (account_id, difficulty, was_correct, ability_after, ability_peak),
+            )
+            conn.commit()
+
+
+def get_latest_account_ability(account_id):
+    """Load the most recent persisted ability score for a signed-in learner."""
+    with closing(get_db_connection()) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT ability_after
+                FROM account_math_attempts
+                WHERE account_id = %s
+                ORDER BY created_at DESC, id DESC
+                LIMIT 1
+                """,
+                (account_id,),
+            )
+            row = cur.fetchone()
+    return row[0] if row else None
+
+
+@app.route('/account/register', methods=['GET', 'POST'])
+def account_register():
+    """Create a learner account and sign the learner in."""
+    if session.get('account_id'):
+        return redirect(url_for('account_dashboard'))
+
+    error_message = None
+    display_name = ''
+    email = ''
+    if request.method == 'POST':
+        display_name = request.form.get('display_name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
+        if not valid_csrf_token(request.form.get('csrf_token', '')):
+            error_message = 'This form expired. Please try signing up again.'
+        elif not display_name or len(display_name) > 80:
+            error_message = 'Enter a name that is 1 to 80 characters long.'
+        elif len(email) > 254 or not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+            error_message = 'Enter a valid email address.'
+        elif len(password) < 10:
+            error_message = 'Choose a password with at least 10 characters.'
+        elif len(password) > 1024:
+            error_message = 'Password is too long.'
+        elif password != password_confirm:
+            error_message = 'The passwords do not match.'
+        else:
+            try:
+                ensure_account_tables()
+                with closing(get_db_connection()) as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            INSERT INTO learning_accounts (email, display_name, password_hash)
+                            VALUES (%s, %s, %s)
+                            ON CONFLICT (email) DO NOTHING
+                            RETURNING id, display_name
+                            """,
+                            (email, display_name, hash_account_password(password)),
+                        )
+                        account = cur.fetchone()
+                        conn.commit()
+                if account is None:
+                    error_message = 'An account with that email already exists. Please log in.'
+                else:
+                    session.clear()
+                    session.permanent = True
+                    session['account_id'] = account[0]
+                    session['account_name'] = account[1]
+                    return redirect(url_for('account_dashboard'))
+            except Exception:
+                app.logger.exception('Failed creating learner account.')
+                error_message = 'We could not create your account right now. Please try again.'
+
+    response_status = 200
+    if error_message == 'This form expired. Please try signing up again.':
+        response_status = 400
+    elif error_message == 'We could not create your account right now. Please try again.':
+        response_status = 503
+    return render_template(
+        'account_auth.html',
+        mode='register',
+        error_message=error_message,
+        display_name=display_name,
+        email=email,
+    ), response_status
+
+
+@app.route('/account/login', methods=['GET', 'POST'])
+def account_login():
+    """Authenticate a learner account and begin a fresh signed session."""
+    if session.get('account_id'):
+        return redirect(url_for('account_dashboard'))
+
+    error_message = None
+    email = ''
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        if not valid_csrf_token(request.form.get('csrf_token', '')):
+            error_message = 'This form expired. Please try logging in again.'
+        elif len(email) > 254 or not email or len(password) > 1024:
+            error_message = 'Email or password is incorrect.'
+        else:
+            try:
+                ensure_account_tables()
+                with closing(get_db_connection()) as conn:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            SELECT id, display_name, password_hash
+                            FROM learning_accounts
+                            WHERE email = %s
+                            """,
+                            (email,),
+                        )
+                        account = cur.fetchone()
+                        if account and verify_account_password(password, account[2]):
+                            cur.execute(
+                                """
+                                UPDATE learning_accounts
+                                SET last_login_at = NOW()
+                                WHERE id = %s
+                                """,
+                                (account[0],),
+                            )
+                            conn.commit()
+                        else:
+                            account = None
+                if account is None:
+                    error_message = 'Email or password is incorrect.'
+                else:
+                    session.clear()
+                    session.permanent = True
+                    session['account_id'] = account[0]
+                    session['account_name'] = account[1]
+                    return redirect(url_for('account_dashboard'))
+            except Exception:
+                app.logger.exception('Failed authenticating learner account.')
+                error_message = 'We could not log you in right now. Please try again.'
+
+    response_status = 200
+    if error_message == 'Email or password is incorrect.':
+        response_status = 401
+    elif error_message == 'This form expired. Please try logging in again.':
+        response_status = 400
+    elif error_message == 'We could not log you in right now. Please try again.':
+        response_status = 503
+    return render_template(
+        'account_auth.html',
+        mode='login',
+        error_message=error_message,
+        display_name='',
+        email=email,
+    ), response_status
+
+
+@app.route('/account/logout', methods=['POST'])
+def account_logout():
+    """End the learner's session."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+    session.clear()
+    return redirect(url_for('quest_map'))
+
+
+@app.route('/account')
+@login_required
+def account_dashboard():
+    """Show the signed-in learner's account details and saved Math Practice history."""
+    account_id = session.get('account_id')
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, email, display_name, created_at, last_login_at
+                    FROM learning_accounts
+                    WHERE id = %s
+                    """,
+                    (account_id,),
+                )
+                account = cur.fetchone()
+                if account is None:
+                    session.clear()
+                    return redirect(url_for('account_login'))
+                cur.execute(
+                    """
+                    SELECT COUNT(*),
+                           COUNT(*) FILTER (WHERE was_correct),
+                           COALESCE(MAX(ability_peak), %s),
+                           (SELECT ability_after
+                            FROM account_math_attempts
+                            WHERE account_id = %s
+                            ORDER BY created_at DESC, id DESC
+                            LIMIT 1),
+                           MAX(created_at)
+                    FROM account_math_attempts
+                    WHERE account_id = %s
+                    """,
+                    (adaptive.INITIAL_ABILITY, account_id, account_id),
+                )
+                stats = cur.fetchone()
+                cur.execute(
+                    """
+                    SELECT difficulty, was_correct, created_at
+                    FROM account_math_attempts
+                    WHERE account_id = %s
+                    ORDER BY created_at DESC, id DESC
+                    LIMIT 10
+                    """,
+                    (account_id,),
+                )
+                recent_attempts = cur.fetchall()
+    except Exception:
+        app.logger.exception('Failed loading learner account dashboard.')
+        return render_template(
+            'account_dashboard.html',
+            account=None,
+            progress=None,
+            recent_attempts=[],
+            error_message='We could not load your account data right now. Please try again.',
+        ), 503
+
+    attempt_count, correct_count, peak_ability, current_ability, last_activity = stats
+    current_ability = current_ability if current_ability is not None else adaptive.INITIAL_ABILITY
+    progress = {
+        'attempt_count': attempt_count,
+        'correct_count': correct_count,
+        'accuracy': round(correct_count * 100 / attempt_count) if attempt_count else 0,
+        'peak_tier': adaptive.ability_to_tier(peak_ability),
+        'current_tier': adaptive.ability_to_tier(current_ability),
+        'last_activity': last_activity,
+    }
+    return render_template(
+        'account_dashboard.html',
+        account={
+            'id': account[0],
+            'email': account[1],
+            'display_name': account[2],
+            'created_at': account[3],
+            'last_login_at': account[4],
+        },
+        progress=progress,
+        recent_attempts=recent_attempts,
+        error_message=None,
+    )
 
 
 def ensure_student_creations_table():
