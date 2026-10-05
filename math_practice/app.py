@@ -16,6 +16,7 @@ import random
 import re
 import secrets
 import time
+import unicodedata
 from contextlib import closing
 from collections import deque
 from datetime import datetime, timedelta
@@ -899,6 +900,37 @@ def verify_account_password(password, stored_hash):
     return hmac.compare_digest(actual, expected)
 
 
+INAPPROPRIATE_USERNAME_TERMS = {
+    'ass', 'asshole', 'bastard', 'bitch', 'bullshit', 'cock', 'crap', 'cunt',
+    'damn', 'dick', 'dickhead', 'dumbass', 'fuck', 'fucker', 'fucking',
+    'motherfucker', 'piss', 'pissed', 'porn', 'pussy', 'shit', 'shithead',
+    'shitty', 'slut', 'whore',
+}
+
+
+def username_is_appropriate(username):
+    """Reject common profanity after case, accent, and common leetspeak normalization."""
+    normalized = unicodedata.normalize('NFKD', username).casefold()
+    normalized = ''.join(char for char in normalized if not unicodedata.combining(char))
+    normalized = normalized.translate(str.maketrans({
+        '@': 'a',
+        '$': 's',
+        '!': 'i',
+        '0': 'o',
+        '1': 'i',
+        '3': 'e',
+        '4': 'a',
+        '5': 's',
+        '7': 't',
+        '8': 'b',
+    }))
+    words = [
+        re.sub(r'[^a-z0-9]', '', token)
+        for token in normalized.split()
+    ]
+    return not any(word in INAPPROPRIATE_USERNAME_TERMS for word in words)
+
+
 def issue_csrf_token():
     """Return the random CSRF token bound to the current signed session."""
     token = session.get('csrf_token')
@@ -972,6 +1004,13 @@ def account_register():
             error_message = 'This form expired. Please try signing up again.'
         elif not display_name or len(display_name) > 80:
             error_message = 'Enter a name that is 1 to 80 characters long.'
+        elif any(
+            not (character.isalnum() or character in " .'-")
+            for character in display_name
+        ):
+            error_message = 'Names may use letters, numbers, spaces, hyphens, apostrophes, and periods.'
+        elif not username_is_appropriate(display_name):
+            error_message = 'Please choose a respectful name that does not include profanity.'
         elif len(password) < 10:
             error_message = 'Choose a password with at least 10 characters.'
         elif len(password) > 1024:

@@ -278,6 +278,29 @@ def test_signup_rejects_duplicate_names_case_insensitively():
         assert b'already in use' in response.data
 
 
+def test_signup_rejects_profanity_obfuscation_and_disallowed_characters():
+    for name in ('badword fuck', 'f.u.c.k', 'sh1t', 'name<script>'):
+        client = app_module.app.test_client()
+        client.get('/account/register')
+        response = client.post(
+            '/account/register',
+            data={
+                'csrf_token': csrf_token(client),
+                'display_name': name,
+                'password': 'a-long-example-password',
+            },
+        )
+        assert response.status_code == 200
+        assert b'Please choose a respectful name' in response.data or (
+            b'Names may use letters' in response.data
+        )
+
+
+def test_signup_accepts_respectful_names():
+    for name in ('Learner One', "O'Neil", 'Mia-Rose', 'Zoë'):
+        assert app_module.username_is_appropriate(name)
+
+
 def test_skip_replaces_the_session_question():
     client = app_module.app.test_client()
 
