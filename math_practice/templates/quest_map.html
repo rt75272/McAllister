@@ -417,7 +417,20 @@
                     { text: "ELA", count: 4, orbitRadius: 2.4, orbitSpeed: 0.015, yOffset: 0.75, scale: 0.78 }
                 ]
             },
-            { id: 15, name: "Science Planet", unitLabel: "SCIENCE", color: 0x16a34a, size: 1.4, radius: 78, speed: 0.017, icon: "🔬", specialRoute: "/earth-science-planet" },
+            {
+                id: 15,
+                name: "Science Planet",
+                unitLabel: "SCIENCE",
+                color: 0x16a34a,
+                size: 1.4,
+                radius: 78,
+                speed: 0.017,
+                icon: "🔬",
+                specialRoute: "/earth-science-planet",
+                orbitingSymbols: [
+                    { text: "Science", count: 4, orbitRadius: 2.5, orbitSpeed: 0.015, yOffset: 0.75, scale: 0.78 }
+                ]
+            },
             { id: 16, name: "Black Hole: Solar System Portal", unitLabel: "OPEN EXPLORATION", color: 0x000000, size: 2.7, radius: 86, speed: 0.016, icon: "🕳️", specialRoute: "/solar-system", blackHole: true },
             { id: 17, name: "Decimal Life Planet", unitLabel: "SPECIAL PLANET", color: 0x14b8a6, size: 1.65, radius: 133, speed: 0.009, icon: "💸", specialRoute: "/decimal-life", asteroidRing: true },
             { id: 19, name: "Chess Planet", unitLabel: "STRATEGY ARENA", color: 0xd6b66e, size: 1.75, radius: 164, speed: 0.007, icon: "♞", specialRoute: "/chess-planet", asteroidRing: true },
