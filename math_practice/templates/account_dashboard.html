@@ -52,7 +52,6 @@
                 <h2>Account details</h2>
                 <dl class="account-details">
                     <dt>Name</dt><dd>{{ account.display_name }}</dd>
-                    <dt>Email</dt><dd>{{ account.email }}</dd>
                     <dt>Member since</dt><dd>{{ account.created_at.strftime('%b %d, %Y') }}</dd>
                     <dt>Last login</dt><dd>{{ account.last_login_at.strftime('%b %d, %Y at %I:%M %p UTC') }}</dd>
                 </dl>

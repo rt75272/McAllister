@@ -38,15 +38,12 @@
             {% if mode == 'register' %}
                 <label for="display-name">Name</label>
                 <input id="display-name" name="display_name" value="{{ display_name }}" maxlength="80" autocomplete="name" required>
+            {% else %}
+                <label for="login-name">Name</label>
+                <input id="login-name" name="login_name" value="{{ login_name }}" maxlength="254" autocomplete="username" required>
             {% endif %}
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="{{ email }}" maxlength="254" autocomplete="email" required>
             <label for="password">Password</label>
             <input id="password" name="password" type="password" minlength="10" maxlength="1024" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required>
-            {% if mode == 'register' %}
-                <label for="password-confirm">Confirm password</label>
-                <input id="password-confirm" name="password_confirm" type="password" minlength="10" maxlength="1024" autocomplete="new-password" required>
-            {% endif %}
             <button type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }}</button>
         </form>
 
@@ -58,7 +55,11 @@
             {% endif %}
             <a href="{{ url_for('quest_map') }}">Back to learning</a>
         </div>
-        <p class="account-privacy-note">Use an email address you can access, and never reuse a password you use for school or other important accounts.</p>
+        {% if mode == 'register' %}
+            <p class="account-privacy-note">Your name must be unique. Choose a password with at least 10 characters.</p>
+        {% else %}
+            <p class="account-privacy-note">If you created an account before name-based sign-in was added, you can still use its email address as the name.</p>
+        {% endif %}
     </section>
 </main>
 {% endblock %}

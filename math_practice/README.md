@@ -36,7 +36,7 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Moth Camouflage** - Collect moving moths in a timed hunt with natural selection running every five seconds; colors collected less often, or camouflaged against the habitat when collection rates are tied, become more common in the next generation.
 
 ### 👤 Learner Accounts
-- **Sign up, log in, and log out** - Passwords are salted and hashed; account sessions use secure, HTTP-only cookies.
+- **Sign up, log in, and log out** - Create an account with a unique name and password (no email required); passwords are salted and hashed, and account sessions use secure, HTTP-only cookies.
 - **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
 - **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
 

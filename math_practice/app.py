@@ -820,19 +820,33 @@ def get_db_connection():
 
 
 def ensure_account_tables():
-    """Create account and per-account math progress tables when needed."""
+    """Create account/progress tables and migrate accounts to name-based sign-in."""
     with closing(get_db_connection()) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS learning_accounts (
                     id SERIAL PRIMARY KEY,
-                    email TEXT NOT NULL UNIQUE,
+                    email TEXT UNIQUE,
+                    login_name TEXT,
                     display_name TEXT NOT NULL,
                     password_hash TEXT NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                     last_login_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 )
+                """
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ALTER COLUMN email DROP NOT NULL"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS login_name TEXT"
+            )
+            cur.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS learning_accounts_login_name_lower_idx
+                ON learning_accounts (LOWER(login_name))
+                WHERE login_name IS NOT NULL
                 """
             )
             cur.execute(
@@ -951,24 +965,17 @@ def account_register():
 
     error_message = None
     display_name = ''
-    email = ''
     if request.method == 'POST':
         display_name = request.form.get('display_name', '').strip()
-        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
-        password_confirm = request.form.get('password_confirm', '')
         if not valid_csrf_token(request.form.get('csrf_token', '')):
             error_message = 'This form expired. Please try signing up again.'
         elif not display_name or len(display_name) > 80:
             error_message = 'Enter a name that is 1 to 80 characters long.'
-        elif len(email) > 254 or not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
-            error_message = 'Enter a valid email address.'
         elif len(password) < 10:
             error_message = 'Choose a password with at least 10 characters.'
         elif len(password) > 1024:
             error_message = 'Password is too long.'
-        elif password != password_confirm:
-            error_message = 'The passwords do not match.'
         else:
             try:
                 ensure_account_tables()
@@ -976,17 +983,17 @@ def account_register():
                     with conn.cursor() as cur:
                         cur.execute(
                             """
-                            INSERT INTO learning_accounts (email, display_name, password_hash)
+                            INSERT INTO learning_accounts (login_name, display_name, password_hash)
                             VALUES (%s, %s, %s)
-                            ON CONFLICT (email) DO NOTHING
+                            ON CONFLICT DO NOTHING
                             RETURNING id, display_name
                             """,
-                            (email, display_name, hash_account_password(password)),
+                            (display_name, display_name, hash_account_password(password)),
                         )
                         account = cur.fetchone()
                         conn.commit()
                 if account is None:
-                    error_message = 'An account with that email already exists. Please log in.'
+                    error_message = 'That name is already in use. Please log in or choose another name.'
                 else:
                     session.clear()
                     session.permanent = True
@@ -1007,7 +1014,6 @@ def account_register():
         mode='register',
         error_message=error_message,
         display_name=display_name,
-        email=email,
     ), response_status
 
 
@@ -1018,14 +1024,14 @@ def account_login():
         return redirect(url_for('account_dashboard'))
 
     error_message = None
-    email = ''
+    login_name = ''
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
+        login_name = request.form.get('login_name', '').strip()
         password = request.form.get('password', '')
         if not valid_csrf_token(request.form.get('csrf_token', '')):
             error_message = 'This form expired. Please try logging in again.'
-        elif len(email) > 254 or not email or len(password) > 1024:
-            error_message = 'Email or password is incorrect.'
+        elif len(login_name) > 254 or not login_name or len(password) > 1024:
+            error_message = 'Name or password is incorrect.'
         else:
             try:
                 ensure_account_tables()
@@ -1035,9 +1041,10 @@ def account_login():
                             """
                             SELECT id, display_name, password_hash
                             FROM learning_accounts
-                            WHERE email = %s
+                            WHERE LOWER(login_name) = LOWER(%s)
+                               OR (email IS NOT NULL AND LOWER(email) = LOWER(%s))
                             """,
-                            (email,),
+                            (login_name, login_name),
                         )
                         account = cur.fetchone()
                         if account and verify_account_password(password, account[2]):
@@ -1053,7 +1060,7 @@ def account_login():
                         else:
                             account = None
                 if account is None:
-                    error_message = 'Email or password is incorrect.'
+                    error_message = 'Name or password is incorrect.'
                 else:
                     session.clear()
                     session.permanent = True
@@ -1065,7 +1072,7 @@ def account_login():
                 error_message = 'We could not log you in right now. Please try again.'
 
     response_status = 200
-    if error_message == 'Email or password is incorrect.':
+    if error_message == 'Name or password is incorrect.':
         response_status = 401
     elif error_message == 'This form expired. Please try logging in again.':
         response_status = 400
@@ -1076,7 +1083,7 @@ def account_login():
         mode='login',
         error_message=error_message,
         display_name='',
-        email=email,
+        login_name=login_name,
     ), response_status
 
 
@@ -1100,7 +1107,7 @@ def account_dashboard():
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, email, display_name, created_at, last_login_at
+                    SELECT id, display_name, created_at, last_login_at
                     FROM learning_accounts
                     WHERE id = %s
                     """,
@@ -1162,10 +1169,9 @@ def account_dashboard():
         'account_dashboard.html',
         account={
             'id': account[0],
-            'email': account[1],
-            'display_name': account[2],
-            'created_at': account[3],
-            'last_login_at': account[4],
+            'display_name': account[1],
+            'created_at': account[2],
+            'last_login_at': account[3],
         },
         progress=progress,
         recent_attempts=recent_attempts,

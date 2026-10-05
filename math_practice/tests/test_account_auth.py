@@ -25,17 +25,18 @@ class FakeCursor:
     def execute(self, query, params=None):
         normalized = ' '.join(query.split()).upper()
         self.result = None
-        if normalized.startswith(('CREATE TABLE', 'CREATE INDEX')):
+        if normalized.startswith(('CREATE TABLE', 'CREATE INDEX', 'CREATE UNIQUE INDEX', 'ALTER TABLE')):
             return
         if normalized.startswith('INSERT INTO LEARNING_ACCOUNTS'):
-            email, display_name, password_hash = params
-            if email not in self.database.accounts:
+            login_name, display_name, password_hash = params
+            normalized_name = login_name.casefold()
+            if normalized_name not in self.database.accounts:
                 account_id = self.database.next_account_id
                 self.database.next_account_id += 1
                 now = datetime.now(timezone.utc)
-                self.database.accounts[email] = {
+                self.database.accounts[normalized_name] = {
                     'id': account_id,
-                    'email': email,
+                    'login_name': login_name,
                     'display_name': display_name,
                     'password_hash': password_hash,
                     'created_at': now,
@@ -43,7 +44,13 @@ class FakeCursor:
                 }
                 self.result = (account_id, display_name)
         elif normalized.startswith('SELECT ID, DISPLAY_NAME, PASSWORD_HASH'):
-            account = self.database.accounts.get(params[0])
+            account = next(
+                (
+                    item for item in self.database.accounts.values()
+                    if item['login_name'].casefold() == params[0].casefold()
+                ),
+                None,
+            )
             if account:
                 self.result = (
                     account['id'],
@@ -55,7 +62,7 @@ class FakeCursor:
             for account in self.database.accounts.values():
                 if account['id'] == account_id:
                     account['last_login_at'] = datetime.now(timezone.utc)
-        elif normalized.startswith('SELECT ID, EMAIL, DISPLAY_NAME, CREATED_AT'):
+        elif normalized.startswith('SELECT ID, DISPLAY_NAME, CREATED_AT'):
             account_id = params[0]
             account = next(
                 (item for item in self.database.accounts.values() if item['id'] == account_id),
@@ -64,7 +71,6 @@ class FakeCursor:
             if account:
                 self.result = (
                     account['id'],
-                    account['email'],
                     account['display_name'],
                     account['created_at'],
                     account['last_login_at'],
@@ -170,15 +176,15 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
 
         assert client.get('/account').status_code == 302
         registration_page = client.get('/account/register')
+        assert b'name="email"' not in registration_page.data
+        assert b'name="password_confirm"' not in registration_page.data
         assert registration_page.status_code == 200
         response = client.post(
             '/account/register',
             data={
                 'csrf_token': csrf_token(client),
                 'display_name': 'Learner One',
-                'email': 'LEARNER@example.com',
                 'password': 'a-long-example-password',
-                'password_confirm': 'a-long-example-password',
             },
             follow_redirects=True,
         )
@@ -223,7 +229,7 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             '/account/login',
             data={
                 'csrf_token': csrf_token(client),
-                'email': 'learner@example.com',
+                'login_name': 'learner one',
                 'password': 'a-long-example-password',
             },
             follow_redirects=True,
@@ -245,11 +251,31 @@ def test_account_actions_reject_requests_without_csrf_token():
         '/account/register',
         data={
             'display_name': 'Learner',
-            'email': 'learner@example.com',
             'password': 'a-long-example-password',
-            'password_confirm': 'a-long-example-password',
         },
     ).status_code == 400
+
+
+def test_signup_rejects_duplicate_names_case_insensitively():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        for name in ('Learner One', 'LEARNER ONE'):
+            client = app_module.app.test_client()
+            client.get('/account/register')
+            response = client.post(
+                '/account/register',
+                data={
+                    'csrf_token': csrf_token(client),
+                    'display_name': name,
+                    'password': 'a-long-example-password',
+                },
+            )
+        assert response.status_code == 200
+        assert b'already in use' in response.data
 
 
 def test_skip_replaces_the_session_question():
