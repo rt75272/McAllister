@@ -13,6 +13,21 @@ def test_science_activities_are_listed_on_one_planet():
     assert b'Math' in response.data
 
 
+def test_beetle_natural_selection_includes_timed_collection():
+    client = app.test_client()
+
+    response = client.get('/natural-selection-planet')
+
+    assert response.status_code == 200
+    assert b'Timed beetle hunt' in response.data
+    assert b'id="startBeetleHunt"' in response.data
+    assert b'id="beetlesCollected"' in response.data
+    assert b'id="beetleHuntTime"' in response.data
+    assert b'Every five seconds' in response.data
+    assert b'huntElapsedSeconds % 5 === 0' in response.data
+    assert b'window.requestAnimationFrame(animateHunt)' in response.data
+
+
 def test_moth_camouflage_game_loads():
     client = app.test_client()
 
@@ -36,6 +51,9 @@ def test_moth_camouflage_includes_timed_collection_controls():
     assert b'id="collectedCount"' in response.data
     assert b'id="huntTime"' in response.data
     assert b'30-second timer' in response.data
+    assert b'Every five seconds' in response.data
+    assert b'window.requestAnimationFrame(animateHuntFrame)' in response.data
+    assert b'huntElapsedSeconds % 5 === 0' in response.data
 
 
 def test_quest_map_has_one_science_planet_and_all_subjects():

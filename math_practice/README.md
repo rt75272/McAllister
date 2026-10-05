@@ -32,8 +32,8 @@ A comprehensive web-based learning and practice platform featuring interactive m
 
 ### 🔬 Science Planet
 - **Earth Science Stations** - Ten interactive checkpoints covering rocks, erosion, earthquakes, condensation, and the water cycle.
-- **Beetle Natural Selection** - Change habitats and observe inherited color traits across generations.
-- **Moth Camouflage** - Collect moths in a timed hunt; moth colors collected less often, or camouflaged against the habitat when selection is tied, become more common in the next generation.
+- **Beetle Natural Selection** - Collect moving beetles in a timed hunt with natural selection running every five seconds; shell colors collected less often, or camouflaged against the habitat when collection rates tie, become more common in the next generation.
+- **Moth Camouflage** - Collect moving moths in a timed hunt with natural selection running every five seconds; colors collected less often, or camouflaged against the habitat when collection rates are tied, become more common in the next generation.
 
 ### 🪐 3D Space Flight & Quest Map
 - **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.

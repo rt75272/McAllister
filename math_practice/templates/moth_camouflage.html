@@ -192,7 +192,6 @@
     let collectionActive = false;
     let collectedCount = 0;
     let collectedByTrait = { light: 0, dark: 0 };
-    let startingByTrait = { light: 0, dark: 0 };
     let huntCollectedByTrait = { light: 0, dark: 0 };
     let huntStartingByTrait = { light: 0, dark: 0 };
     let huntElapsedSeconds = 0;
@@ -210,16 +209,20 @@
         })).sort(() => Math.random() - .5);
     }
 
-    function recordGeneration() {
-        const light = moths.filter((moth) => moth.trait === 'light').length;
-        history.push({ generation, light, dark: moths.length - light });
+    function recordGeneration(population = moths) {
+        const light = population.filter((moth) => moth.trait === 'light').length;
+        history.push({ generation, light, dark: population.length - light });
     }
 
     function resizeCanvas(canvas, context) {
         const rect = canvas.getBoundingClientRect();
         const ratio = Math.max(1, window.devicePixelRatio || 1);
-        canvas.width = Math.round(rect.width * ratio);
-        canvas.height = Math.round(rect.height * ratio);
+        const pixelWidth = Math.round(rect.width * ratio);
+        const pixelHeight = Math.round(rect.height * ratio);
+        if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+            canvas.width = pixelWidth;
+            canvas.height = pixelHeight;
+        }
         context.setTransform(ratio, 0, 0, ratio, 0, 0);
         return { width: rect.width, height: rect.height };
     }
@@ -370,7 +373,13 @@
         moths = Array.from({ length: POPULATION_SIZE }, () => {
             let trait = survivors[Math.floor(Math.random() * survivors.length)].trait;
             if (Math.random() < .025) trait = trait === 'light' ? 'dark' : 'light';
-            return { trait, x: .04 + Math.random() * .92, y: .06 + Math.random() * .88 };
+            return {
+                trait,
+                x: .04 + Math.random() * .92,
+                y: .06 + Math.random() * .88,
+                vx: (Math.random() - .5) * .12,
+                vy: (Math.random() - .5) * .12
+            };
         });
         generation += 1;
         recordGeneration();
@@ -428,13 +437,13 @@
         const { trait: selectedFor } = chooseSelectedColor(huntStartingByTrait, huntCollectedByTrait);
         collectionMoths = evolveGeneration(collectionMoths, selectedFor);
         generation += 1;
-        recordGeneration();
+        recordGeneration(collectionMoths);
         huntStartingByTrait = {
             light: collectionMoths.filter((moth) => moth.trait === 'light').length,
             dark: collectionMoths.filter((moth) => moth.trait === 'dark').length
         };
         huntCollectedByTrait = { light: 0, dark: 0 };
-        $('huntStatus').textContent = `Generation ${generation}: moths collected less often are becoming more common. Keep trying to catch them!`;
+        $('huntStatus').textContent = `${selectedFor === 'light' ? 'Light' : 'Dark'} moths are favored in generation ${generation} because they were collected less often—or because they blend into the habitat when collection rates were tied. Keep trying to catch them!`;
         render();
     }
 
@@ -488,15 +497,16 @@
         animationFrame = null;
         collectionActive = false;
         secondsLeft = 0;
-        const { trait: selectedFor, selectedByCollection: selectedByUser } = chooseSelectedColor(startingByTrait, collectedByTrait);
+        const { trait: selectedFor, selectedByCollection: selectedByUser } = chooseSelectedColor(huntStartingByTrait, huntCollectedByTrait);
         moths = evolveGeneration(collectionMoths, selectedFor);
         generation += 1;
         recordGeneration();
         const selectionResult = selectedByUser
-            ? `${selectedFor === 'light' ? 'Light' : 'Dark'} moths were collected less often, so they were more likely to survive and reproduce.`
-            : `The collection rates were tied, so moths camouflaged against the ${habitats[habitatKey].label.toLowerCase()} had the survival advantage.`;
+            ? `${selectedFor === 'light' ? 'Light' : 'Dark'} moths were collected less often in the final five-second generation, so they were more likely to survive and reproduce.`
+            : `Collection rates were tied or only one color remained in the final generation, so moths camouflaged against the ${habitats[habitatKey].label.toLowerCase()} had the survival advantage.`;
         $('huntStatus').textContent = `Time is up! You collected ${collectedByTrait.light} light and ${collectedByTrait.dark} dark moths (${collectedCount} total). ${selectionResult} Generation ${generation} now has ${moths.filter((moth) => moth.trait === 'light').length} light and ${moths.filter((moth) => moth.trait === 'dark').length} dark moths. Play again to apply selection again.`;
         updateHuntControls();
+        render();
     }
 
     function startHunt() {
@@ -505,12 +515,11 @@
         collectionMoths = moths.map((moth) => ({ ...moth }));
         collectedCount = 0;
         collectedByTrait = { light: 0, dark: 0 };
-        startingByTrait = {
-            light: moths.filter((moth) => moth.trait === 'light').length,
-            dark: moths.filter((moth) => moth.trait === 'dark').length
-        };
         huntCollectedByTrait = { light: 0, dark: 0 };
-        huntStartingByTrait = { ...startingByTrait };
+        huntStartingByTrait = {
+            light: collectionMoths.filter((moth) => moth.trait === 'light').length,
+            dark: collectionMoths.filter((moth) => moth.trait === 'dark').length
+        };
         huntElapsedSeconds = 0;
         secondsLeft = 30;
         collectionActive = true;
@@ -542,7 +551,6 @@
         $('simulationStatus').textContent = 'Both inherited color variations begin equally common. On this bark, the well-camouflaged moths are harder for predators to see.';
         collectedCount = 0;
         collectedByTrait = { light: 0, dark: 0 };
-        startingByTrait = { light: 0, dark: 0 };
         huntCollectedByTrait = { light: 0, dark: 0 };
         huntStartingByTrait = { light: 0, dark: 0 };
         huntElapsedSeconds = 0;
