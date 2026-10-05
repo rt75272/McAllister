@@ -18,6 +18,18 @@
     .profile-editor label { display:block; margin:14px 0 6px; font-size:.85rem; font-weight:700; }
     .profile-editor textarea, .profile-editor select { box-sizing:border-box; width:100%; border:1px solid #b7c7b9; border-radius:8px; padding:10px; font:inherit; }
     .profile-editor textarea { min-height:88px; resize:vertical; }
+    .profile-editor .profile-visibility-option { display:flex; align-items:center; gap:10px; margin:18px 0 8px; cursor:pointer; }
+    .profile-editor input[type="checkbox"] {
+        appearance:checkbox;
+        -webkit-appearance:checkbox;
+        flex:0 0 20px;
+        width:20px;
+        height:20px;
+        margin:0;
+        padding:0;
+        accent-color:var(--account-green);
+        cursor:pointer;
+    }
     .profile-editor button { margin-top:16px; border:0; border-radius:8px; padding:10px 14px; background:var(--account-green); color:white; font:700 .9rem 'Lexend',sans-serif; cursor:pointer; }
     .profile-alert { padding:10px 12px; border-radius:8px; }
     .profile-alert.success { background:#eaf5ea; color:#28633d; }
@@ -100,8 +112,8 @@
                         <option value="gold" {{ 'selected' if account.profile_color == 'gold' }}>Golden</option>
                         <option value="teal" {{ 'selected' if account.profile_color == 'teal' }}>Teal</option>
                     </select>
-                    <label>
-                        <input type="checkbox" name="profile_public" value="yes" {{ 'checked' if account.profile_public }}>
+                    <label class="profile-visibility-option" for="profile-public">
+                        <input id="profile-public" type="checkbox" name="profile_public" value="yes" {{ 'checked' if account.profile_public }}>
                         Allow signed-in learners to view my profile
                     </label>
                     <p class="account-note" id="profile-privacy-note">For your privacy, do not include a last name, school, birth date, address, phone number, email, or other identifying details in your bio. The site does not ask for a last name.</p>

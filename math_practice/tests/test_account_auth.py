@@ -295,6 +295,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert b'Learner One' in response.data
         assert b'0%' in response.data
         assert b'id="profile-bio"' in response.data
+        assert b'id="profile-public"' in response.data
+        assert b'appearance:checkbox' in response.data
         assert b'name="last_name"' not in response.data
         game_page = client.get('/math-blast')
         assert b'window.learningAccountContext' in game_page.data
@@ -314,6 +316,7 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             follow_redirects=True,
         )
         assert profile_update.status_code == 200
+        assert b'id="profile-public" type="checkbox" name="profile_public" value="yes" checked' in profile_update.data
         assert b'I enjoy puzzles and science.' in profile_update.data
         assert b'Explore science' in profile_update.data
         saved_profile = database.accounts['learner one']
