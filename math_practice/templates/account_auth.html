@@ -44,6 +44,10 @@
             {% endif %}
             <label for="password">Password</label>
             <input id="password" name="password" type="password" minlength="10" maxlength="1024" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required>
+            {% if mode == 'register' %}
+                <label for="password-confirm">Confirm password</label>
+                <input id="password-confirm" name="password_confirm" type="password" minlength="10" maxlength="1024" autocomplete="new-password" required>
+            {% endif %}
             <button type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }}</button>
         </form>
 

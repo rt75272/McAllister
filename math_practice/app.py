@@ -1000,6 +1000,7 @@ def account_register():
     if request.method == 'POST':
         display_name = request.form.get('display_name', '').strip()
         password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
         if not valid_csrf_token(request.form.get('csrf_token', '')):
             error_message = 'This form expired. Please try signing up again.'
         elif not display_name or len(display_name) > 80:
@@ -1015,6 +1016,8 @@ def account_register():
             error_message = 'Choose a password with at least 10 characters.'
         elif len(password) > 1024:
             error_message = 'Password is too long.'
+        elif password != password_confirm:
+            error_message = 'The passwords do not match.'
         else:
             try:
                 ensure_account_tables()

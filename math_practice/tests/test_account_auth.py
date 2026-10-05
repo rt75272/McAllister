@@ -177,7 +177,7 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert client.get('/account').status_code == 302
         registration_page = client.get('/account/register')
         assert b'name="email"' not in registration_page.data
-        assert b'name="password_confirm"' not in registration_page.data
+        assert b'name="password_confirm"' in registration_page.data
         assert registration_page.status_code == 200
         response = client.post(
             '/account/register',
@@ -185,6 +185,7 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
                 'csrf_token': csrf_token(client),
                 'display_name': 'Learner One',
                 'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
             },
             follow_redirects=True,
         )
@@ -252,6 +253,7 @@ def test_account_actions_reject_requests_without_csrf_token():
         data={
             'display_name': 'Learner',
             'password': 'a-long-example-password',
+            'password_confirm': 'a-long-example-password',
         },
     ).status_code == 400
 
@@ -272,6 +274,7 @@ def test_signup_rejects_duplicate_names_case_insensitively():
                     'csrf_token': csrf_token(client),
                     'display_name': name,
                     'password': 'a-long-example-password',
+                    'password_confirm': 'a-long-example-password',
                 },
             )
         assert response.status_code == 200
@@ -288,6 +291,7 @@ def test_signup_rejects_profanity_obfuscation_and_disallowed_characters():
                 'csrf_token': csrf_token(client),
                 'display_name': name,
                 'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
             },
         )
         assert response.status_code == 200
@@ -299,6 +303,24 @@ def test_signup_rejects_profanity_obfuscation_and_disallowed_characters():
 def test_signup_accepts_respectful_names():
     for name in ('Learner One', "O'Neil", 'Mia-Rose', 'Zoë'):
         assert app_module.username_is_appropriate(name)
+
+
+def test_signup_rejects_password_confirmation_mismatch():
+    client = app_module.app.test_client()
+    client.get('/account/register')
+
+    response = client.post(
+        '/account/register',
+        data={
+            'csrf_token': csrf_token(client),
+            'display_name': 'Learner One',
+            'password': 'a-long-example-password',
+            'password_confirm': 'a-different-example-password',
+        },
+    )
+
+    assert response.status_code == 200
+    assert b'The passwords do not match.' in response.data
 
 
 def test_skip_replaces_the_session_question():
