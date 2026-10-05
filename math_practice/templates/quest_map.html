@@ -495,11 +495,14 @@
             canvas.height = 128;
             const ctx = canvas.getContext('2d');
 
+            const isWord = text.length > 2;
+            ctx.font = isWord ? '900 46px Arial' : '72px Arial';
+            const textWidth = ctx.measureText(text).width;
+            canvas.width = isWord ? Math.max(128, Math.ceil(textWidth + 32)) : 128;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-
-            const isWord = text.length > 2;
             ctx.fillStyle = '#ffffff';
             ctx.font = isWord ? '900 46px Arial' : '72px Arial';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
@@ -515,7 +518,7 @@
                 depthWrite: false
             }));
             const base = isWord ? 1.45 : 1.1;
-            sprite.scale.set(base * scale, base * scale, 1);
+            sprite.scale.set(base * scale * (canvas.width / canvas.height), base * scale, 1);
             return sprite;
         }
 
