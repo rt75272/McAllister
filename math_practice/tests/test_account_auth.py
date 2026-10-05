@@ -8,6 +8,7 @@ class FakeDatabase:
     def __init__(self):
         self.accounts = {}
         self.attempts = []
+        self.scores = []
         self.next_account_id = 1
 
 
@@ -15,6 +16,7 @@ class FakeCursor:
     def __init__(self, database):
         self.database = database
         self.result = None
+        self.rowcount = -1
 
     def __enter__(self):
         return self
@@ -25,6 +27,7 @@ class FakeCursor:
     def execute(self, query, params=None):
         normalized = ' '.join(query.split()).upper()
         self.result = None
+        self.rowcount = -1
         if normalized.startswith(('CREATE TABLE', 'CREATE INDEX', 'CREATE UNIQUE INDEX', 'ALTER TABLE')):
             return
         if normalized.startswith('INSERT INTO LEARNING_ACCOUNTS'):
@@ -39,6 +42,11 @@ class FakeCursor:
                     'login_name': login_name,
                     'display_name': display_name,
                     'password_hash': password_hash,
+                    'bio': '',
+                    'favorite_subject': 'not_set',
+                    'learning_goal': 'general',
+                    'profile_color': 'sage',
+                    'profile_public': False,
                     'created_at': now,
                     'last_login_at': now,
                 }
@@ -57,6 +65,21 @@ class FakeCursor:
                     account['display_name'],
                     account['password_hash'],
                 )
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET BIO'):
+            bio, favorite_subject, learning_goal, profile_color, profile_public, account_id = params
+            account = next(
+                (item for item in self.database.accounts.values() if item['id'] == account_id),
+                None,
+            )
+            self.rowcount = 1 if account else 0
+            if account:
+                account.update(
+                    bio=bio,
+                    favorite_subject=favorite_subject,
+                    learning_goal=learning_goal,
+                    profile_color=profile_color,
+                    profile_public=profile_public,
+                )
         elif normalized.startswith('UPDATE LEARNING_ACCOUNTS'):
             account_id = params[0]
             for account in self.database.accounts.values():
@@ -74,7 +97,86 @@ class FakeCursor:
                     account['display_name'],
                     account['created_at'],
                     account['last_login_at'],
+                    account['bio'],
+                    account['favorite_subject'],
+                    account['learning_goal'],
+                    account['profile_color'],
+                    account['profile_public'],
                 )
+        elif normalized.startswith('INSERT INTO ACCOUNT_GAME_SCORES'):
+            account_id, game_key, score = params
+            existing = next(
+                (row for row in self.database.scores
+                 if row['account_id'] == account_id and row['game_key'] == game_key),
+                None,
+            )
+            if existing:
+                existing['score'] = max(existing['score'], score)
+            else:
+                self.database.scores.append(
+                    {'account_id': account_id, 'game_key': game_key, 'score': score}
+                )
+        elif normalized.startswith('SELECT S.ACCOUNT_ID, A.DISPLAY_NAME, A.PROFILE_PUBLIC'):
+            game_key = params[0]
+            matching_accounts = {
+                account['id']: account
+                for account in self.database.accounts.values()
+            }
+            grouped_scores = {}
+            for score_row in self.database.scores:
+                if score_row['game_key'] == game_key:
+                    account = matching_accounts[score_row['account_id']]
+                    grouped_scores[score_row['account_id']] = max(
+                        grouped_scores.get(score_row['account_id'], 0),
+                        score_row['score'],
+                    )
+            self.result = [
+                (account_id, matching_accounts[account_id]['display_name'],
+                 matching_accounts[account_id]['profile_public'], score)
+                for account_id, score in sorted(
+                    grouped_scores.items(), key=lambda item: -item[1]
+                )
+            ][:50]
+        elif normalized.startswith('SELECT A.ID, A.DISPLAY_NAME, A.PROFILE_PUBLIC'):
+            grouped_scores = {}
+            for attempt in self.database.attempts:
+                if attempt['was_correct']:
+                    grouped_scores[attempt['account_id']] = grouped_scores.get(attempt['account_id'], 0) + 1
+            matching_accounts = {
+                account['id']: account
+                for account in self.database.accounts.values()
+            }
+            self.result = [
+                (account_id, matching_accounts[account_id]['display_name'],
+                 matching_accounts[account_id]['profile_public'], score)
+                for account_id, score in sorted(
+                    grouped_scores.items(), key=lambda item: -item[1]
+                )
+            ][:50]
+        elif normalized.startswith('SELECT ID, DISPLAY_NAME, BIO, FAVORITE_SUBJECT'):
+            if 'WHERE ID = %S AND PROFILE_PUBLIC = TRUE' in normalized:
+                account = next(
+                    (item for item in self.database.accounts.values()
+                     if item['id'] == params[0] and item['profile_public']),
+                    None,
+                )
+                if account:
+                    self.result = (
+                        account['id'], account['display_name'], account['bio'],
+                        account['favorite_subject'], account['learning_goal'],
+                        account['profile_color'],
+                    )
+            else:
+                excluded_id = params[0]
+                self.result = [
+                    (
+                        account['id'], account['display_name'], account['bio'],
+                        account['favorite_subject'], account['learning_goal'],
+                        account['profile_color'],
+                    )
+                    for account in self.database.accounts.values()
+                    if account['profile_public'] and account['id'] != excluded_id
+                ]
         elif normalized.startswith('INSERT INTO ACCOUNT_MATH_ATTEMPTS'):
             account_id, difficulty, was_correct, ability_after, ability_peak = params
             self.database.attempts.append(
@@ -192,6 +294,32 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert response.status_code == 200
         assert b'Learner One' in response.data
         assert b'0%' in response.data
+        assert b'id="profile-bio"' in response.data
+        assert b'name="last_name"' not in response.data
+        game_page = client.get('/math-blast')
+        assert b'window.learningAccountContext' in game_page.data
+        assert b'"gameKey": "math-blast"' in game_page.data
+        assert b'leaderboard_tracking.js' in game_page.data
+
+        profile_update = client.post(
+            '/account/profile',
+            data={
+                'csrf_token': csrf_token(client),
+                'bio': 'I enjoy puzzles and science.',
+                'favorite_subject': 'science',
+                'learning_goal': 'science_exploration',
+                'profile_color': 'teal',
+                'profile_public': 'yes',
+            },
+            follow_redirects=True,
+        )
+        assert profile_update.status_code == 200
+        assert b'I enjoy puzzles and science.' in profile_update.data
+        assert b'Explore science' in profile_update.data
+        saved_profile = database.accounts['learner one']
+        assert saved_profile['bio'] == 'I enjoy puzzles and science.'
+        assert saved_profile['profile_color'] == 'teal'
+        assert saved_profile['profile_public'] is True
 
         assert client.get('/math-practice').status_code == 200
         with client.session_transaction() as session:
@@ -237,6 +365,24 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         )
         assert login.status_code == 200
         assert b'Learner One' in login.data
+        score_response = client.post(
+            '/api/leaderboards/scores',
+            data={
+                'csrf_token': csrf_token(client),
+                'game_key': 'math-blast',
+                'score': '120',
+            },
+        )
+        assert score_response.status_code == 200
+        board_response = client.get('/leaderboards?game=math-blast')
+        assert board_response.status_code == 200
+        assert b'Learner One' in board_response.data
+        assert b'>120</td>' in board_response.data
+        public_profile_response = client.get(
+            f"/users/{database.accounts['learner one']['id']}"
+        )
+        assert public_profile_response.status_code == 200
+        assert b'I enjoy puzzles and science.' in public_profile_response.data
         assert client.get('/math-practice').status_code == 200
         with client.session_transaction() as session:
             assert session['ability'] == saved_ability
@@ -256,6 +402,159 @@ def test_account_actions_reject_requests_without_csrf_token():
             'password_confirm': 'a-long-example-password',
         },
     ).status_code == 400
+    assert client.post('/account/profile').status_code == 302
+
+
+def test_profile_updates_reject_invalid_values_and_oversized_bio():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        client = app_module.app.test_client()
+        client.get('/account/register')
+        client.post(
+            '/account/register',
+            data={
+                'csrf_token': csrf_token(client),
+                'display_name': 'Profile Learner',
+                'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
+            },
+        )
+        client.get('/account')
+        long_bio = 'a' * 241
+        response = client.post(
+            '/account/profile',
+            data={
+                'csrf_token': csrf_token(client),
+                'bio': long_bio,
+                'favorite_subject': 'math',
+                'learning_goal': 'general',
+                'profile_color': 'sage',
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert b'240 characters or fewer' in response.data
+        assert database.accounts['profile learner']['bio'] == ''
+
+        response = client.post(
+            '/account/profile',
+            data={
+                'csrf_token': csrf_token(client),
+                'bio': '',
+                'favorite_subject': 'unapproved-value',
+                'learning_goal': 'general',
+                'profile_color': 'sage',
+            },
+            follow_redirects=True,
+        )
+        assert b'Choose a valid favorite subject.' in response.data
+
+
+def test_leaderboard_score_requires_login_csrf_and_valid_game():
+    anonymous = app_module.app.test_client()
+    assert anonymous.post(
+        '/api/leaderboards/scores',
+        data={'game_key': 'math-blast', 'score': 10},
+    ).status_code == 302
+
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        client = app_module.app.test_client()
+        client.get('/account/register')
+        client.post(
+            '/account/register',
+            data={
+                'csrf_token': csrf_token(client),
+                'display_name': 'Board Tester',
+                'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
+            },
+        )
+        client.get('/account')
+        token = csrf_token(client)
+        assert client.post(
+            '/api/leaderboards/scores',
+            data={'game_key': 'not-a-game', 'score': 10, 'csrf_token': token},
+        ).status_code == 400
+        assert client.post(
+            '/api/leaderboards/scores',
+            data={'game_key': 'math-blast', 'score': 10, 'csrf_token': 'bad-token'},
+        ).status_code == 400
+        for score in (10, 8):
+            response = client.post(
+                '/api/leaderboards/scores',
+                data={'game_key': 'math-blast', 'score': score, 'csrf_token': token},
+            )
+            assert response.status_code == 200
+        assert len(database.scores) == 1
+        assert database.scores[0]['score'] == 10
+
+
+def test_public_profiles_are_opt_in_and_require_login():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        owner = app_module.app.test_client()
+        owner.get('/account/register')
+        owner.post(
+            '/account/register',
+            data={
+                'csrf_token': csrf_token(owner),
+                'display_name': 'Private Learner',
+                'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
+            },
+        )
+        owner.get('/account')
+        owner_id = database.accounts['private learner']['id']
+        assert not database.accounts['private learner']['profile_public']
+        assert owner.get(f'/users/{owner_id}').status_code == 404
+
+        other_learner = app_module.app.test_client()
+        other_learner.get('/account/register')
+        other_learner.post(
+            '/account/register',
+            data={
+                'csrf_token': csrf_token(other_learner),
+                'display_name': 'Another Learner',
+                'password': 'a-long-example-password',
+                'password_confirm': 'a-long-example-password',
+            },
+        )
+        owner.post(
+            '/account/profile',
+            data={
+                'csrf_token': csrf_token(owner),
+                'bio': 'I like learning.',
+                'favorite_subject': 'math',
+                'learning_goal': 'general',
+                'profile_color': 'sage',
+                'profile_public': 'yes',
+            },
+        )
+        response = other_learner.get(f'/users/{owner_id}')
+        assert response.status_code == 200
+        assert b'Private Learner' in response.data
+        assert b'I like learning.' in response.data
+        assert b'last_login_at' not in response.data
+        community = other_learner.get('/community')
+        assert community.status_code == 200
+        assert b'Private Learner' in community.data
+        assert b'I like learning.' in community.data
+
+        anonymous = app_module.app.test_client()
+        assert anonymous.get(f'/users/{owner_id}').status_code == 302
 
 
 def test_signup_rejects_duplicate_names_case_insensitively():

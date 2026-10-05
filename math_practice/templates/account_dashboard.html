@@ -13,6 +13,15 @@
     .account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
     .account-card { padding:20px; border:1px solid var(--account-line); border-radius:12px; background:white; box-shadow:0 10px 26px rgba(26,55,38,.06); }
     .account-card h2 { margin:0 0 16px; font-size:1.1rem; }
+    .profile-card { border-top:5px solid var(--profile-accent, var(--account-green)); }
+    .profile-bio { margin:0 0 14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .profile-editor label { display:block; margin:14px 0 6px; font-size:.85rem; font-weight:700; }
+    .profile-editor textarea, .profile-editor select { box-sizing:border-box; width:100%; border:1px solid #b7c7b9; border-radius:8px; padding:10px; font:inherit; }
+    .profile-editor textarea { min-height:88px; resize:vertical; }
+    .profile-editor button { margin-top:16px; border:0; border-radius:8px; padding:10px 14px; background:var(--account-green); color:white; font:700 .9rem 'Lexend',sans-serif; cursor:pointer; }
+    .profile-alert { padding:10px 12px; border-radius:8px; }
+    .profile-alert.success { background:#eaf5ea; color:#28633d; }
+    .profile-alert.error { background:#fff0ee; color:#8b2f25; }
     .account-details { display:grid; grid-template-columns:1fr auto; gap:12px; margin:0; font-size:.9rem; }
     .account-details dt { color:var(--account-muted); }
     .account-details dd { margin:0; text-align:right; font-weight:600; overflow-wrap:anywhere; }
@@ -47,14 +56,58 @@
     {% if error_message %}
         <p class="account-error" role="alert">{{ error_message }}</p>
     {% elif account and progress %}
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <p class="profile-alert {{ category }}" role="status">{{ message }}</p>
+        {% endfor %}
         <div class="account-grid">
-            <section class="account-card">
+            <section class="account-card profile-card" style="--profile-accent: {{ {'sage':'#6b8e6e','sky':'#4d8caf','lavender':'#8b75b7','coral':'#d97968','gold':'#c49a35','teal':'#398c83'}.get(account.profile_color, '#6b8e6e') }}">
                 <h2>Account details</h2>
                 <dl class="account-details">
                     <dt>Name</dt><dd>{{ account.display_name }}</dd>
                     <dt>Member since</dt><dd>{{ account.created_at.strftime('%b %d, %Y') }}</dd>
                     <dt>Last login</dt><dd>{{ account.last_login_at.strftime('%b %d, %Y at %I:%M %p UTC') }}</dd>
                 </dl>
+                {% if account.bio %}<h3>About me</h3><p class="profile-bio">{{ account.bio }}</p>{% endif %}
+                {% if account.favorite_subject != 'not_set' %}<p><strong>Favorite subject:</strong> {{ {'math':'Math','ela':'ELA','science':'Science'}.get(account.favorite_subject, 'Not set') }}</p>{% endif %}
+                <p><strong>Learning goal:</strong> {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(account.learning_goal, 'General learning') }}</p>
+            </section>
+            <section class="account-card profile-editor">
+                <h2>Customize my profile</h2>
+                <form method="post" action="{{ url_for('update_account_profile') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label for="profile-bio">Short bio (optional)</label>
+                    <textarea id="profile-bio" name="bio" maxlength="240" aria-describedby="profile-privacy-note">{{ account.bio }}</textarea>
+                    <label for="favorite-subject">Favorite subject (optional)</label>
+                    <select id="favorite-subject" name="favorite_subject">
+                        <option value="not_set" {{ 'selected' if account.favorite_subject == 'not_set' }}>Choose later</option>
+                        <option value="math" {{ 'selected' if account.favorite_subject == 'math' }}>Math</option>
+                        <option value="ela" {{ 'selected' if account.favorite_subject == 'ela' }}>ELA</option>
+                        <option value="science" {{ 'selected' if account.favorite_subject == 'science' }}>Science</option>
+                    </select>
+                    <label for="learning-goal">Learning goal</label>
+                    <select id="learning-goal" name="learning_goal">
+                        <option value="general" {{ 'selected' if account.learning_goal == 'general' }}>General learning</option>
+                        <option value="math_practice" {{ 'selected' if account.learning_goal == 'math_practice' }}>Practice math</option>
+                        <option value="reading" {{ 'selected' if account.learning_goal == 'reading' }}>Build reading skills</option>
+                        <option value="science_exploration" {{ 'selected' if account.learning_goal == 'science_exploration' }}>Explore science</option>
+                    </select>
+                    <label for="profile-color">Profile accent color</label>
+                    <select id="profile-color" name="profile_color">
+                        <option value="sage" {{ 'selected' if account.profile_color == 'sage' }}>Sage green</option>
+                        <option value="sky" {{ 'selected' if account.profile_color == 'sky' }}>Sky blue</option>
+                        <option value="lavender" {{ 'selected' if account.profile_color == 'lavender' }}>Lavender</option>
+                        <option value="coral" {{ 'selected' if account.profile_color == 'coral' }}>Coral</option>
+                        <option value="gold" {{ 'selected' if account.profile_color == 'gold' }}>Golden</option>
+                        <option value="teal" {{ 'selected' if account.profile_color == 'teal' }}>Teal</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" name="profile_public" value="yes" {{ 'checked' if account.profile_public }}>
+                        Allow signed-in learners to view my profile
+                    </label>
+                    <p class="account-note" id="profile-privacy-note">For your privacy, do not include a last name, school, birth date, address, phone number, email, or other identifying details in your bio. The site does not ask for a last name.</p>
+                    <p class="account-note">Your profile is visible only to you unless you opt in above. Public profiles show only your chosen display name, bio, favorite subject, and learning goal. This setting is off by default.</p>
+                    <button type="submit">Save profile</button>
+                </form>
             </section>
             <section class="account-card">
                 <h2>Math Practice progress</h2>
@@ -93,6 +146,8 @@
                 {% endif %}
                 <div class="account-actions">
                     <a href="{{ url_for('math_practice') }}">Practice math</a>
+                    <a href="{{ url_for('leaderboards') }}">View leaderboards</a>
+                    <a href="{{ url_for('community_profiles') }}">Browse public profiles</a>
                     <a href="{{ url_for('quest_map') }}">Explore the planets</a>
                 </div>
             </section>

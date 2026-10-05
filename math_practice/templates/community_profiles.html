@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Community Profiles - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body { min-height:100vh; margin:0; background:#f3f6f2; color:#19352a; font-family:'Lexend',sans-serif; }
+    .community-shell { max-width:900px; margin:0 auto; padding:34px 20px 60px; }
+    .profile-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:22px; }
+    .profile-tile { padding:18px; border:1px solid #d6e1d6; border-radius:12px; background:white; border-top:5px solid var(--profile-accent,#6b8e6e); }
+    .community-shell a { color:#315f43; font-weight:700; }
+    .profile-tile p { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; }
+    .community-note { color:#5b6f62; font-size:.85rem; line-height:1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="community-shell">
+    <a href="{{ url_for('account_dashboard') }}">← My Account</a>
+    <h1>Public learner profiles</h1>
+    <p class="community-note">Only profiles whose owners opted in appear here. We show only their chosen name and profile details, not account history or identifying information.</p>
+    {% if error_message %}<p role="alert">{{ error_message }}</p>
+    {% elif profiles %}
+        <div class="profile-list">
+        {% for profile in profiles %}
+            <article class="profile-tile" style="--profile-accent: {{ {'sage':'#6b8e6e','sky':'#4d8caf','lavender':'#8b75b7','coral':'#d97968','gold':'#c49a35','teal':'#398c83'}.get(profile[5], '#6b8e6e') }}">
+                <h2><a href="{{ url_for('public_profile', account_id=profile[0]) }}">{{ profile[1] }}</a></h2>
+                {% if profile[2] %}<p>{{ profile[2] }}</p>{% endif %}
+                {% if profile[3] != 'not_set' %}<p>Favorite subject: {{ {'math':'Math','ela':'ELA','science':'Science'}.get(profile[3], 'Not set') }}</p>{% endif %}
+                <p>Goal: {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(profile[4], 'General learning') }}</p>
+            </article>
+        {% endfor %}
+        </div>
+    {% else %}<p class="community-note">No learners have chosen to share their profiles yet.</p>{% endif %}
+</main>
+{% endblock %}

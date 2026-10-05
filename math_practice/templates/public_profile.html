@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Learner Profile - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body { min-height:100vh; margin:0; background:#f3f6f2; color:#19352a; font-family:'Lexend',sans-serif; }
+    .public-profile { max-width:680px; margin:50px auto; padding:24px; border:1px solid #d6e1d6; border-radius:14px; background:white; border-top:6px solid {{ {'sage':'#6b8e6e','sky':'#4d8caf','lavender':'#8b75b7','coral':'#d97968','gold':'#c49a35','teal':'#398c83'}.get(profile[5], '#6b8e6e') if profile else '#6b8e6e' }}; }
+    .public-profile p { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="public-profile">
+    <a href="{{ url_for('community_profiles') }}">← Community profiles</a>
+    {% if error_message %}<p role="alert">{{ error_message }}</p>
+    {% elif profile %}
+        <h1>{{ profile[1] }}</h1>
+        {% if profile[2] %}<h2>About me</h2><p>{{ profile[2] }}</p>{% endif %}
+        {% if profile[3] != 'not_set' %}<p><strong>Favorite subject:</strong> {{ {'math':'Math','ela':'ELA','science':'Science'}.get(profile[3], 'Not set') }}</p>{% endif %}
+        <p><strong>Learning goal:</strong> {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(profile[4], 'General learning') }}</p>
+        <p>This learner chose to make these profile details visible to signed-in users.</p>
+    {% endif %}
+</main>
+{% endblock %}

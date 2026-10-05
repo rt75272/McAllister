@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Game Leaderboards - Learning Center{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body { min-height:100vh; margin:0; background:#f3f6f2; color:#19352a; font-family:'Lexend',sans-serif; }
+    .board-shell { max-width:900px; margin:0 auto; padding:34px 20px 60px; }
+    .board-card { margin-top:22px; padding:22px; border:1px solid #d6e1d6; border-radius:14px; background:white; }
+    .board-card select { min-height:42px; max-width:100%; padding:8px; border:1px solid #b7c7b9; border-radius:8px; font:inherit; }
+    .board-table { width:100%; margin-top:20px; border-collapse:collapse; }
+    .board-table th,.board-table td { padding:11px 8px; border-bottom:1px solid #e4ebe3; text-align:left; }
+    .board-note { color:#5b6f62; font-size:.85rem; line-height:1.5; }
+    .board-shell a { color:#315f43; font-weight:700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="board-shell">
+    <a href="{{ url_for('account_dashboard') }}">← My Account</a>
+    <h1>Game Leaderboards</h1>
+    <p class="board-note">Scores are saved to the signed-in account. A board shows each learner’s best score. Math Practice ranks total correct answers, and Math Memory ranks completion efficiency. Other games report their visible score as you play; these scores are self-reported by the game page. Your chosen display name appears here; no last name is shown.</p>
+    {% if error_message %}<p role="alert">{{ error_message }}</p>{% endif %}
+    <section class="board-card">
+        <form method="get" action="{{ url_for('leaderboards') }}">
+            <label for="game">Choose a game</label>
+            <select id="game" name="game" onchange="this.form.submit()">
+                {% for key, title in games.items() %}
+                    <option value="{{ key }}" {{ 'selected' if key == selected_game }}>{{ title }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% if scores %}
+            <div style="overflow-x:auto">
+                <table class="board-table">
+                    <thead><tr><th>Rank</th><th>Learner</th><th>Best score</th></tr></thead>
+                    <tbody>
+                    {% for score in scores %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{% if score[2] %}<a href="{{ url_for('public_profile', account_id=score[0]) }}">{{ score[1] }}</a>{% else %}{{ score[1] }}{% endif %}</td>
+                            <td>{{ score[3] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="board-note">No scores have been saved for this game yet. Sign in and play to add your score.</p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

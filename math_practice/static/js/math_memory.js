@@ -274,6 +274,10 @@ function startGame() {
 function endGame() {
     gameState.isPlaying = false;
     clearInterval(gameState.timer);
+    if (typeof window.submitLeaderboardScore === 'function') {
+        const efficiencyScore = Math.max(1, 10000 - Math.min(gameState.moves, 9999));
+        window.submitLeaderboardScore(efficiencyScore, 'math-memory');
+    }
     
     const totalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
     const minutes = Math.floor(totalTime / 60);

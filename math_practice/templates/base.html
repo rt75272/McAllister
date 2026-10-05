@@ -62,6 +62,8 @@
     <nav id="account-navigation" aria-label="Account">
         {% if current_account_name %}
             <a href="{{ url_for('account_dashboard') }}">👤 {{ current_account_name }}</a>
+            <a href="{{ url_for('leaderboards') }}">Leaderboards</a>
+            <a href="{{ url_for('community_profiles') }}">Community</a>
             <form method="post" action="{{ url_for('account_logout') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit">Log out</button>

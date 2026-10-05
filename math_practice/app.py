@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from urllib import error, request as urllib_request
 
-from flask import Flask, abort, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, abort, flash, render_template, request, jsonify, session, redirect, url_for
 import psycopg2
 
 import adaptive_difficulty as adaptive
@@ -47,6 +47,68 @@ GEMINI_API_URL = (
     f'{GEMINI_MODEL}:generateContent?key={{api_key}}'
 )
 CHATBOT_HISTORY_LIMIT = 6
+PROFILE_SUBJECTS = {'math', 'ela', 'science', 'not_set'}
+PROFILE_GOALS = {'math_practice', 'reading', 'science_exploration', 'general'}
+PROFILE_COLORS = {'sage', 'sky', 'lavender', 'coral', 'gold', 'teal'}
+LEADERBOARD_GAMES = {
+    'math-practice': 'Math Practice',
+    'math-blast': 'Math Blast',
+    'math-race': 'Math Race',
+    'math-memory': 'Math Memory',
+    'word-match': 'Word Match',
+    'sentence-fixer': 'Sentence Fixer',
+    'context-clues': 'Context Clues',
+    'verb-detective': 'Verb Detective',
+    'fraction-master': 'Fraction Master',
+    'decimal-master': 'Decimal Master',
+    'exponent-power': 'Exponent Power',
+    'exponent-world': 'Exponent World',
+    'exponent-rules': 'Exponent Rules',
+    'expression-comparison': 'Expression Comparison',
+    'area-explorer': 'Area Explorer',
+    'coordinate-navigator': 'Coordinate Navigator',
+    'ratio-river': 'Ratio River',
+    'vault-solver': 'Vault Solver',
+    'obstacle-course': 'Math Obstacle Course',
+    'snake-arcade': 'Snake Arcade',
+    'tetris': 'Tetris',
+    'pong-arcade': 'Pong Arcade',
+    'pinball-arcade': 'Pinball Arcade',
+    'dino-arcade': 'Dino Arcade',
+    'natural-selection-planet': 'Beetle Natural Selection',
+    'moth-camouflage': 'Moth Camouflage',
+    'earth-science-planet': 'Earth Science Stations',
+    'orientation': 'Orientation Station',
+    'planet-hub': 'Curriculum Planet Hub',
+    'plot-points': 'Plot Points',
+    'd20': 'D20 Dice Challenge',
+    'baking-club': 'Baking Club',
+    'grand-finale': 'Grand Finale',
+    'pet-land': 'Pet Land',
+    'solar-system': 'Solar System Explorer',
+    'solar-system-study': 'Solar System Study',
+    'percentage-quest': 'Percentage Quest',
+    'decimal-life': 'Decimal Life',
+    'math-adventure': 'Math Adventure',
+    'ela-planet': 'ELA Planet',
+    'baking-club-planet': 'Baking Club',
+    'grand-finale-planet': 'Grand Finale',
+    'game-planet': 'Game Planet',
+    'chess-planet': 'Chess Planet',
+}
+LEADERBOARD_TRACKED_GAMES = {
+    'math-blast', 'math-race', 'word-match', 'sentence-fixer',
+    'math-memory',
+    'context-clues', 'verb-detective', 'fraction-master', 'decimal-master',
+    'exponent-power', 'exponent-world', 'exponent-rules',
+    'expression-comparison', 'area-explorer', 'coordinate-navigator',
+    'ratio-river', 'vault-solver', 'obstacle-course', 'snake-arcade',
+    'tetris', 'pong-arcade', 'pinball-arcade', 'dino-arcade',
+    'natural-selection-planet', 'moth-camouflage', 'earth-science-planet',
+    'orientation', 'percentage-quest', 'planet-hub', 'plot-points',
+    'baking-club', 'grand-finale', 'game-planet', 'decimal-life',
+    'math-adventure',
+}
 
 CHATBOT_FAQ = {
     'hi': "Hi! I'm your Math Bot! I'm here to help with games on this website, Canvas navigation, and simple learning questions. I can give hints and directions, but you should still do the thinking. Keep personal information private. What do you need help with today?",
@@ -257,6 +319,41 @@ def inject_account_navigation():
         'current_account_name': session.get('account_name'),
         'csrf_token': issue_csrf_token(),
     }
+
+
+@app.after_request
+def inject_game_leaderboard_tracker(response):
+    """Load the account-bound score tracker on game pages, including standalone templates."""
+    if (
+        not session.get('account_id')
+        or response.mimetype != 'text/html'
+        or response.direct_passthrough
+        or response.status_code != 200
+    ):
+        return response
+    game_key = request.path.strip('/').replace('/', '-')
+    if game_key == 'percentage_quest':
+        game_key = 'percentage-quest'
+    elif game_key.startswith('quest-map-planet-'):
+        game_key = 'planet-hub'
+    if game_key not in LEADERBOARD_TRACKED_GAMES:
+        return response
+
+    config = json.dumps(
+        {'gameKey': game_key, 'csrfToken': issue_csrf_token()}
+    ).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    tracking_script = (
+        '<script>window.learningAccountContext = ' + config + ';</script>'
+        '<script src="' + url_for('static', filename='js/leaderboard_tracking.js') + '"></script>'
+    )
+    html = response.get_data(as_text=True)
+    closing_body = html.rfind('</body>')
+    if closing_body >= 0:
+        html = html[:closing_body] + tracking_script + html[closing_body:]
+    else:
+        html += tracking_script
+    response.set_data(html)
+    return response
 
 # Difficulty progression settings. 
 easy_num = 4      # Number of consecutive easy questions to answer correctly to reach medium.
@@ -844,6 +941,21 @@ def ensure_account_tables():
                 "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS login_name TEXT"
             )
             cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS favorite_subject TEXT NOT NULL DEFAULT 'not_set'"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS learning_goal TEXT NOT NULL DEFAULT 'general'"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS profile_color TEXT NOT NULL DEFAULT 'sage'"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS profile_public BOOLEAN NOT NULL DEFAULT FALSE"
+            )
+            cur.execute(
                 """
                 CREATE UNIQUE INDEX IF NOT EXISTS learning_accounts_login_name_lower_idx
                 ON learning_accounts (LOWER(login_name))
@@ -867,6 +979,29 @@ def ensure_account_tables():
                 """
                 CREATE INDEX IF NOT EXISTS account_math_attempts_account_created_idx
                 ON account_math_attempts (account_id, created_at DESC)
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_game_scores (
+                    id BIGSERIAL PRIMARY KEY,
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    game_key TEXT NOT NULL,
+                    score INTEGER NOT NULL CHECK (score >= 0),
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS account_game_scores_game_score_idx
+                ON account_game_scores (game_key, score DESC, created_at ASC)
+                """
+            )
+            cur.execute(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS account_game_scores_account_game_idx
+                ON account_game_scores (account_id, game_key)
                 """
             )
             conn.commit()
@@ -1138,6 +1273,59 @@ def account_logout():
     return redirect(url_for('quest_map'))
 
 
+@app.route('/account/profile', methods=['POST'])
+@login_required
+def update_account_profile():
+    """Update private, optional profile details and visual preferences."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+
+    bio = request.form.get('bio', '').strip()
+    favorite_subject = request.form.get('favorite_subject', 'not_set')
+    learning_goal = request.form.get('learning_goal', 'general')
+    profile_color = request.form.get('profile_color', 'sage')
+    profile_public = request.form.get('profile_public') == 'yes'
+
+    if len(bio) > 240:
+        flash('Keep your bio to 240 characters or fewer.', 'error')
+    elif favorite_subject not in PROFILE_SUBJECTS:
+        flash('Choose a valid favorite subject.', 'error')
+    elif learning_goal not in PROFILE_GOALS:
+        flash('Choose a valid learning goal.', 'error')
+    elif profile_color not in PROFILE_COLORS:
+        flash('Choose a valid profile color.', 'error')
+    else:
+        try:
+            ensure_account_tables()
+            with closing(get_db_connection()) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE learning_accounts
+                        SET bio = %s, favorite_subject = %s,
+                            learning_goal = %s, profile_color = %s,
+                            profile_public = %s
+                        WHERE id = %s
+                        """,
+                        (
+                            bio,
+                            favorite_subject,
+                            learning_goal,
+                            profile_color,
+                            profile_public,
+                            session['account_id'],
+                        ),
+                    )
+                    if cur.rowcount != 1:
+                        raise RuntimeError('Signed-in account was not found while saving profile.')
+                    conn.commit()
+            flash('Your private profile has been updated.', 'success')
+        except Exception:
+            app.logger.exception('Failed updating learner profile.')
+            flash('We could not save your profile right now. Please try again.', 'error')
+    return redirect(url_for('account_dashboard'))
+
+
 @app.route('/account')
 @login_required
 def account_dashboard():
@@ -1149,7 +1337,8 @@ def account_dashboard():
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, display_name, created_at, last_login_at
+                    SELECT id, display_name, created_at, last_login_at,
+                           bio, favorite_subject, learning_goal, profile_color, profile_public
                     FROM learning_accounts
                     WHERE id = %s
                     """,
@@ -1214,11 +1403,156 @@ def account_dashboard():
             'display_name': account[1],
             'created_at': account[2],
             'last_login_at': account[3],
+            'bio': account[4],
+            'favorite_subject': account[5],
+            'learning_goal': account[6],
+            'profile_color': account[7],
+            'profile_public': account[8],
         },
         progress=progress,
         recent_attempts=recent_attempts,
         error_message=None,
     )
+
+
+@app.route('/leaderboards')
+@login_required
+def leaderboards():
+    """Show best saved scores for each supported learning game."""
+    selected_game = request.args.get('game', 'math-practice')
+    if selected_game not in LEADERBOARD_GAMES:
+        abort(404)
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                if selected_game == 'math-practice':
+                    cur.execute(
+                        """
+                        SELECT a.id, a.display_name, a.profile_public,
+                               COUNT(*) FILTER (WHERE p.was_correct) AS best_score
+                        FROM learning_accounts a
+                        JOIN account_math_attempts p ON p.account_id = a.id
+                        GROUP BY a.id, a.display_name, a.profile_public
+                        ORDER BY best_score DESC, LOWER(a.display_name)
+                        LIMIT 50
+                        """
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT s.account_id, a.display_name, a.profile_public,
+                               MAX(s.score) AS best_score
+                        FROM account_game_scores s
+                        JOIN learning_accounts a ON a.id = s.account_id
+                        WHERE s.game_key = %s
+                        GROUP BY s.account_id, a.display_name, a.profile_public
+                        ORDER BY best_score DESC, MIN(s.created_at) ASC, LOWER(a.display_name)
+                        LIMIT 50
+                        """,
+                        (selected_game,),
+                    )
+                scores = cur.fetchall()
+    except Exception:
+        app.logger.exception('Failed loading game leaderboard.')
+        return render_template(
+            'leaderboards.html',
+            games=LEADERBOARD_GAMES,
+            selected_game=selected_game,
+            scores=[],
+            error_message='We could not load the leaderboard right now.',
+        ), 503
+    return render_template(
+        'leaderboards.html',
+        games=LEADERBOARD_GAMES,
+        selected_game=selected_game,
+        scores=scores,
+        error_message=None,
+    )
+
+
+@app.route('/api/leaderboards/scores', methods=['POST'])
+@login_required
+def save_game_score():
+    """Save a client-reported score for an allow-listed game and signed-in account."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+    game_key = request.form.get('game_key', '')
+    try:
+        score = int(request.form.get('score', ''))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Score must be a whole number.'}), 400
+    if game_key not in LEADERBOARD_GAMES or not 1 <= score <= 1_000_000:
+        return jsonify({'error': 'Invalid game or score.'}), 400
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO account_game_scores (account_id, game_key, score)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (account_id, game_key)
+                    DO UPDATE SET score = GREATEST(account_game_scores.score, EXCLUDED.score),
+                                  created_at = NOW()
+                    """,
+                    (session['account_id'], game_key, score),
+                )
+                conn.commit()
+    except Exception:
+        app.logger.exception('Failed saving game score.')
+        return jsonify({'error': 'Could not save your score right now.'}), 503
+    return jsonify({'ok': True})
+
+
+@app.route('/community')
+@login_required
+def community_profiles():
+    """List only profiles their owners explicitly made visible to signed-in users."""
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, display_name, bio, favorite_subject, learning_goal, profile_color
+                    FROM learning_accounts
+                    WHERE profile_public = TRUE AND id != %s
+                    ORDER BY LOWER(display_name)
+                    LIMIT 100
+                    """,
+                    (session['account_id'],),
+                )
+                profiles = cur.fetchall()
+    except Exception:
+        app.logger.exception('Failed loading public learner profiles.')
+        return render_template('community_profiles.html', profiles=[], error_message='We could not load profiles right now.'), 503
+    return render_template('community_profiles.html', profiles=profiles, error_message=None)
+
+
+@app.route('/users/<int:account_id>')
+@login_required
+def public_profile(account_id):
+    """Show only the deliberately shared profile fields of a public account."""
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, display_name, bio, favorite_subject, learning_goal, profile_color
+                    FROM learning_accounts
+                    WHERE id = %s AND profile_public = TRUE
+                    """,
+                    (account_id,),
+                )
+                profile = cur.fetchone()
+    except Exception:
+        app.logger.exception('Failed loading public learner profile.')
+        return render_template('public_profile.html', profile=None, error_message='We could not load this profile right now.'), 503
+    if profile is None:
+        abort(404)
+    return render_template('public_profile.html', profile=profile, error_message=None)
 
 
 def ensure_student_creations_table():

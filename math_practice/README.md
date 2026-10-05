@@ -39,6 +39,8 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Sign up, log in, and log out** - Create an account with a unique name and password (no email required); passwords are salted and hashed, and account sessions use secure, HTTP-only cookies.
 - **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
 - **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
+- **Private learner profiles** - Optionally save a short bio, favorite subject, learning goal, and accent color. No last name, birth date, school, or contact details are requested; profile bio guidance reminds learners not to share identifying information.
+- **Game leaderboards and community profiles** - Signed-in learners can see the best saved scores by game. Scores are tied to accounts; Math Practice ranks saved correct answers and other games report their visible score counters. Profiles remain private unless the learner opts in; only the display name and selected profile fields are shown to other signed-in learners.
 
 ### 🪐 3D Space Flight & Quest Map
 - **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.
