@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Earth Science Planet - Learning Center{% endblock %}
+{% block title %}Science Planet - Learning Center{% endblock %}
 
 {% block extra_styles %}
 <style>
@@ -245,6 +245,28 @@
     }
 
     .station-grid { display: none; }
+    .science-games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .science-game-card {
+        display: block;
+        padding: 16px;
+        border: 1px solid rgba(103, 232, 249, .4);
+        border-radius: 12px;
+        color: #ecfeff;
+        text-decoration: none;
+        background: linear-gradient(135deg, rgba(14, 116, 82, .9), rgba(8, 47, 73, .95));
+        transition: transform .15s ease, border-color .15s ease;
+    }
+    .science-game-card:hover, .science-game-card:focus-visible {
+        transform: translateY(-2px);
+        border-color: #bef264;
+    }
+    .science-game-card h3 { margin: 0 0 8px; color: #d9f99d; }
+    .science-game-card p { margin: 0; line-height: 1.5; color: #e0f2fe; }
 
     .station-card {
         background: var(--card);
@@ -493,19 +515,36 @@
 <div class="page-shell">
     <nav class="top-links">
         <a class="portal-link" href="{{ url_for('quest_map') }}">🪐 Return to Unit Space Map</a>
+        <a class="portal-link" href="{{ url_for('ela_planet') }}">✍️ ELA</a>
+        <a class="portal-link" href="{{ url_for('math_games') }}">🔢 Math</a>
+        <a class="portal-link" href="{{ url_for('earth_science_planet') }}">🔬 Science</a>
         <a class="portal-link" href="{{ url_for('solar_system_study') }}">🔭 Study the Solar System</a>
         <a class="portal-link" href="{{ url_for('solar_system') }}">🚀 Fly the Solar System</a>
     </nav>
 
     <section class="hero">
-        <h1>🌍 Earth Science Planet: Grade 6 Mission Zone</h1>
+        <h1>🔬 Science Planet: Grade 6 Mission Zone</h1>
         <p>
-            Explore ten stations focused on rocks, erosion, earthquakes, condensation, and the water cycle.
-            Each station gives a quick concept check so students practice core Earth science ideas while they travel.
+            Find every science activity together: explore Earth science stations, model beetle natural selection, and test moth camouflage.
+            Choose a simulation below, or continue to the ten Earth science checkpoints.
         </p>
         <div class="progress-panel">
             <strong id="progress-label">Stations completed: 0 / 10</strong>
             <div class="progress-bar" aria-hidden="true"><div id="progress-fill" class="progress-fill"></div></div>
+        </div>
+    </section>
+
+    <section class="glass-station-panel" aria-labelledby="science-games-title">
+        <h2 id="science-games-title" class="station-topic" style="margin: 0; color: #bef264;">Science Games</h2>
+        <div class="science-games-grid">
+            <a class="science-game-card" href="{{ url_for('natural_selection_planet') }}">
+                <h3>🪲 Beetle Natural Selection</h3>
+                <p>Change the habitat and watch inherited shell-color traits shift as beetles survive and reproduce.</p>
+            </a>
+            <a class="science-game-card" href="{{ url_for('moth_camouflage') }}">
+                <h3>🦋 Moth Camouflage</h3>
+                <p>Help peppered moths blend into light or dark tree bark, then see how camouflage affects survival over generations.</p>
+            </a>
         </div>
     </section>
 

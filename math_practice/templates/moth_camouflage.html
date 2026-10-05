@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+
+{% block title %}Moth Camouflage - Science Planet{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        --moth-ink: #202820;
+        --moth-muted: #5f6b5d;
+        --moth-moss: #476b48;
+        --moth-line: rgba(32, 40, 32, .18);
+        --moth-paper: #f2f2e7;
+    }
+    html { min-height: 100%; background: var(--moth-paper); }
+    body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--moth-ink);
+        background:
+            radial-gradient(ellipse at 82% 5%, rgba(167, 191, 130, .24), transparent 28rem),
+            var(--moth-paper);
+        font-family: 'Lexend', sans-serif;
+    }
+    .moth-shell { max-width: 1120px; margin: 0 auto; padding: 20px 24px 48px; }
+    .moth-nav { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+    .moth-nav a { color: var(--moth-moss); font-weight: 700; text-decoration: none; }
+    .moth-nav a:hover { text-decoration: underline; }
+    .moth-hero { margin-bottom: 18px; }
+    .moth-kicker { color: var(--moth-moss); font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 7px 0; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; }
+    .moth-hero p { max-width: 760px; margin: 0; color: var(--moth-muted); line-height: 1.6; }
+    .moth-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr); gap: 16px; align-items: start; }
+    .moth-panel { padding: 18px; border: 1px solid var(--moth-line); border-radius: 10px; background: rgba(255,255,255,.82); box-shadow: 0 12px 30px rgba(38,55,35,.08); }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .panel-heading h2, .moth-controls h2 { margin: 0; font-size: 1.05rem; }
+    .generation { padding: 7px 10px; border-radius: 5px; background: #e3ebdc; color: #35543a; font-size: .78rem; font-weight: 700; white-space: nowrap; }
+    .canvas-wrap { overflow: hidden; border: 1px solid rgba(32,40,32,.26); border-radius: 7px; background: #c8c0a9; }
+    #mothHabitat { display: block; width: 100%; height: 300px; }
+    .habitat-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 9px 2px; color: var(--moth-muted); font-size: .76rem; }
+    .moth-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,.3); border-radius: 50%; }
+    .legend-swatch.light { background: #d7d0b4; }
+    .legend-swatch.dark { background: #453b32; }
+    .population-counts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .count-tile { padding: 10px; border-radius: 6px; background: #f3f4ed; }
+    .count-tile span { display: block; color: var(--moth-muted); font-size: .74rem; }
+    .count-tile strong { display: block; margin-top: 3px; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+    .count-tile.light strong { color: #776c51; }
+    .count-tile.dark strong { color: #493e36; }
+    .chart-wrap { height: 200px; margin-top: 18px; border: 1px solid var(--moth-line); border-radius: 6px; background: #fcfcf8; }
+    #mothChart { display: block; width: 100%; height: 100%; }
+    .moth-controls { display: grid; gap: 14px; }
+    .hunt-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .hunt-stat { padding: 10px; border-radius: 6px; background: #f3f4ed; }
+    .hunt-stat span { display: block; color: var(--moth-muted); font-size: .74rem; }
+    .hunt-stat strong { display: block; margin-top: 3px; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+    #mothHabitat { cursor: crosshair; }
+    .control-label { display: block; margin: 12px 0 7px; color: var(--moth-muted); font-size: .78rem; font-weight: 700; }
+    .habitat-options { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .moth-button {
+        min-height: 40px;
+        border: 1px solid var(--moth-line);
+        border-radius: 5px;
+        padding: 8px 10px;
+        background: white;
+        color: var(--moth-ink);
+        font: 600 .8rem 'Lexend', sans-serif;
+        cursor: pointer;
+    }
+    .moth-button:hover { border-color: var(--moth-moss); }
+    .moth-button[aria-pressed="true"] { border-color: var(--moth-moss); background: #e6eddf; box-shadow: inset 0 0 0 1px var(--moth-moss); }
+    .moth-button.primary { background: var(--moth-moss); border-color: var(--moth-moss); color: white; }
+    .moth-button:disabled { cursor: not-allowed; opacity: .55; }
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .moth-status { min-height: 58px; margin: 0; color: var(--moth-muted); font-size: .78rem; line-height: 1.5; }
+    .learning-note { padding: 12px; border-left: 3px solid #c29155; background: #faf1df; color: #58462b; font-size: .78rem; line-height: 1.5; }
+    .moth-footer { margin-top: 14px; color: var(--moth-muted); font-size: .72rem; line-height: 1.5; }
+    @media (max-width: 800px) { .moth-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 540px) {
+        .moth-shell { padding: 14px 14px 32px; }
+        .moth-panel { padding: 13px; }
+        #mothHabitat { height: 230px; }
+        .panel-heading { align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="moth-shell">
+    <nav class="moth-nav" aria-label="Science navigation">
+        <a href="{{ url_for('earth_science_planet') }}">← Science Planet</a>
+        <a href="{{ url_for('quest_map') }}">Quest Map →</a>
+    </nav>
+    <header class="moth-hero">
+        <div class="moth-kicker">Life Science · Natural Selection</div>
+        <h1>🦋 Moth Camouflage</h1>
+        <p>Peppered moths vary in color. Predators are more likely to spot moths that contrast with tree bark. Choose a habitat and run generations to see how inherited color traits can become more common when they provide camouflage.</p>
+    </header>
+
+    <div class="moth-layout">
+        <section class="moth-panel" aria-label="Moth population simulation">
+            <div class="panel-heading">
+                <h2>Peppered moth population</h2>
+                <span id="generationLabel" class="generation">Generation 0</span>
+            </div>
+            <div class="canvas-wrap">
+                <canvas id="mothHabitat" role="img" aria-label="Light and dark moths resting on tree bark"></canvas>
+            </div>
+            <div class="habitat-caption">
+                <span id="habitatCaption">Lichen-covered bark · light moths are better camouflaged</span>
+                <div class="moth-legend" aria-label="Moth color legend">
+                    <span class="legend-item"><i class="legend-swatch light"></i>Light moths</span>
+                    <span class="legend-item"><i class="legend-swatch dark"></i>Dark moths</span>
+                </div>
+            </div>
+            <div class="population-counts" aria-live="polite">
+                <div class="count-tile light"><span>Light moths</span><strong id="lightCount">24 / 48</strong></div>
+                <div class="count-tile dark"><span>Dark moths</span><strong id="darkCount">24 / 48</strong></div>
+            </div>
+            <div class="chart-wrap"><canvas id="mothChart" role="img" aria-label="Line chart showing light and dark moth percentages over generations"></canvas></div>
+            <p class="moth-footer">This simplified model keeps the population at 48 moths. During the timed hunt, individual moths move and the population evolves every five seconds. Moths do not change color within a lifetime; colors selected less often by you—or best camouflaged when collection is tied—become more common in each new generation.</p>
+        </section>
+
+        <aside class="moth-controls">
+            <section class="moth-panel">
+                <h2>Timed moth hunt</h2>
+                <p class="moth-footer">Click the moving moths on the bark to collect as many as you can before the 30-second timer ends. Every five seconds, the surviving moths reproduce: colors you collect less often are more likely to survive, or camouflage wins when collection rates are tied.</p>
+                <div class="hunt-summary" aria-live="polite">
+                    <div class="hunt-stat"><span>Moths collected</span><strong id="collectedCount">0</strong></div>
+                    <div class="hunt-stat"><span>Time left</span><strong><span id="huntTime">30</span> sec</strong></div>
+                </div>
+                <button id="startHunt" class="moth-button primary" type="button">Start timed hunt</button>
+                <p id="huntStatus" class="moth-status" role="status" aria-live="polite">Ready when you are! Your score is the number of moths collected before time runs out.</p>
+            </section>
+            <section class="moth-panel">
+                <h2>Change the environment</h2>
+                <span class="control-label">Tree bark habitat</span>
+                <div id="habitatOptions" class="habitat-options" role="group" aria-label="Choose tree bark habitat">
+                    <button type="button" class="moth-button" data-habitat="lichen" aria-pressed="true">🌿 Lichen-covered</button>
+                    <button type="button" class="moth-button" data-habitat="soot" aria-pressed="false">🌑 Soot-darkened</button>
+                </div>
+                <span class="control-label">Simulation</span>
+                <div class="action-grid">
+                    <button id="nextGeneration" class="moth-button primary" type="button">Next generation</button>
+                    <button id="runSimulation" class="moth-button" type="button">▶ Run</button>
+                    <button id="resetSimulation" class="moth-button" type="button">↺ Reset</button>
+                </div>
+                <p id="simulationStatus" class="moth-status" role="status" aria-live="polite">Both inherited color variations begin equally common. On this light bark, light moths are harder for predators to see.</p>
+            </section>
+            <section class="moth-panel">
+                <h2>What to look for</h2>
+                <p class="moth-footer"><strong>Variation:</strong> The starting population has both light and dark moths.</p>
+                <p class="moth-footer"><strong>Selection:</strong> Predators catch more moths that stand out against the bark.</p>
+                <p class="moth-footer"><strong>Inheritance:</strong> Survivors pass their color traits to offspring.</p>
+                <div class="learning-note">Try switching the habitat after several generations. A color that was well camouflaged may become easier to spot when the background changes.</div>
+            </section>
+        </aside>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(() => {
+    'use strict';
+    const POPULATION_SIZE = 48;
+    const habitats = {
+        lichen: {
+            label: 'Lichen-covered bark',
+            background: '#c8c0a9',
+            favorable: 'light',
+            caption: 'Lichen-covered bark · light moths are better camouflaged'
+        },
+        soot: {
+            label: 'Soot-darkened bark',
+            background: '#494640',
+            favorable: 'dark',
+            caption: 'Soot-darkened bark · dark moths are better camouflaged'
+        }
+    };
+    const $ = (id) => document.getElementById(id);
+    const habitatCanvas = $('mothHabitat');
+    const chartCanvas = $('mothChart');
+    let habitatKey = 'lichen';
+    let generation = 0;
+    let moths = [];
+    let history = [];
+    let timer = null;
+    let collectionTimer = null;
+    let collectionMoths = [];
+    let collectionActive = false;
+    let collectedCount = 0;
+    let collectedByTrait = { light: 0, dark: 0 };
+    let startingByTrait = { light: 0, dark: 0 };
+    let huntCollectedByTrait = { light: 0, dark: 0 };
+    let huntStartingByTrait = { light: 0, dark: 0 };
+    let huntElapsedSeconds = 0;
+    let animationFrame = null;
+    let previousFrameTime = 0;
+    let secondsLeft = 30;
+
+    function makeMoths(lightCount = POPULATION_SIZE / 2) {
+        return Array.from({ length: POPULATION_SIZE }, (_, index) => ({
+            trait: index < lightCount ? 'light' : 'dark',
+            x: .04 + Math.random() * .92,
+            y: .06 + Math.random() * .88,
+            vx: (Math.random() - .5) * .12,
+            vy: (Math.random() - .5) * .12
+        })).sort(() => Math.random() - .5);
+    }
+
+    function recordGeneration() {
+        const light = moths.filter((moth) => moth.trait === 'light').length;
+        history.push({ generation, light, dark: moths.length - light });
+    }
+
+    function resizeCanvas(canvas, context) {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = Math.max(1, window.devicePixelRatio || 1);
+        canvas.width = Math.round(rect.width * ratio);
+        canvas.height = Math.round(rect.height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        return { width: rect.width, height: rect.height };
+    }
+
+    function drawBark(context, width, height, habitat) {
+        context.fillStyle = habitat.background;
+        context.fillRect(0, 0, width, height);
+        for (let index = 0; index < 23; index += 1) {
+            const x = (index * 71 + 19) % width;
+            const y = (index * 47 + 11) % height;
+            context.strokeStyle = habitatKey === 'lichen' ? 'rgba(88,76,57,.22)' : 'rgba(20,19,17,.32)';
+            context.lineWidth = 1 + index % 3;
+            context.beginPath();
+            context.moveTo(x, y);
+            context.bezierCurveTo(x - 10, y + 26, x + 12, y + 45, x + (index % 2 ? 3 : -5), y + 72);
+            context.stroke();
+        }
+        if (habitatKey === 'lichen') {
+            context.fillStyle = 'rgba(151,164,122,.36)';
+            for (let index = 0; index < 16; index += 1) {
+                const x = (index * 89 + 31) % width;
+                const y = (index * 61 + 14) % height;
+                context.beginPath();
+                context.ellipse(x, y, 13 + index % 4 * 3, 5 + index % 3 * 2, index * .18, 0, Math.PI * 2);
+                context.fill();
+            }
+        }
+    }
+
+    function drawMoth(context, x, y, trait, scale = 1) {
+        const isLight = trait === 'light';
+        const wing = isLight ? '#d7d0b4' : '#453b32';
+        const markings = isLight ? 'rgba(83,76,59,.48)' : 'rgba(224,211,184,.42)';
+        context.save();
+        context.translate(x, y);
+        context.scale(scale, scale);
+        context.fillStyle = wing;
+        context.strokeStyle = isLight ? 'rgba(69,63,49,.5)' : 'rgba(20,18,16,.65)';
+        context.lineWidth = 1;
+        for (const side of [-1, 1]) {
+            context.beginPath();
+            context.ellipse(side * 7, -4, 8, 13, side * -.35, 0, Math.PI * 2);
+            context.fill();
+            context.stroke();
+            context.beginPath();
+            context.ellipse(side * 6, 7, 6, 9, side * .3, 0, Math.PI * 2);
+            context.fill();
+            context.stroke();
+            context.fillStyle = markings;
+            for (let mark = 0; mark < 4; mark += 1) {
+                context.beginPath();
+                context.arc(side * (5 + mark % 2 * 4), -9 + mark * 4, 1, 0, Math.PI * 2);
+                context.fill();
+            }
+            context.fillStyle = wing;
+        }
+        context.strokeStyle = '#292720';
+        context.lineWidth = 1.3;
+        context.beginPath();
+        context.moveTo(0, -2);
+        context.lineTo(0, 8);
+        context.moveTo(-1, -2);
+        context.quadraticCurveTo(-7, -11, -9, -9);
+        context.moveTo(1, -2);
+        context.quadraticCurveTo(7, -11, 9, -9);
+        context.stroke();
+        context.restore();
+    }
+
+    function drawHabitat() {
+        const context = habitatCanvas.getContext('2d');
+        const { width, height } = resizeCanvas(habitatCanvas, context);
+        drawBark(context, width, height, habitats[habitatKey]);
+        const visibleMoths = collectionActive ? collectionMoths : moths;
+        visibleMoths.forEach((moth) => drawMoth(context, moth.x * width, moth.y * height, moth.trait, .9));
+        context.fillStyle = 'rgba(20,27,21,.72)';
+        context.fillRect(10, 10, 180, 25);
+        context.fillStyle = '#fff';
+        context.font = '600 12px Lexend, sans-serif';
+        context.fillText(`${habitats[habitatKey].label} · ${visibleMoths.length} moths`, 18, 27);
+    }
+
+    function drawChart() {
+        const context = chartCanvas.getContext('2d');
+        const { width, height } = resizeCanvas(chartCanvas, context);
+        const pad = { top: 15, right: 16, bottom: 28, left: 39 };
+        const chartWidth = width - pad.left - pad.right;
+        const chartHeight = height - pad.top - pad.bottom;
+        context.clearRect(0, 0, width, height);
+        context.font = '11px Lexend, sans-serif';
+        context.textAlign = 'right';
+        for (let value = 0; value <= 100; value += 25) {
+            const y = pad.top + chartHeight * (1 - value / 100);
+            context.strokeStyle = '#e1e5db';
+            context.beginPath();
+            context.moveTo(pad.left, y);
+            context.lineTo(width - pad.right, y);
+            context.stroke();
+            context.fillStyle = '#687368';
+            context.fillText(`${value}%`, pad.left - 6, y + 4);
+        }
+        const maxGeneration = Math.max(8, history[history.length - 1].generation);
+        const xAt = (item) => pad.left + (item.generation / maxGeneration) * chartWidth;
+        const yAt = (count) => pad.top + (1 - count / POPULATION_SIZE) * chartHeight;
+        [['light', '#8b8060'], ['dark', '#453b32']].forEach(([key, color]) => {
+            context.beginPath();
+            history.forEach((item, index) => {
+                const x = xAt(item);
+                const y = yAt(item[key]);
+                if (index === 0) context.moveTo(x, y);
+                else context.lineTo(x, y);
+            });
+            context.strokeStyle = color;
+            context.lineWidth = 2.5;
+            context.stroke();
+            history.forEach((item) => {
+                context.beginPath();
+                context.arc(xAt(item), yAt(item[key]), 3, 0, Math.PI * 2);
+                context.fillStyle = color;
+                context.fill();
+            });
+        });
+        context.textAlign = 'center';
+        context.fillStyle = '#687368';
+        context.fillText('Generation', pad.left + chartWidth / 2, height - 4);
+    }
+
+    function render() {
+        const population = collectionActive ? collectionMoths : moths;
+        const light = population.filter((moth) => moth.trait === 'light').length;
+        $('generationLabel').textContent = `Generation ${generation}`;
+        $('lightCount').textContent = `${light} / ${population.length}`;
+        $('darkCount').textContent = `${population.length - light} / ${population.length}`;
+        $('habitatCaption').textContent = habitats[habitatKey].caption;
+        drawHabitat();
+        drawChart();
+    }
+
+    function nextGeneration() {
+        const habitat = habitats[habitatKey];
+        const survivors = moths.filter((moth) => {
+            const isCamouflaged = moth.trait === habitat.favorable;
+            return Math.random() < (isCamouflaged ? .94 : .58);
+        });
+        if (survivors.length === 0) survivors.push(moths[Math.floor(Math.random() * moths.length)]);
+        const lightSurvivors = survivors.filter((moth) => moth.trait === 'light').length;
+        const darkSurvivors = survivors.length - lightSurvivors;
+        moths = Array.from({ length: POPULATION_SIZE }, () => {
+            let trait = survivors[Math.floor(Math.random() * survivors.length)].trait;
+            if (Math.random() < .025) trait = trait === 'light' ? 'dark' : 'light';
+            return { trait, x: .04 + Math.random() * .92, y: .06 + Math.random() * .88 };
+        });
+        generation += 1;
+        recordGeneration();
+        $('simulationStatus').textContent = `${survivors.length} moths survived (${lightSurvivors} light, ${darkSurvivors} dark). Moths that blended into the ${habitat.label.toLowerCase()} were harder for predators to spot and passed their color traits to offspring.`;
+        render();
+    }
+
+    function chooseSelectedColor(startingCounts, collectedCounts) {
+        const rates = {
+            light: startingCounts.light ? collectedCounts.light / startingCounts.light : null,
+            dark: startingCounts.dark ? collectedCounts.dark / startingCounts.dark : null
+        };
+        const selectedByCollection = rates.light !== null && rates.dark !== null && rates.light !== rates.dark;
+        let selectedFor = habitats[habitatKey].favorable;
+        if (selectedByCollection) {
+            selectedFor = rates.light < rates.dark ? 'light' : 'dark';
+        }
+        return { trait: selectedFor, selectedByCollection };
+    }
+
+    function evolveGeneration(population, selectedFor) {
+        const sourcePopulation = population.length ? population : [{
+            trait: selectedFor,
+            x: .04 + Math.random() * .92,
+            y: .06 + Math.random() * .88,
+            vx: (Math.random() - .5) * .12,
+            vy: (Math.random() - .5) * .12
+        }];
+        const hasSelectedTrait = sourcePopulation.some((moth) => moth.trait === selectedFor);
+        const survivors = sourcePopulation.filter((moth) => (
+            Math.random() < (moth.trait === selectedFor ? .92 : .48)
+        ));
+        if (survivors.length === 0) {
+            survivors.push(sourcePopulation.find((moth) => moth.trait === selectedFor) || sourcePopulation[0]);
+        }
+        if (!hasSelectedTrait) survivors[0] = { trait: selectedFor };
+        const offspring = Array.from({ length: POPULATION_SIZE }, () => {
+            let trait = survivors[Math.floor(Math.random() * survivors.length)].trait;
+            if (Math.random() < .02) trait = trait === 'light' ? 'dark' : 'light';
+            return {
+                trait,
+                x: .04 + Math.random() * .92,
+                y: .06 + Math.random() * .88,
+                vx: (Math.random() - .5) * .12,
+                vy: (Math.random() - .5) * .12
+            };
+        });
+        if (!offspring.some((moth) => moth.trait === selectedFor)) {
+            offspring[Math.floor(Math.random() * offspring.length)].trait = selectedFor;
+        }
+        return offspring;
+    }
+
+    function evolveDuringHunt() {
+        const { trait: selectedFor } = chooseSelectedColor(huntStartingByTrait, huntCollectedByTrait);
+        collectionMoths = evolveGeneration(collectionMoths, selectedFor);
+        generation += 1;
+        recordGeneration();
+        huntStartingByTrait = {
+            light: collectionMoths.filter((moth) => moth.trait === 'light').length,
+            dark: collectionMoths.filter((moth) => moth.trait === 'dark').length
+        };
+        huntCollectedByTrait = { light: 0, dark: 0 };
+        $('huntStatus').textContent = `Generation ${generation}: moths collected less often are becoming more common. Keep trying to catch them!`;
+        render();
+    }
+
+    function animateHuntFrame(timestamp) {
+        if (!collectionActive) return;
+        const elapsed = previousFrameTime ? Math.min(.05, (timestamp - previousFrameTime) / 1000) : 0;
+        previousFrameTime = timestamp;
+        collectionMoths.forEach((moth) => {
+            moth.x += moth.vx * elapsed;
+            moth.y += moth.vy * elapsed;
+            if (moth.x < .035 || moth.x > .965) {
+                moth.x = Math.max(.035, Math.min(.965, moth.x));
+                moth.vx *= -1;
+            }
+            if (moth.y < .06 || moth.y > .94) {
+                moth.y = Math.max(.06, Math.min(.94, moth.y));
+                moth.vy *= -1;
+            }
+        });
+        drawHabitat();
+        animationFrame = window.requestAnimationFrame(animateHuntFrame);
+    }
+
+    function stopSimulation() {
+        if (timer) window.clearInterval(timer);
+        timer = null;
+        $('runSimulation').textContent = '▶ Run';
+        $('nextGeneration').disabled = false;
+    }
+
+    function updateHuntControls() {
+        $('collectedCount').textContent = String(collectedCount);
+        $('huntTime').textContent = String(secondsLeft);
+        $('startHunt').textContent = collectionActive ? 'Hunt in progress…' : (secondsLeft === 0 ? 'Play again' : 'Start timed hunt');
+        $('startHunt').disabled = collectionActive;
+        $('habitatOptions').querySelectorAll('[data-habitat]').forEach((button) => {
+            button.disabled = collectionActive;
+        });
+        $('nextGeneration').disabled = collectionActive;
+        $('runSimulation').disabled = collectionActive;
+        habitatCanvas.setAttribute('aria-label', collectionActive
+            ? 'Click a moth on the tree bark to collect it before time runs out'
+            : 'Light and dark moths resting on tree bark');
+        habitatCanvas.style.cursor = collectionActive ? 'pointer' : 'crosshair';
+    }
+
+    function finishHunt() {
+        if (collectionTimer) window.clearInterval(collectionTimer);
+        collectionTimer = null;
+        if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+        collectionActive = false;
+        secondsLeft = 0;
+        const { trait: selectedFor, selectedByCollection: selectedByUser } = chooseSelectedColor(startingByTrait, collectedByTrait);
+        moths = evolveGeneration(collectionMoths, selectedFor);
+        generation += 1;
+        recordGeneration();
+        const selectionResult = selectedByUser
+            ? `${selectedFor === 'light' ? 'Light' : 'Dark'} moths were collected less often, so they were more likely to survive and reproduce.`
+            : `The collection rates were tied, so moths camouflaged against the ${habitats[habitatKey].label.toLowerCase()} had the survival advantage.`;
+        $('huntStatus').textContent = `Time is up! You collected ${collectedByTrait.light} light and ${collectedByTrait.dark} dark moths (${collectedCount} total). ${selectionResult} Generation ${generation} now has ${moths.filter((moth) => moth.trait === 'light').length} light and ${moths.filter((moth) => moth.trait === 'dark').length} dark moths. Play again to apply selection again.`;
+        updateHuntControls();
+    }
+
+    function startHunt() {
+        if (collectionActive) return;
+        stopSimulation();
+        collectionMoths = moths.map((moth) => ({ ...moth }));
+        collectedCount = 0;
+        collectedByTrait = { light: 0, dark: 0 };
+        startingByTrait = {
+            light: moths.filter((moth) => moth.trait === 'light').length,
+            dark: moths.filter((moth) => moth.trait === 'dark').length
+        };
+        huntCollectedByTrait = { light: 0, dark: 0 };
+        huntStartingByTrait = { ...startingByTrait };
+        huntElapsedSeconds = 0;
+        secondsLeft = 30;
+        collectionActive = true;
+        $('huntStatus').textContent = 'Go! Click directly on the moths to collect them.';
+        updateHuntControls();
+        render();
+        previousFrameTime = 0;
+        animationFrame = window.requestAnimationFrame(animateHuntFrame);
+        collectionTimer = window.setInterval(() => {
+            secondsLeft -= 1;
+            huntElapsedSeconds += 1;
+            $('huntTime').textContent = String(secondsLeft);
+            if (secondsLeft <= 0) finishHunt();
+            else if (huntElapsedSeconds % 5 === 0) evolveDuringHunt();
+        }, 1000);
+    }
+
+    function resetSimulation() {
+        stopSimulation();
+        if (collectionTimer) window.clearInterval(collectionTimer);
+        collectionTimer = null;
+        if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+        collectionActive = false;
+        generation = 0;
+        moths = makeMoths();
+        history = [];
+        recordGeneration();
+        $('simulationStatus').textContent = 'Both inherited color variations begin equally common. On this bark, the well-camouflaged moths are harder for predators to see.';
+        collectedCount = 0;
+        collectedByTrait = { light: 0, dark: 0 };
+        startingByTrait = { light: 0, dark: 0 };
+        huntCollectedByTrait = { light: 0, dark: 0 };
+        huntStartingByTrait = { light: 0, dark: 0 };
+        huntElapsedSeconds = 0;
+        secondsLeft = 30;
+        $('huntStatus').textContent = 'Ready when you are! Your score is the number of moths collected before time runs out.';
+        updateHuntControls();
+        render();
+    }
+
+    $('habitatOptions').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-habitat]');
+        if (!button || collectionActive) return;
+        habitatKey = button.dataset.habitat;
+        $('habitatOptions').querySelectorAll('[data-habitat]').forEach((option) => {
+            option.setAttribute('aria-pressed', String(option === button));
+        });
+        $('simulationStatus').textContent = `${habitats[habitatKey].label} selected. The moth color that blends into this background has a survival advantage.`;
+        render();
+    });
+    habitatCanvas.addEventListener('click', (event) => {
+        if (!collectionActive || secondsLeft <= 0 || collectionMoths.length === 0) return;
+        const rect = habitatCanvas.getBoundingClientRect();
+        const canvasX = event.clientX - rect.left;
+        const canvasY = event.clientY - rect.top;
+        const hitRadius = 24;
+        let nearestIndex = -1;
+        let nearestDistance = hitRadius;
+        collectionMoths.forEach((moth, index) => {
+            const mothX = moth.x * rect.width;
+            const mothY = moth.y * rect.height;
+            const distance = Math.hypot(canvasX - mothX, canvasY - mothY);
+            if (distance <= nearestDistance) {
+                nearestIndex = index;
+                nearestDistance = distance;
+            }
+        });
+        if (nearestIndex < 0) return;
+        const collectedTrait = collectionMoths[nearestIndex].trait;
+        collectionMoths.splice(nearestIndex, 1);
+        collectedCount += 1;
+        collectedByTrait[collectedTrait] += 1;
+        huntCollectedByTrait[collectedTrait] += 1;
+        $('collectedCount').textContent = String(collectedCount);
+        $('huntStatus').textContent = collectionMoths.length === 0
+            ? `You found all the moths! Your score is ${collectedCount}; the timer keeps running.`
+            : `Collected ${collectedCount} moth${collectedCount === 1 ? '' : 's'}! Keep looking.`;
+        render();
+    });
+    $('startHunt').addEventListener('click', startHunt);
+    $('nextGeneration').addEventListener('click', nextGeneration);
+    $('runSimulation').addEventListener('click', () => {
+        if (timer) {
+            stopSimulation();
+            return;
+        }
+        $('runSimulation').textContent = 'Ⅱ Pause';
+        $('nextGeneration').disabled = true;
+        timer = window.setInterval(nextGeneration, 1100);
+    });
+    $('resetSimulation').addEventListener('click', resetSimulation);
+    window.addEventListener('resize', () => {
+        render();
+    });
+    resetSimulation();
+})();
+</script>
+{% endblock %}

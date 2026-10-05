@@ -30,6 +30,11 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Verb Detective** - Identification of action verbs, linking verbs, and verb phrases in narrative sentences.
 - **Word Match** - Synonym and antonym pairing across tiered difficulties.
 
+### 🔬 Science Planet
+- **Earth Science Stations** - Ten interactive checkpoints covering rocks, erosion, earthquakes, condensation, and the water cycle.
+- **Beetle Natural Selection** - Change habitats and observe inherited color traits across generations.
+- **Moth Camouflage** - Collect moths in a timed hunt; moth colors collected less often, or camouflaged against the habitat when selection is tied, become more common in the next generation.
+
 ### 🪐 3D Space Flight & Quest Map
 - **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.
 - **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.

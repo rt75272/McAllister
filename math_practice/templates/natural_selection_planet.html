@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Natural Selection Planet - Learning Center{% endblock %}
+{% block title %}Beetle Natural Selection - Science Planet{% endblock %}
 
 {% block extra_styles %}
 <style>
@@ -96,14 +96,14 @@
 
 {% block content %}
 <main class="evo-shell">
-    <nav class="evo-topbar" aria-label="Planet navigation">
+    <nav class="evo-topbar" aria-label="Science navigation">
         <a href="{{ url_for('quest_map') }}">← Quest Map</a>
-        <a href="{{ url_for('math_games') }}">Math Games</a>
+        <a href="{{ url_for('earth_science_planet') }}">🔬 Science Planet</a>
     </nav>
     <header class="evo-hero">
         <div>
-            <div class="evo-kicker">Earth Science · Life Over Time</div>
-            <h1>Natural Selection</h1>
+            <div class="evo-kicker">Science Planet · Life Over Time</div>
+            <h1>Beetle Natural Selection</h1>
             <p>Watch a population change as inherited traits help some beetles survive and reproduce in a changing habitat.</p>
         </div>
         <div class="evo-world" aria-hidden="true"><span class="evo-world-sun"></span><span class="evo-world-hill"></span><span class="evo-world-beetle"></span></div>

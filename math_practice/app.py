@@ -331,13 +331,18 @@ def game_planet():
 
 @app.route('/earth-science-planet', methods=['GET'])
 def earth_science_planet():
-    """Earth Science Planet with 10 content stations."""
+    """Science Planet with Earth science stations and life-science games."""
     return render_template('earth_science_planet.html')
 
 @app.route('/natural-selection-planet', methods=['GET'])
 def natural_selection_planet():
-    """Interactive natural selection and population-change simulation."""
+    """Interactive beetle natural-selection game on the Science Planet."""
     return render_template('natural_selection_planet.html')
+
+@app.route('/moth-camouflage', methods=['GET'])
+def moth_camouflage():
+    """Natural-selection game about peppered moth camouflage."""
+    return render_template('moth_camouflage.html')
 
 @app.route('/chess-planet', methods=['GET'])
 def chess_planet():
