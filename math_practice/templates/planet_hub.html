@@ -595,10 +595,9 @@
     <script>
         const planetId = parseInt("{{ planet_id }}") || 1;
 
-        // Each of the 5 active units below defines exactly 10 stations. Every gamified
-        // station uses a `question_generator` function (instead of a static bank) so
-        // students get freshly randomized numbers on every attempt. `getFreshChallenge`
-        // (defined further down) also guards against back-to-back duplicate questions.
+        // Active units define their own station counts. Gamified stations use a
+        // `question_generator` function so students get freshly randomized questions.
+        // `getFreshChallenge` (defined further down) also guards against duplicates.
         const curriculumData = [
             {
                 unit_id: "planet_1_number_properties",
@@ -1053,6 +1052,28 @@
                         points_reward: 300,
                         min_questions: 1,
                         max_questions: 1
+                    },
+                    {
+                        id: "p3_s11",
+                        title: "Absolute Value Football",
+                        type: "football_inequalities",
+                        description: "Answer absolute-value inequalities with negative and positive numbers to advance the football player downfield for a touchdown!",
+                        points_reward: 250,
+                        min_questions: 10,
+                        max_questions: 10,
+                        question_generator: () => {
+                            const negativeMagnitude = randomInt(1, 12);
+                            const positiveValue = randomInt(1, 12);
+                            const left = Math.abs(-negativeMagnitude);
+                            const right = positiveValue;
+                            const answer = left < right ? "<" : left > right ? ">" : "=";
+                            return {
+                                scenario: "Touchdown Inequality",
+                                task: `Choose the comparison that makes this true: |-${negativeMagnitude}| __ +${positiveValue}.`,
+                                answer,
+                                key: `${negativeMagnitude}_${positiveValue}`
+                            };
+                        }
                     }
                 ]
             },
@@ -1383,6 +1404,7 @@
 
         function stationNameFromActivity(activity, stationNum) {
             if (activity.title) return activity.title;
+            if (activity.type === 'football_inequalities') return activity.title || 'Absolute Value Football';
             if (activity.type === 'game_portal') return activity.game_name || `Game Portal ${stationNum}`;
             if (activity.type === 'quick_facts') return `Warmup ${stationNum}`;
             if (activity.type === 'student_creation') return 'Alien Teacher Studio';
@@ -1411,6 +1433,7 @@
 
         function stationDescFromActivity(activity) {
             if (activity.description) return activity.description;
+            if (activity.type === 'football_inequalities') return 'Answer absolute-value inequalities with negative and positive numbers to advance the football player downfield for a touchdown!';
             if (activity.type === 'game_portal') return `Complete the station quiz streak, and optionally launch ${activity.game_name} from the side button.`;
             if (activity.type === 'adaptive_practice') return 'A fresh curriculum challenge appears after every correct answer.';
             if (activity.type === 'math_snake') return 'Collect energy cells, avoid hazard cores, and solve a unit math question when a hazard is hit.';
@@ -1546,6 +1569,10 @@
 
             if (activity.type === 'quick_facts') {
                 loadQuickFacts(mBody, station, activity);
+                return;
+            }
+            if (activity.type === 'football_inequalities') {
+                loadFootballInequalities(mBody, station, activity);
                 return;
             }
             if (activity.type === 'game_portal') {
@@ -2209,6 +2236,64 @@
 
             document.getElementById('quick-submit').addEventListener('click', submitQuick);
             bindEnterSubmit(['quick-input'], submitQuick);
+        }
+
+        function loadFootballInequalities(container, station, activity) {
+            const points = activity.points_reward || 250;
+            const challenge = activity.question_generator();
+            const yards = Math.min(activeStationRun.solved * 10, 100);
+            const isTouchdown = yards >= 100;
+            container.innerHTML = `
+                <p class="text-slate-400"><span class="math-label">Touchdown Inequality</span>: ${challenge.task}</p>
+                <div class="bg-slate-950/70 border border-slate-700 rounded-xl p-2.5 text-[11px] text-slate-300">
+                    Football drive: <span id="football-drive-progress" class="math-term">${yards}/100 yards</span> &nbsp; | &nbsp; Question ${activeStationRun.solved + 1} of ${activeStationRun.required}
+                </div>
+                <div class="relative h-28 overflow-hidden rounded-xl border-2 border-white/70"
+                    role="img" aria-label="Football field. Player at ${yards} yards of 100, ${isTouchdown ? 'touchdown!' : 'moving toward the end zone.'}"
+                    style="background-color:#15803d;background-image:linear-gradient(90deg,transparent 9.7%,rgba(255,255,255,.45) 10%,transparent 10.3%),linear-gradient(90deg,transparent 19.7%,rgba(255,255,255,.45) 20%,transparent 20.3%),linear-gradient(90deg,transparent 29.7%,rgba(255,255,255,.45) 30%,transparent 30.3%),linear-gradient(90deg,transparent 39.7%,rgba(255,255,255,.45) 40%,transparent 40.3%),linear-gradient(90deg,transparent 49.7%,rgba(255,255,255,.45) 50%,transparent 50.3%),linear-gradient(90deg,transparent 59.7%,rgba(255,255,255,.45) 60%,transparent 60.3%),linear-gradient(90deg,transparent 69.7%,rgba(255,255,255,.45) 70%,transparent 70.3%),linear-gradient(90deg,transparent 79.7%,rgba(255,255,255,.45) 80%,transparent 80.3%),linear-gradient(90deg,transparent 89.7%,rgba(255,255,255,.45) 90%,transparent 90.3%)">
+                    <div class="absolute inset-y-0 right-0 w-[14%] flex items-center justify-center bg-yellow-400/90 text-center text-[10px] font-black leading-tight text-slate-900">END<br>ZONE</div>
+                    <div class="absolute left-0 top-1 text-[10px] font-bold text-white/80">YOUR GOAL →</div>
+                    <div id="football-player" class="absolute bottom-2 text-2xl transition-all duration-500" style="left:calc(${Math.min(yards, 86)}% - 1rem)" aria-hidden="true">${isTouchdown ? '🏈🎉' : '🏃🏈'}</div>
+                    <div class="absolute bottom-1 right-[14%] text-[9px] font-bold text-white/80">100 YD LINE</div>
+                </div>
+                <p id="football-drive-status" class="text-center text-sm font-bold text-cyan-200">${isTouchdown ? 'TOUCHDOWN!' : 'Answer correctly to move 10 yards!'}</p>
+                <div class="grid grid-cols-3 gap-2">
+                    ${['<', '=', '>'].map((symbol) => `<button type="button" class="btn-accessible px-4 py-3 text-lg" data-football-answer="${symbol}" aria-label="Answer ${symbol}">${symbol}</button>`).join('')}
+                </div>
+                <p id="football-feedback" class="text-xs font-bold text-center min-h-4" aria-live="polite"></p>
+            `;
+
+            const feedback = container.querySelector('#football-feedback');
+            container.querySelectorAll('[data-football-answer]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (button.dataset.footballAnswer === challenge.answer) {
+                        container.querySelectorAll('[data-football-answer]').forEach((answerButton) => {
+                            answerButton.disabled = true;
+                        });
+                        if (yards + 10 >= 100) {
+                            const player = container.querySelector('#football-player');
+                            player.style.left = 'calc(86% - 1rem)';
+                            player.textContent = '🏈🎉';
+                            container.querySelector('#football-drive-progress').textContent = '100/100 yards';
+                            const field = container.querySelector('[role="img"]');
+                            field.setAttribute('aria-label', 'Football field. Touchdown at the end zone!');
+                            container.querySelector('#football-drive-status').textContent = 'TOUCHDOWN!';
+                        }
+                        resolveCorrectAttempt(
+                            container,
+                            station,
+                            activity,
+                            points,
+                            feedback,
+                            yards + 10 >= 100 ? 'Touchdown!' : 'Correct! 10 yards gained!',
+                            loadFootballInequalities
+                        );
+                    } else {
+                        feedback.textContent = 'Not quite—compare the distance from zero with the positive number.';
+                        feedback.style.color = '#ef4444';
+                    }
+                });
+            });
         }
 
         function normalizeChallengeAnswer(value) {
