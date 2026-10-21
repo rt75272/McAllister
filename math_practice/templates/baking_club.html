@@ -139,6 +139,89 @@
             color: var(--pink);
         }
 
+        .recipe-catalog {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 1em;
+            padding: 1.5em;
+            margin-bottom: 2em;
+        }
+
+        .recipe-catalog h2 {
+            color: var(--pink);
+            margin-top: 0;
+        }
+
+        .recipe-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: .75em;
+        }
+
+        .recipe-choice {
+            min-height: 3.5em;
+            padding: .8em 1em;
+            border: 1px solid var(--line);
+            border-radius: .7em;
+            background: rgba(255,255,255,.06);
+            color: var(--ink);
+            font: inherit;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .recipe-choice:hover,
+        .recipe-choice:focus-visible {
+            background: rgba(103,232,249,.16);
+            border-color: var(--cyan);
+            outline: 2px solid var(--cyan);
+            outline-offset: 2px;
+        }
+
+        .recipe-dialog {
+            width: min(800px, calc(100% - 2em));
+            max-height: 85vh;
+            overflow: auto;
+            padding: 1.5em;
+            border: 1px solid var(--line);
+            border-radius: 1em;
+            background: #fdfbf7;
+            color: #333;
+        }
+
+        .recipe-dialog::backdrop {
+            background: rgba(0, 0, 0, .75);
+        }
+
+        .recipe-dialog > [data-recipe-content] {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .recipe-dialog h2,
+        .recipe-dialog h3 {
+            color: #99582a;
+        }
+
+        .recipe-dialog h2 {
+            margin-top: 0;
+        }
+
+        .recipe-dialog .recipe-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            padding: .5em .8em;
+            border: 1px solid #99582a;
+            border-radius: .5em;
+            background: #fff;
+            color: #6f4e37;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 2em;
@@ -184,7 +267,197 @@
             <p class="hero-subtitle">Share your favorite recipes, pictures, and tips with other baking enthusiasts!</p>
         </div>
 
-        {% include "baking_club_recipes_9_16.html" %}
+        <section class="recipe-catalog" aria-labelledby="recipe-catalog-title">
+            <h2 id="recipe-catalog-title">🍰 Baking Club Recipes</h2>
+            <p>Select any recipe to open its ingredients and instructions.</p>
+            <div class="recipe-list" id="recipe-list"></div>
+        </section>
+
+        {% include "baking_club_recipes.html" %}
+
+        <script>
+            (() => {
+                const recipeSection = document.querySelector('[aria-label="Baking Club recipe dialogs"]');
+                const recipeList = document.getElementById('recipe-list');
+                if (!recipeSection || !recipeList) {
+                    return;
+                }
+
+                const originalCards = Array.from(recipeSection.children)
+                    .filter((element) => element.querySelector('h1'));
+                recipeSection.replaceChildren();
+
+                const newRecipes = [
+                    {
+                        title: 'Flan',
+                        icon: '🍮',
+                        content: `
+                            <h2>Flan</h2>
+                            <p><strong>Makes:</strong> 6 servings &nbsp; <strong>Prep:</strong> 20 minutes &nbsp; <strong>Bake:</strong> 50–60 minutes, plus chilling</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>3/4 cup granulated sugar, for the caramel</li><li>4 large eggs</li><li>1 can (14 ounces) sweetened condensed milk</li><li>1 can (12 ounces) evaporated milk</li><li>1 teaspoon vanilla extract</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Ask an adult to preheat the oven to 350°F and prepare a large baking dish for a water bath.</li><li>Carefully melt the sugar in a small saucepan over medium-low heat, stirring until it becomes amber. An adult should pour it into a round baking dish and swirl to coat the bottom.</li><li>Whisk the eggs, condensed milk, evaporated milk, and vanilla until smooth. Pour the mixture over the caramel.</li><li>Set the dish inside the larger pan. Carefully add hot water to the larger pan until it reaches about halfway up the flan dish.</li><li>Bake until the center is just set, about 50–60 minutes. Remove the dish from the water bath with adult help.</li><li>Cool, cover, and refrigerate for at least 4 hours. Run a knife around the edge and invert onto a serving plate.</li></ol>
+                            <p><strong>Baker tip:</strong> Hot caramel can cause serious burns. An adult should handle the saucepan and hot dish.</p>`
+                    },
+                    {
+                        title: 'Omelet',
+                        icon: '🍳',
+                        content: `
+                            <h2>Cheese Omelet</h2>
+                            <p><strong>Makes:</strong> 1 omelet &nbsp; <strong>Prep:</strong> 5 minutes &nbsp; <strong>Cook:</strong> 5–7 minutes</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>2 large eggs</li><li>1 tablespoon milk or water</li><li>A pinch of salt and pepper</li><li>1 teaspoon butter</li><li>1/4 cup shredded cheddar cheese</li><li>Optional: 1 tablespoon chopped bell pepper or cooked spinach</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Wash your hands. Crack the eggs into a bowl and whisk with the milk or water, salt, and pepper.</li><li>With adult supervision, melt the butter in a small nonstick skillet over medium-low heat.</li><li>Pour in the eggs. As the edges set, gently push them toward the center and tilt the pan so uncooked egg fills the open spaces.</li><li>When the top is nearly set, add the cheese and optional vegetables to one half.</li><li>Fold the omelet in half with a spatula and cook until the egg is fully set and the cheese melts.</li><li>Slide onto a plate and serve warm.</li></ol>
+                            <p><strong>Food safety:</strong> Cook eggs until firm; children should use the stove with adult supervision.</p>`
+                    },
+                    {
+                        title: 'Butter and Rolls',
+                        icon: '🥖',
+                        content: `
+                            <h2>Soft Dinner Rolls with Whipped Butter</h2>
+                            <p><strong>Makes:</strong> 8 rolls and about 1/2 cup butter &nbsp; <strong>Prep:</strong> 25 minutes &nbsp; <strong>Rise:</strong> 1 hour &nbsp; <strong>Bake:</strong> 15–18 minutes</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>3/4 cup warm milk (warm, not hot)</li><li>2 1/4 teaspoons active dry yeast</li><li>2 tablespoons sugar</li><li>1 egg</li><li>2 tablespoons softened butter</li><li>2 1/2 cups all-purpose flour, plus a little for kneading</li><li>1/2 teaspoon salt</li><li>1/2 cup softened butter and 1 tablespoon cold water, for whipped butter</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Stir the warm milk, yeast, and sugar together. Let stand for 5 minutes until foamy.</li><li>Mix in the egg and softened butter. Add the flour and salt and stir until a soft dough forms.</li><li>Knead on a lightly floured surface for 6–8 minutes. Place in a greased bowl, cover, and let rise until doubled, about 1 hour.</li><li>Divide the dough into 8 pieces and shape into balls. Place in a greased baking pan, cover, and rest for 20 minutes.</li><li>With adult help, bake at 375°F for 15–18 minutes, until golden. Cool slightly.</li><li>For whipped butter, beat the softened butter with cold water until light and fluffy. Serve with the warm rolls.</li></ol>
+                            <p><strong>Baker tip:</strong> Yeast works best in warm—not hot—liquid. Ask an adult to handle the oven.</p>`
+                    },
+                    {
+                        title: 'Biscuits and Gravy with Sausage',
+                        icon: '🍽️',
+                        content: `
+                            <h2>Biscuits and Gravy with Sausage</h2>
+                            <p><strong>Makes:</strong> 8 biscuits and about 4 servings of gravy &nbsp; <strong>Prep:</strong> 20 minutes &nbsp; <strong>Bake:</strong> 12–15 minutes</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>2 cups all-purpose flour</li><li>1 tablespoon baking powder</li><li>1/2 teaspoon salt</li><li>6 tablespoons cold butter, cubed</li><li>3/4 cup milk, plus 1 tablespoon for brushing</li><li>1/2 pound ground breakfast sausage</li><li>2 tablespoons all-purpose flour, for gravy</li><li>2 cups milk, for gravy</li><li>1/4 teaspoon black pepper</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Ask an adult to preheat the oven to 425°F. Whisk the flour, baking powder, and salt together.</li><li>Cut the cold butter into the flour until crumbly. Stir in 3/4 cup milk just until a dough forms.</li><li>Pat the dough about 3/4 inch thick, cut into 8 biscuits, and place on a baking sheet. Brush the tops with a little milk.</li><li>With adult help, bake for 12–15 minutes, until golden.</li><li>While the biscuits bake, an adult should cook the sausage in a skillet until no pink remains. Sprinkle in 2 tablespoons flour and stir for 1 minute.</li><li>Slowly stir in 2 cups milk and pepper. Simmer, stirring, until thickened, about 5 minutes.</li><li>Split the warm biscuits and spoon the sausage gravy over them.</li></ol>
+                            <p><strong>Food safety:</strong> Cook sausage to 160°F. An adult should handle the skillet and oven.</p>`
+                    },
+                    {
+                        title: 'Fudgy Brownies',
+                        icon: '🍫',
+                        content: `
+                            <h2>Fudgy Brownies</h2>
+                            <p><strong>Makes:</strong> 16 brownies &nbsp; <strong>Prep:</strong> 15 minutes &nbsp; <strong>Bake:</strong> 22–26 minutes</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>1/2 cup unsalted butter, melted</li><li>1 cup granulated sugar</li><li>2 large eggs</li><li>1 teaspoon vanilla extract</li><li>1/3 cup unsweetened cocoa powder</li><li>1/2 cup all-purpose flour</li><li>1/4 teaspoon salt</li><li>1/2 cup chocolate chips, optional</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Ask an adult to preheat the oven to 350°F. Grease or line an 8-inch square pan.</li><li>Whisk the melted butter and sugar together. Add the eggs and vanilla and whisk until smooth.</li><li>Stir in cocoa powder, flour, and salt just until combined. Fold in chocolate chips if using.</li><li>Spread the batter evenly in the pan.</li><li>With adult help, bake for 22–26 minutes, until a toothpick comes out with a few moist crumbs.</li><li>Cool completely before slicing into 16 brownies.</li></ol>
+                            <p><strong>Baker tip:</strong> Avoid overmixing after adding the flour to keep the brownies tender.</p>`
+                    },
+                    {
+                        title: 'Apple Pie',
+                        icon: '🥧',
+                        content: `
+                            <h2>Apple Pie</h2>
+                            <p><strong>Makes:</strong> 1 nine-inch pie &nbsp; <strong>Prep:</strong> 25 minutes &nbsp; <strong>Bake:</strong> 45–55 minutes</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>1 package refrigerated double pie crust</li><li>6 cups peeled and thinly sliced apples</li><li>2/3 cup granulated sugar</li><li>2 tablespoons all-purpose flour</li><li>1 teaspoon ground cinnamon</li><li>1 tablespoon lemon juice</li><li>1 tablespoon butter, cut into small pieces</li><li>1 tablespoon milk, for brushing</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Ask an adult to preheat the oven to 425°F. Place one crust in a nine-inch pie plate.</li><li>In a large bowl, gently toss the apples with sugar, flour, cinnamon, and lemon juice.</li><li>Spoon the filling into the crust and dot with butter.</li><li>Place the second crust over the filling. Seal and crimp the edges with adult help, then cut a few vents in the top.</li><li>Brush the top crust with milk. Set the pie on a baking sheet to catch drips.</li><li>With adult help, bake for 15 minutes, then reduce the oven to 350°F and bake 30–40 minutes more, until the crust is golden and filling bubbles.</li><li>Cool for at least 2 hours before slicing.</li></ol>
+                            <p><strong>Baker tip:</strong> Ask an adult to help peel apples and handle the hot pie.</p>`
+                    },
+                    {
+                        title: 'Chocolate Chip Cookies',
+                        icon: '🍪',
+                        content: `
+                            <h2>Chocolate Chip Cookies</h2>
+                            <p><strong>Makes:</strong> About 24 cookies &nbsp; <strong>Prep:</strong> 15 minutes &nbsp; <strong>Bake:</strong> 9–11 minutes per batch</p>
+                            <h3>Ingredients</h3>
+                            <ul><li>1/2 cup unsalted butter, softened</li><li>1/2 cup packed brown sugar</li><li>1/4 cup granulated sugar</li><li>1 large egg</li><li>1 teaspoon vanilla extract</li><li>1 1/2 cups all-purpose flour</li><li>1/2 teaspoon baking soda</li><li>1/4 teaspoon salt</li><li>1 cup chocolate chips</li></ul>
+                            <h3>Instructions</h3>
+                            <ol><li>Ask an adult to preheat the oven to 350°F and line baking sheets with parchment paper.</li><li>Beat the softened butter and both sugars until creamy.</li><li>Mix in the egg and vanilla.</li><li>In a separate bowl, stir together flour, baking soda, and salt. Add to the butter mixture and mix just until combined.</li><li>Fold in the chocolate chips. Scoop rounded tablespoons of dough onto the baking sheets, leaving space between cookies.</li><li>With adult help, bake for 9–11 minutes, until the edges are lightly golden. Cool on the pan for 5 minutes before moving to a rack.</li></ol>
+                            <p><strong>Baker tip:</strong> Cookies may look a little soft in the center when they first come out; they will finish setting as they cool.</p>`
+                    }
+                ];
+
+                const whippedCreamRecipe = {
+                    title: 'Whipped Cream for Cake',
+                    icon: '🍰',
+                    content: `
+                        <h2>Whipped Cream for Cake</h2>
+                        <p><strong>Makes:</strong> About 2 cups &nbsp; <strong>Prep:</strong> 10 minutes</p>
+                        <h3>Ingredients</h3>
+                        <ul><li>1 cup cold heavy whipping cream</li><li>2 tablespoons powdered sugar</li><li>1/2 teaspoon vanilla extract</li></ul>
+                        <h3>Instructions</h3>
+                        <ol><li>Chill a mixing bowl and beaters for 10–15 minutes.</li><li>Pour the cold cream into the chilled bowl. Beat on medium speed until it begins to thicken.</li><li>Add the powdered sugar and vanilla. Continue beating until soft peaks form for spreading, or firm peaks form for piping.</li><li>Stop as soon as the cream holds its shape. Overbeating can turn it grainy and eventually into butter.</li><li>Spread on a completely cooled cake. Keep the cake refrigerated until serving.</li></ol>
+                        <p><strong>Baker tip:</strong> Keep the cream cold and use an adult's help with the mixer.</p>`
+                };
+
+                const addRecipe = (number, title, icon, content) => {
+                    const dialog = document.createElement('dialog');
+                    dialog.className = 'recipe-dialog';
+                    dialog.id = `baking-recipe-${number}`;
+                    dialog.setAttribute('aria-labelledby', `baking-recipe-title-${number}`);
+                    dialog.innerHTML = `
+                        <button class="recipe-close" type="button" aria-label="Close ${title} recipe">Close ×</button>
+                        <article data-recipe-content>
+                            <p><strong>Baking Club Recipe #${number}</strong></p>
+                            ${content}
+                        </article>`;
+                    const heading = dialog.querySelector('h2');
+                    heading.id = `baking-recipe-title-${number}`;
+                    recipeSection.append(dialog);
+
+                    const button = document.createElement('button');
+                    button.className = 'recipe-choice';
+                    button.type = 'button';
+                    button.textContent = `${icon} ${number}. ${title}`;
+                    button.setAttribute('aria-haspopup', 'dialog');
+                    button.setAttribute('aria-controls', dialog.id);
+                    button.addEventListener('click', () => dialog.showModal());
+                    recipeList.append(button);
+                    dialog.querySelector('.recipe-close').addEventListener('click', () => dialog.close());
+                };
+
+                let recipeNumber = 1;
+                newRecipes.forEach((recipe) => {
+                    addRecipe(recipeNumber++, recipe.title, recipe.icon, recipe.content);
+                });
+
+                originalCards.forEach((card) => {
+                    const heading = card.querySelector('h1');
+                    const recipeTitle = card.querySelector('h2');
+                    const title = recipeTitle ? recipeTitle.textContent.trim() : `Recipe ${recipeNumber}`;
+                    if (title === 'Classic Two Layer Cake') {
+                        addRecipe(recipeNumber++, whippedCreamRecipe.title, whippedCreamRecipe.icon, whippedCreamRecipe.content);
+                    }
+                    const number = recipeNumber++;
+                    const iconMatch = heading.textContent.match(/^[^\s]+/);
+                    const icon = iconMatch ? iconMatch[0] : '🍰';
+                    heading.textContent = heading.textContent.replace(/#\d+/, `#${number}`);
+
+                    const dialog = document.createElement('dialog');
+                    dialog.className = 'recipe-dialog';
+                    dialog.id = `baking-recipe-${number}`;
+                    dialog.setAttribute('aria-labelledby', `baking-recipe-title-${number}`);
+                    const closeButton = document.createElement('button');
+                    closeButton.className = 'recipe-close';
+                    closeButton.type = 'button';
+                    closeButton.textContent = 'Close ×';
+                    closeButton.setAttribute('aria-label', `Close ${title} recipe`);
+                    const cardHeading = card.querySelector('h2');
+                    if (cardHeading) {
+                        cardHeading.id = `baking-recipe-title-${number}`;
+                    }
+                    dialog.append(closeButton, card);
+                    recipeSection.append(dialog);
+
+                    const button = document.createElement('button');
+                    button.className = 'recipe-choice';
+                    button.type = 'button';
+                    button.textContent = `${icon} ${number}. ${title}`;
+                    button.setAttribute('aria-haspopup', 'dialog');
+                    button.setAttribute('aria-controls', dialog.id);
+                    button.addEventListener('click', () => dialog.showModal());
+                    recipeList.append(button);
+                    closeButton.addEventListener('click', () => dialog.close());
+                });
+            })();
+        </script>
 
         <!-- Scottish Shortbread Slideshow -->
         <div class="pdf-section">
