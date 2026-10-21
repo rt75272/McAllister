@@ -292,6 +292,41 @@
             box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), 0 8px 15px rgba(0,0,0,0.6);
         }
 
+        .station-node.football-station .station-circle {
+            background: radial-gradient(circle at 35% 35%, #facc15, #b45309);
+            border-color: #fde68a;
+            color: #1c1917;
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.75), 0 5px 10px rgba(0,0,0,0.5);
+        }
+
+        .station-node.football-station .station-label {
+            color: #1c1917;
+            background: #fde68a;
+            border-color: #f59e0b;
+        }
+
+        .football-launch-button {
+            display: block;
+            width: 100%;
+            margin-top: .75rem;
+            padding: .85rem 1rem;
+            border: 2px solid #facc15;
+            border-radius: .75rem;
+            background: linear-gradient(110deg, #166534, #15803d);
+            color: #fff;
+            font: inherit;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .football-launch-button:hover,
+        .football-launch-button:focus-visible {
+            background: linear-gradient(110deg, #15803d, #22c55e);
+            outline: 3px solid #fde68a;
+            outline-offset: 2px;
+        }
+
         .station-node.completed .station-circle {
             background: radial-gradient(circle at 35% 35%, #10b981, #064e3b);
             border-color: #34d399;
@@ -547,6 +582,9 @@
         </div>
 
         <!-- 2D Constellation Trail Map -->
+        <button id="football-game-launch" class="football-launch-button" type="button" hidden>
+            🏈 Play Absolute Value Football — Unit 3, Station 11
+        </button>
         <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Unit Constellation Pathway</h3>
         <div id="constellation-map" class="constellation-map" data-theme="cosmic">
             <div class="planet-photo"></div>
@@ -1371,7 +1409,7 @@
         const pathCoords = [
             { x: 10, y: 50 }, { x: 18, y: 30 }, { x: 26, y: 20 }, { x: 34, y: 30 },
             { x: 42, y: 55 }, { x: 50, y: 75 }, { x: 58, y: 80 }, { x: 66, y: 65 },
-            { x: 74, y: 45 }, { x: 82, y: 25 }, { x: 90, y: 20 }, { x: 95, y: 40 }
+            { x: 74, y: 45 }, { x: 82, y: 25 }, { x: 90, y: 78 }, { x: 95, y: 40 }
         ];
 
         function getCurrentCurriculumUnit() {
@@ -1526,7 +1564,15 @@
                 }
                 node.style.left = `${coord.x}%`;
                 node.style.top = `${coord.y}%`;
-                node.innerHTML = `<div class="station-circle">${station.id}</div><div class="station-label">Station ${station.id}</div>`;
+                const isFootballStation = station.activity && station.activity.type === 'football_inequalities';
+                if (isFootballStation) {
+                    node.classList.add('football-station');
+                    node.setAttribute('aria-label', 'Play Absolute Value Football, Station 11');
+                    node.title = 'Play Absolute Value Football';
+                    node.innerHTML = '<div class="station-circle">🏈</div><div class="station-label">Football Game</div>';
+                } else {
+                    node.innerHTML = `<div class="station-circle">${station.id}</div><div class="station-label">Station ${station.id}</div>`;
+                }
 
                 node.addEventListener('mouseenter', () => {
                     document.getElementById('detail-title').textContent = `🌟 Station ${station.id}: ${station.name}`;
@@ -1536,6 +1582,13 @@
                 node.addEventListener('click', () => launchStation(station));
                 nodesContainer.appendChild(node);
             });
+
+            const footballStation = activeStations.find((station) => station.activity && station.activity.type === 'football_inequalities');
+            const footballLaunchButton = document.getElementById('football-game-launch');
+            if (footballStation && planetId === 3 && footballLaunchButton) {
+                footballLaunchButton.hidden = false;
+                footballLaunchButton.addEventListener('click', () => launchStation(footballStation));
+            }
 
             // Revert back to the default message only when leaving the entire constellation map area
             mapSurface.addEventListener('mouseleave', () => {
