@@ -1094,13 +1094,14 @@
                         min_questions: 6,
                         max_questions: 10,
                         question_generator: () => {
-                            const x = randomInt(2, 5);
+                            const x = randomInt(-5, 5) || -3;
                             const exp = randomInt(2, 3);
-                            const constant = randomInt(1, 10);
-                            const answer = Math.pow(x, exp) + constant;
+                            const constant = randomInt(-15, 15) || -4;
+                            const answer = Math.pow(Math.abs(x), exp) + constant;
+                            const constantOperator = constant < 0 ? "-" : "+";
                             return {
                                 scenario: "Calibrate Thermostat",
-                                task: `Evaluate x^${exp} + ${constant} when x = ${x}.`,
+                                task: `Evaluate |x|^${exp} ${constantOperator} ${Math.abs(constant)} when x = ${x}.`,
                                 answer: String(answer),
                                 key: `${x}_${exp}_${constant}`
                             };
