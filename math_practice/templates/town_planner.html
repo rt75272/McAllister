@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Town Planner - Planet 4 Coordinate Town Builder{% endblock %}
+{% block title %}Town Planner - Coordinate Town Builder{% endblock %}
 
 {% block extra_styles %}
 <style>
@@ -355,8 +355,7 @@
 <main class="town-page">
     <header class="town-header">
         <nav class="town-nav" aria-label="Town Planner navigation">
-            <a href="{{ url_for('planet_hub', planet_id=4) }}">← Back to Planet 4</a>
-            <a href="{{ url_for('quest_map') }}">Quest Map</a>
+            <a href="{{ url_for('quest_map') }}">← Back to Quest Map</a>
         </nav>
         <h1>🏘️ Town Planner</h1>
         <p>Plan a community on a coordinate plane. Choose a grid step, then place items on its intersections.</p>

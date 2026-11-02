@@ -894,9 +894,9 @@ def coordinate_navigator():
     return render_template('coordinate_navigator.html')
 
 
-@app.route('/planet4/town-planner')
-def planet4_town_planner():
-    """Interactive coordinate-plane town builder for Planet 4."""
+@app.route('/town-planner')
+def town_planner():
+    """Interactive coordinate-plane town builder on its own planet."""
     return render_template('town_planner.html')
 
 
