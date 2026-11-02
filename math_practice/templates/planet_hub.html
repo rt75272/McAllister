@@ -1112,7 +1112,7 @@
                                 key: `${negativeMagnitude}_${positiveValue}`
                             };
                         }
-                    }
+                    },
                 ]
             },
             {
@@ -1247,6 +1247,20 @@
                         skill_focus: "expressions",
                         prompt: "Adopt the teacher role! Create a custom algebra expression. Type the problem, the value of the variable, and the correct evaluation.",
                         points_reward: 300,
+                        min_questions: 1,
+                        max_questions: 1
+                    },
+                    {
+                        id: "p4_s11",
+                        title: "Town Planner",
+                        type: "game_portal",
+                        game_name: "Town Planner",
+                        game_url: "{{ url_for('planet4_town_planner') }}",
+                        game_topic: "expressions",
+                        question_topic: "expressions",
+                        game_icon: "🏘️",
+                        description: "Build a town on a coordinate plane by plotting buildings, nature, and community details at ordered pairs.",
+                        points_reward: 120,
                         min_questions: 1,
                         max_questions: 1
                     }

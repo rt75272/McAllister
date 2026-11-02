@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}Town Planner - Planet 4 Coordinate Town Builder{% endblock %}
+
+{% block extra_styles %}
+<style>
+    :root {
+        color-scheme: dark;
+        --town-panel: rgba(15, 23, 42, .94);
+        --town-border: rgba(125, 211, 252, .3);
+        --town-cyan: #67e8f9;
+        --town-gold: #fbbf24;
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px 16px 40px;
+        box-sizing: border-box;
+        color: #eaf5ff;
+        font-family: 'Lexend', 'Arial', sans-serif;
+        background-color: #05030d;
+        background-image:
+            radial-gradient(circle at 15% 15%, rgba(249, 168, 212, .16), transparent 26rem),
+            radial-gradient(circle at 85% 80%, rgba(14, 165, 233, .14), transparent 30rem),
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23dbeafe' fill-opacity='.35'%3E%3Ccircle cx='16' cy='20' r='1'/%3E%3Ccircle cx='94' cy='31' r='.7'/%3E%3Ccircle cx='146' cy='16' r='1'/%3E%3Ccircle cx='55' cy='112' r='.9'/%3E%3Ccircle cx='169' cy='138' r='.7'/%3E%3Ccircle cx='122' cy='163' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .town-page {
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    .town-header,
+    .town-panel {
+        border: 1px solid var(--town-border);
+        border-radius: 18px;
+        background: var(--town-panel);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, .35);
+    }
+
+    .town-header {
+        padding: 20px 24px;
+        margin-bottom: 18px;
+    }
+
+    .town-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .town-nav a,
+    .town-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 1px solid rgba(103, 232, 249, .5);
+        border-radius: 10px;
+        padding: 9px 13px;
+        color: #eaf5ff;
+        background: rgba(255, 255, 255, .07);
+        font: inherit;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .town-nav a:hover,
+    .town-button:hover,
+    .town-button:focus-visible {
+        border-color: var(--town-cyan);
+        background: rgba(103, 232, 249, .16);
+    }
+
+    .town-header h1 {
+        margin: 0;
+        color: var(--town-cyan);
+        font-size: clamp(1.7rem, 4vw, 2.5rem);
+    }
+
+    .town-header p {
+        margin: 8px 0 0;
+        color: #bfcee0;
+    }
+
+    .town-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+        align-items: start;
+        gap: 18px;
+    }
+
+    .town-panel {
+        padding: 18px;
+    }
+
+    .town-panel h2,
+    .town-panel h3 {
+        margin: 0 0 12px;
+        color: var(--town-gold);
+    }
+
+    .town-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .town-controls label,
+    .student-name-label {
+        display: grid;
+        gap: 6px;
+        color: #d6e5f6;
+        font-size: .88rem;
+        font-weight: 700;
+    }
+
+    .town-controls select,
+    .town-controls input,
+    .student-name-input {
+        min-height: 40px;
+        box-sizing: border-box;
+        border: 1px solid rgba(148, 163, 184, .55);
+        border-radius: 9px;
+        padding: 8px 10px;
+        color: #f8fafc;
+        background: #0b1220;
+        font: inherit;
+    }
+
+    .town-controls select {
+        min-width: 190px;
+    }
+
+    .mode-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .mode-button[aria-pressed="true"],
+    .palette-item[aria-pressed="true"] {
+        outline: 2px solid var(--town-gold);
+        outline-offset: 2px;
+        background: rgba(251, 191, 36, .2);
+    }
+
+    .canvas-wrap {
+        overflow: auto;
+        border: 1px solid rgba(148, 163, 184, .38);
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    #town-canvas {
+        display: block;
+        width: 100%;
+        min-width: 520px;
+        height: auto;
+        touch-action: none;
+        cursor: crosshair;
+    }
+
+    .town-help,
+    .town-status,
+    .selected-coordinate {
+        color: #bfcee0;
+        font-size: .9rem;
+        line-height: 1.5;
+    }
+
+    .town-help {
+        margin: 10px 0 0;
+    }
+
+    .town-sidebar {
+        display: grid;
+        gap: 16px;
+    }
+
+    .palette-category + .palette-category {
+        margin-top: 16px;
+    }
+
+    .palette-category h3 {
+        font-size: 1rem;
+    }
+
+    .palette-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .palette-item {
+        min-height: 48px;
+        padding: 8px;
+        border: 1px solid rgba(148, 163, 184, .42);
+        border-radius: 10px;
+        color: #eaf5ff;
+        background: rgba(255, 255, 255, .06);
+        font: inherit;
+        font-size: .84rem;
+        font-weight: 700;
+        cursor: grab;
+    }
+
+    .palette-item:active {
+        cursor: grabbing;
+    }
+
+    .palette-item:focus-visible,
+    .town-button:focus-visible,
+    .mode-button:focus-visible {
+        outline: 2px solid var(--town-cyan);
+        outline-offset: 2px;
+    }
+
+    .selected-coordinate {
+        min-height: 1.5em;
+        margin: 0 0 8px;
+        color: var(--town-cyan);
+        font-weight: 700;
+    }
+
+    .town-table-wrap {
+        overflow-x: auto;
+    }
+
+    .town-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .85rem;
+    }
+
+    .town-table th,
+    .town-table td {
+        border-bottom: 1px solid rgba(148, 163, 184, .25);
+        padding: 8px 5px;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .town-table th {
+        color: #bfdbfe;
+    }
+
+    .coordinate-icon-preview {
+        display: inline-block;
+        min-width: 1.5em;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    .coordinate-answer {
+        width: 100%;
+        min-width: 72px;
+        min-height: 34px;
+        border: 1px solid rgba(148, 163, 184, .55);
+        border-radius: 7px;
+        padding: 5px 7px;
+        color: #f8fafc;
+        background: #0b1220;
+        font: inherit;
+        text-align: center;
+    }
+
+    .town-table tr[data-selected="true"] {
+        background: rgba(103, 232, 249, .12);
+    }
+
+    .table-delete,
+    .delete-selected {
+        border: 1px solid rgba(248, 113, 113, .6);
+        border-radius: 7px;
+        padding: 5px 8px;
+        color: #fecaca;
+        background: rgba(127, 29, 29, .45);
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .town-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .export-button {
+        grid-column: 1 / -1;
+        border-color: rgba(251, 191, 36, .75);
+        background: linear-gradient(110deg, #854d0e, #b45309);
+    }
+
+    .export-button:hover {
+        background: linear-gradient(110deg, #a16207, #d97706);
+    }
+
+    .export-reminder {
+        grid-column: 1 / -1;
+        margin: -2px 0 0;
+        color: #bfcee0;
+        font-size: .82rem;
+        line-height: 1.4;
+    }
+
+    .town-status {
+        min-height: 1.5em;
+        margin: 12px 0 0;
+    }
+
+    @media (max-width: 960px) {
+        .town-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .town-sidebar {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 14px 10px 28px;
+        }
+
+        .town-header,
+        .town-panel {
+            padding: 14px;
+        }
+
+        .town-controls {
+            align-items: stretch;
+        }
+
+        .mode-buttons,
+        .town-controls label {
+            width: 100%;
+        }
+
+        .mode-button {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="town-page">
+    <header class="town-header">
+        <nav class="town-nav" aria-label="Town Planner navigation">
+            <a href="{{ url_for('planet_hub', planet_id=4) }}">← Back to Planet 4</a>
+            <a href="{{ url_for('quest_map') }}">Quest Map</a>
+        </nav>
+        <h1>🏘️ Town Planner</h1>
+        <p>Plan a community on a coordinate plane. Choose a grid step, then place items on its intersections.</p>
+    </header>
+
+    <div class="town-layout">
+        <section class="town-panel" aria-labelledby="map-title">
+            <h2 id="map-title">Coordinate Town Map</h2>
+            <div class="town-controls">
+                <div>
+                    <span class="student-name-label">Coordinate plane</span>
+                    <div class="mode-buttons" role="group" aria-label="Coordinate plane mode">
+                        <button class="town-button mode-button" type="button" data-mode="quadrant1" aria-pressed="false">Quadrant I (0 to 10)</button>
+                        <button class="town-button mode-button" type="button" data-mode="four" aria-pressed="true">Four quadrants (-8 to 8)</button>
+                    </div>
+                </div>
+                <label for="map-style">Street layout
+                    <select id="map-style">
+                        <option value="suburban">Suburban Neighborhood</option>
+                        <option value="river-city">River City</option>
+                        <option value="lakeside">Lakeside Town</option>
+                        <option value="downtown">Downtown Grid</option>
+                    </select>
+                </label>
+                <label for="grid-step">Grid step
+                    <select id="grid-step">
+                        <option value="1">Standard (Integers 1, 2, 3...)</option>
+                        <option value="0.5">Advanced Challenge (Halves / 0.5 steps)</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="canvas-wrap">
+                <canvas id="town-canvas" width="900" height="760" tabindex="0"
+                    aria-label="Interactive coordinate plane. Choose an item from the palette, then click a grid intersection. Drag a placed item to move it."></canvas>
+            </div>
+            <p class="town-help">Choose a sticker from the palette and click the grid, or drag a sticker onto the map. Items snap to the selected grid step. Click an item to inspect it; drag it to move it.</p>
+            <p id="town-status" class="town-status" role="status" aria-live="polite">Choose a sticker to start building your town.</p>
+        </section>
+
+        <aside class="town-sidebar">
+            <section class="town-panel" aria-labelledby="palette-title">
+                <h2 id="palette-title">Sticker Palette</h2>
+                <div class="palette-category">
+                    <h3>Buildings</h3>
+                    <div class="palette-grid">
+                        <button class="palette-item" type="button" draggable="true" data-item="House" data-icon="🏠" aria-pressed="false">🏠 House</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="School" data-icon="🏫" aria-pressed="false">🏫 School</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Grocery Store" data-icon="🏪" aria-pressed="false">🏪 Grocery Store</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Fire Station" data-icon="🚒" aria-pressed="false">🚒 Fire Station</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Pizzeria" data-icon="🍕" aria-pressed="false">🍕 Pizzeria</button>
+                    </div>
+                </div>
+                <div class="palette-category">
+                    <h3>Nature</h3>
+                    <div class="palette-grid">
+                        <button class="palette-item" type="button" draggable="true" data-item="Pine Tree" data-icon="🌲" aria-pressed="false">🌲 Pine Tree</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Oak Tree" data-icon="🌳" aria-pressed="false">🌳 Oak Tree</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Park Pond" data-icon="🏞️" aria-pressed="false">🏞️ Park Pond</button>
+                    </div>
+                </div>
+                <div class="palette-category">
+                    <h3>Utilities &amp; Details</h3>
+                    <div class="palette-grid">
+                        <button class="palette-item" type="button" draggable="true" data-item="Fire Hydrant" data-icon="🚰" aria-pressed="false">🚰 Fire Hydrant</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Street Lamp" data-icon="💡" aria-pressed="false">💡 Street Lamp</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Stop Sign" data-icon="🛑" aria-pressed="false">🛑 Stop Sign</button>
+                    </div>
+                </div>
+                <div class="palette-category">
+                    <h3>Vehicles</h3>
+                    <div class="palette-grid">
+                        <button class="palette-item" type="button" draggable="true" data-item="Garbage Truck" data-icon="🚛" aria-pressed="false">🚛 Garbage Truck</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Tractor" data-icon="🚜" aria-pressed="false">🚜 Tractor</button>
+                    </div>
+                </div>
+                <div class="palette-category">
+                    <h3>Infrastructure &amp; Public Works</h3>
+                    <div class="palette-grid">
+                        <button class="palette-item" type="button" draggable="true" data-item="Horizontal Bridge" data-icon="🌉" aria-pressed="false">🌉 Horizontal Bridge</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Vertical Bridge" data-icon="🌉" data-rotation="90" aria-pressed="false">🌉 Vertical Bridge</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Trash Can / Recycling Bin" data-icon="🗑️" aria-pressed="false">🗑️ Trash / Recycling Bin</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Mailbox" data-icon="📮" aria-pressed="false">📮 Mailbox</button>
+                        <button class="palette-item" type="button" draggable="true" data-item="Park Bench" data-icon="🪑" aria-pressed="false">🪑 Park Bench</button>
+                    </div>
+                </div>
+                <p id="selected-coordinate" class="selected-coordinate">Selected item: none</p>
+                <button id="delete-selected" class="delete-selected" type="button" disabled>Delete selected item</button>
+            </section>
+
+            <section class="town-panel" aria-labelledby="legend-title">
+                <h2 id="legend-title">Town Legend / Coordinates Table</h2>
+                <label class="student-name-label" for="student-name">Student name
+                    <input id="student-name" class="student-name-input" type="text" maxlength="60" placeholder="Enter your name">
+                </label>
+                <div class="town-table-wrap">
+                    <table class="town-table">
+                        <thead>
+                            <tr><th scope="col">Item</th><th scope="col">My ordered pair</th><th scope="col">Action</th></tr>
+                        </thead>
+                        <tbody id="coordinate-rows"></tbody>
+                    </table>
+                </div>
+                <p class="town-help">Record whole numbers, decimals, or fractions, for example (1.5, -2.5) or (1 1/2, -2).</p>
+                <p id="empty-town">No items placed yet. Add a sticker to see a space for its ordered pair here.</p>
+                <div class="town-actions">
+                    <button id="export-town" class="town-button export-button" type="button">⬇ Export town plan as PNG</button>
+                    <p class="export-reminder">Downloads as a .PNG file ready to upload directly to Canvas!</p>
+                    <button id="clear-town" class="town-button" type="button">Clear town</button>
+                </div>
+            </section>
+        </aside>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/town_planner.js') }}" defer></script>
+{% endblock %}

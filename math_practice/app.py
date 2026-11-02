@@ -893,6 +893,13 @@ def coordinate_navigator():
     """Coordinate Plane Navigator game page."""
     return render_template('coordinate_navigator.html')
 
+
+@app.route('/planet4/town-planner')
+def planet4_town_planner():
+    """Interactive coordinate-plane town builder for Planet 4."""
+    return render_template('town_planner.html')
+
+
 @app.route('/ratio-river')
 def ratio_river():
     """Ratio River Crossing game page."""
