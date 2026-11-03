@@ -43,10 +43,11 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Game leaderboards and community profiles** - Signed-in learners can see the best saved scores by game. Scores are tied to accounts; Math Practice ranks saved correct answers and other games report their visible score counters. Profiles remain private unless the learner opts in; only the display name and selected profile fields are shown to other signed-in learners.
 
 ### 🪐 3D Space Flight & Quest Map
-- **Cosmic Flight Quest Map** - 3D space flight navigation across 10 curriculum planetary systems.
+- **Cosmic Flight Quest Map** - 3D space flight navigation across the curriculum planets, special planets (Pet Land, Baking Club, Game, ELA, Science, Decimal Life, Chess, Town Planner, Math Games), and a black-hole portal to the Solar System Flight Explorer.
+- **Customizable Ship** - A "🚀 Customize Ship" tab at the top of the Quest Map and Flight Explorer lets students pick a style (Jet, Rocket, Saucer), body/wing/exhaust colors, and size. Choices are saved in the browser (`localStorage`) and shared by both pages.
 - **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.
 - **Solar System Explorer** - Scale planetary map with authentic NASA imagery and astronomy facts.
-- **Orientation Station** - Module 0 onboarding checking Canvas navigation, calendar, and inbox skills.
+- **Orientation Sun** - Module 0 onboarding (Canvas navigation, calendar, and inbox skills). The Sun at the center of the Quest Map is the Orientation planet; fly close and press Enter to land. Curriculum planets are numbered starting at 1.
 - **Pet Land** - Pet adoption and equipment center earned via quest achievements.
 - **Grand Finale** - 3-day end-of-year math celebration slideshow with interactive mini-games.
 
@@ -109,6 +110,7 @@ math_practice/
 │   ├── planet_hub.html                 # 10-station constellation trail.
 │   ├── solar_system.html               # Solar system fact explorer.
 │   ├── solar_flight.html               # 3D solar system flight simulation.
+│   ├── orientation_planet.html         # Orientation Sun (Module 0) onboarding.
 │   ├── star360_checkin.html            # Diagnostic test check-in log.
 │   └── ...                             # Dedicated game view templates.
 └── static/                             # Static assets.
@@ -118,6 +120,7 @@ math_practice/
     │   ├── planet_backgrounds/         # Illustrated planet backdrop art.
     │   └── screenshots/                # UI screenshots and captures.
     ├── js/                             # Game logic scripts and interactive modules.
+    │   └── ship_customizer.js          # Shared ship builder + customization panel.
     ├── models/                         # 3D WebGL asset models.
     └── pdfs/                           # Printable learning worksheets.
 ```
