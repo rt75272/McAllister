@@ -78,7 +78,7 @@ LEADERBOARD_GAMES = {
     'natural-selection-planet': 'Beetle Natural Selection',
     'moth-camouflage': 'Moth Camouflage',
     'earth-science-planet': 'Earth Science Stations',
-    'orientation': 'Orientation Station',
+    'orientation': 'Orientation Sun',
     'planet-hub': 'Curriculum Planet Hub',
     'plot-points': 'Plot Points',
     'd20': 'D20 Dice Challenge',

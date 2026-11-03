@@ -373,10 +373,11 @@
 {% block extra_scripts %}
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{{ url_for('static', filename='js/ship_customizer.js') }}"></script>
     <script>
         // Data configuration: Curriculum planets orbiting in space.
         const allPlanetsData = [
-            { id: 0, name: "Orientation Station", unitLabel: "ORIENTATION", color: 0x38bdf8, size: 1.0, radius: 6, speed: 0.2, icon: "🛰️", specialRoute: "/orientation" },
+            { id: 0, name: "Orientation Sun", unitLabel: "ORIENTATION", color: 0xffd700, size: 3.5, radius: 0, speed: 0, icon: "☀️", specialRoute: "/orientation", isSun: true },
             { id: 1, name: "Sky Garden Planet (Number Properties)", color: 0xec4899, size: 1.2, radius: 10, speed: 0.15, icon: "🌸" },
             { id: 2, name: "Gorilla Nebula (Fractions & Decimals)", color: 0xa855f7, size: 1.4, radius: 14, speed: 0.12, icon: "🦍" },
             { id: 3, name: "Bathhouse Battle (Rational Numbers)", color: 0x3b82f6, size: 1.1, radius: 18, speed: 0.10, icon: "♨️" },
@@ -572,7 +573,7 @@
 
         function resetShipFlightState() {
             if (!ship) return;
-            ship.position.set(0, 0, 6);
+            ship.position.set(0, 0, 14);
             ship.rotation.set(0, 0, 0);
             shipVelocity.set(0, 0, 0);
             shipRotationY = 0;
@@ -712,7 +713,7 @@
                 roughness: 1,
                 metalness: 0.02
             });
-            const regularPlanets = planetsData.filter((data) => !data.blackHole);
+            const regularPlanets = planetsData.filter((data) => !data.blackHole && !data.isSun);
             const planetGeometry = new THREE.DodecahedronGeometry(1, 1);
             const planetMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
@@ -725,7 +726,7 @@
             scene.add(planetField);
 
             const orbitSegments = 64;
-            planetsData.forEach((data) => {
+            planetsData.filter((data) => data.radius > 0).forEach((data) => {
                 const innerRadius = data.radius - 0.05;
                 const outerRadius = data.radius + 0.05;
                 for (let segment = 0; segment < orbitSegments; segment += 1) {
@@ -751,7 +752,9 @@
                 const planetPosition = new THREE.Vector3();
                 const planetSpin = { value: 0 };
 
-                if (data.blackHole) {
+                if (data.isSun) {
+                    planetMesh = sunMesh;
+                } else if (data.blackHole) {
                     const planetGeo = new THREE.SphereGeometry(data.size, 28, 20);
                     const planetMat = new THREE.MeshStandardMaterial({
                         color: 0x010208,
@@ -886,40 +889,13 @@
             // 7. Spaceship (Low-poly wedge model)
             ship = new THREE.Group();
             
-            // Fuselage (Cone)
-            const bodyGeo = new THREE.ConeGeometry(0.4, 1.5, 5);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, flatShading: true });
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            bodyMesh.rotation.x = Math.PI / 2; // Point forward along Z
-            ship.add(bodyMesh);
+            initShipCustomizer(ship);
 
-            // Wing left
-            const wingLGeo = new THREE.BoxGeometry(0.8, 0.05, 0.5);
-            const wingLMat = new THREE.MeshStandardMaterial({ color: 0xa855f7, flatShading: true });
-            const wingL = new THREE.Mesh(wingLGeo, wingLMat);
-            wingL.position.set(-0.5, -0.1, 0.2);
-            wingL.rotation.y = 0.2;
-            ship.add(wingL);
-
-            // Wing right
-            const wingR = wingL.clone();
-            wingR.position.x = 0.5;
-            wingR.rotation.y = -0.2;
-            ship.add(wingR);
-
-            // Engine Flame glow
-            const exhaustGeo = new THREE.CylinderGeometry(0.2, 0.05, 0.3, 4);
-            const exhaustMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
-            const exhaust = new THREE.Mesh(exhaustGeo, exhaustMat);
-            exhaust.position.set(0, 0, 0.7);
-            exhaust.rotation.x = Math.PI / 2;
-            ship.add(exhaust);
-
-            ship.position.set(0, 0, 6); // Start near the Orientation Station
+            ship.position.set(0, 0, 14); // Start just outside the Sun's landing range
             scene.add(ship);
 
             // Setup camera starting point behind ship
-            camera.position.set(0, 4, 15);
+            camera.position.set(0, 7, 21);
 
             // Event Listeners
             window.addEventListener('keydown', (e) => {
