@@ -443,6 +443,15 @@
             answerInput.spellcheck = false;
             answerInput.setAttribute('aria-label', `Write the ordered pair for ${item.name}`);
             answerInput.placeholder = '(x, y)';
+            answerInput.value = item.answer || '';
+            answerInput.addEventListener('input', () => { item.answer = answerInput.value; });
+            answerInput.addEventListener('change', () => applyOrderedPair(item, answerInput));
+            answerInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyOrderedPair(item, answerInput);
+                }
+            });
             coordinateCell.append(answerInput);
             const actionCell = document.createElement('td');
             const removeButton = document.createElement('button');
@@ -453,11 +462,38 @@
             removeButton.addEventListener('click', () => removeItem(item.id));
             actionCell.append(removeButton);
             row.addEventListener('click', (event) => {
-                if (event.target !== removeButton) selectItem(item.id);
+                if (event.target === removeButton || event.target === answerInput) return;
+                if (item.id !== settings.selectedItemId) selectItem(item.id);
             });
             row.append(nameCell, coordinateCell, actionCell);
             coordinateRows.append(row);
         });
+    }
+
+    function applyOrderedPair(item, input) {
+        const match = input.value.trim().match(/^\(?\s*(-?\d*\.?\d+)\s*,\s*(-?\d*\.?\d+)\s*\)?$/);
+        if (!match) {
+            status.textContent = 'Enter an ordered pair like (3, 4).';
+            return;
+        }
+        const x = parseFloat(match[1]);
+        const y = parseFloat(match[2]);
+        const bounds = boundsForMode();
+        if (x < bounds.min || x > bounds.max || y < bounds.min || y > bounds.max) {
+            status.textContent = `Both numbers must be between ${bounds.min} and ${bounds.max}.`;
+            return;
+        }
+        item.x = x;
+        item.y = y;
+        item.answer = input.value;
+        settings.selectedItemId = item.id;
+        selectedCoordinate.textContent = `Selected: ${item.icon} ${item.name}`;
+        deleteSelectedButton.disabled = false;
+        Array.from(coordinateRows.children).forEach((row, index) => {
+            row.dataset.selected = String(items[index] === item);
+        });
+        render();
+        status.textContent = `${item.icon} ${item.name} moved to (${x}, ${y}).`;
     }
 
     function setPaletteItem(itemName, icon, rotation = 0) {
