@@ -427,11 +427,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (state.coins >= 15) {
                         const confirmUnlock = confirm(`Would you like to spend 15 coins to unlock Unit ${unit.id}: ${unit.name}?`);
                         if (confirmUnlock) {
-                            state.coins -= 15;
-                            state.unlockedUnits.push(unit.id);
-                            playSound('unlock');
-                            saveState();
-                            renderMainMap();
+                            if (window.accountCoinContext) {
+                                const body = new URLSearchParams({
+                                    csrf_token: window.accountCoinContext.csrfToken,
+                                    unit_id: String(unit.id),
+                                });
+                                fetch('/api/account/coins/unit-unlock', {
+                                    method: 'POST',
+                                    body,
+                                    credentials: 'same-origin',
+                                }).then(async (response) => {
+                                    const result = await response.json();
+                                    if (!response.ok) {
+                                        throw new Error(result.error || 'Could not unlock this unit.');
+                                    }
+                                    state.coins = result.coin_balance;
+                                    state.unlockedUnits.push(unit.id);
+                                    playSound('unlock');
+                                    saveState();
+                                    renderMainMap();
+                                }).catch((error) => {
+                                    console.error('Quest Map unit unlock failed:', error);
+                                    alert(error.message || 'Could not unlock this unit. Please try again.');
+                                });
+                            } else {
+                                state.coins -= 15;
+                                state.unlockedUnits.push(unit.id);
+                                playSound('unlock');
+                                saveState();
+                                renderMainMap();
+                            }
                         }
                     } else {
                         alert(`This Unit is currently locked. Earn ${15 - state.coins} more coins or check with your teacher to unlock!`);
@@ -705,17 +730,48 @@ document.addEventListener('DOMContentLoaded', () => {
     function completeTopic() {
         // Increment completed questions counter for leaderboard
         state.correctCount = (state.correctCount || 0) + 1;
+        const topicId = currentActiveTopic.id;
+        const wasCompleted = state.completedTopics.includes(topicId);
+        const coinsAward = wasCompleted ? 2 : (currentActiveTopic.coinsAward || 10);
 
-        if (!state.completedTopics.includes(currentActiveTopic.id)) {
-            state.completedTopics.push(currentActiveTopic.id);
-            // Dynamic coin award from topic configuration (default to 10 if not set)
-            const coinsAward = currentActiveTopic.coinsAward || 10;
+        if (!wasCompleted) {
+            state.completedTopics.push(topicId);
             state.coins += coinsAward;
             playSound('success');
         } else {
             // Replaying an already completed topic earns small 2 coin bonus and increments correctCount
-            state.coins += 2;
+            state.coins += coinsAward;
             playSound('success');
+        }
+
+        if (window.accountCoinContext) {
+            const body = new URLSearchParams({
+                csrf_token: window.accountCoinContext.csrfToken,
+                topic_id: topicId,
+            });
+            fetch('/api/account/coins/quest-topic', {
+                method: 'POST',
+                body,
+                credentials: 'same-origin',
+            }).then(async (response) => {
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Could not save your Quest Map coins.');
+                }
+                state.coins = result.coin_balance;
+                saveState();
+                if (result.coins_awarded > 0) {
+                    showAccountCoinReward(result.coins_awarded);
+                }
+            }).catch((error) => {
+                console.error('Quest Map coin reward could not be saved:', error);
+                alert('Your Quest Map coins could not sync to your account. Please try that topic again.');
+                if (!wasCompleted) {
+                    state.completedTopics = state.completedTopics.filter((id) => id !== topicId);
+                    state.coins -= coinsAward;
+                    saveState();
+                }
+            });
         }
         
         saveState();
@@ -727,6 +783,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderZoomedMap(currentActiveUnitId);
             }
         }, 1200);
+    }
+
+    function showAccountCoinReward(amount) {
+        const notice = document.createElement('div');
+        notice.setAttribute('role', 'status');
+        notice.textContent = `🪙 +${amount} account coins saved!`;
+        Object.assign(notice.style, {
+            position: 'fixed',
+            right: '20px',
+            bottom: '20px',
+            zIndex: '10000',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: '#166534',
+            color: '#fff',
+            font: '700 15px sans-serif',
+            boxShadow: '0 4px 16px rgba(0,0,0,.35)',
+        });
+        document.body.appendChild(notice);
+        window.setTimeout(() => notice.remove(), 3500);
     }
 
     // -------------------------------------------------------------
@@ -1389,5 +1465,20 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatsBar();
     renderMainMap();
     setupInteractiveTilt();
+    if (window.accountCoinContext) {
+        fetch('/api/account/coins', { credentials: 'same-origin' })
+            .then(async (response) => {
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Could not load your account coin balance.');
+                }
+                state.coins = result.coin_balance;
+                saveState();
+            })
+            .catch((error) => {
+                console.error('Account coin balance could not be loaded:', error);
+                alert(error.message || 'Your account coin balance could not load. Please refresh and try again.');
+            });
+    }
     window.addEventListener('resize', renderMainMap);
 });

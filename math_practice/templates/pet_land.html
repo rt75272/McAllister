@@ -520,7 +520,7 @@
             <div>
                 <span class="text-[10px] uppercase tracking-widest text-cyan-400 font-black block">Special Destination</span>
                 <h1 class="text-3xl font-black text-slate-100">Pet Land & Character Port</h1>
-                <p class="text-sm text-slate-400">Turn Pet Planet into a loop of quick wins, milestone unlocks, and animated avatar upgrades that travel with your map progress.</p>
+                <p class="text-sm text-slate-400">Spend coins on characters, hats, colors, skins, tools, shoes, and companions. Sign in to keep your wallet and wardrobe with your account.</p>
             </div>
         </div>
 
@@ -565,7 +565,7 @@
                 <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-black block">Hangar</span>
                 <h2 class="text-xl font-black text-slate-100">Animated Avatar Wardrobe</h2>
             </div>
-            <div class="text-xs text-slate-400">Preview locked gear, rotate the explorer, and swap between idle and traversal states before heading back to the map.</div>
+            <div class="text-xs text-slate-400">Preview gear, rotate the explorer, and swap between idle and traversal states before heading back to the map. Signed-in purchases are saved to your account.</div>
         </div>
         <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-4">
             <div class="pet-card">
@@ -679,8 +679,13 @@
             { id: 'starlight-glow', name: 'Starlight Glow', emoji: '✨', slot: 'aura', target: 'character', rarity: 'Common', dropRate: 90, cost: 1, milestoneUnit: 0, tier: 'immediate', description: 'A simple colorful aura for instant feedback.' },
             { id: 'sun-spex', name: 'Sun Spex', emoji: '🕶️', slot: 'hat', target: 'character', rarity: 'Common', dropRate: 85, cost: 2, milestoneUnit: 0, tier: 'immediate', description: 'Classic shades for a fast first unlock.' },
             { id: 'rookie-cap', name: 'Rookie Cap', emoji: '🧢', slot: 'hat', target: 'pet', rarity: 'Common', dropRate: 80, cost: 3, milestoneUnit: 0, tier: 'immediate', description: 'A basic cap for early point earners.' },
+            { id: 'aurora-color', name: 'Aurora Suit Color', emoji: '🎨', slot: 'color', color: '#34d399', target: 'character', rarity: 'Common', dropRate: 75, cost: 5, milestoneUnit: 0, tier: 'immediate', description: 'Tint your explorer suit with a bright aurora green.' },
+            { id: 'ocean-color', name: 'Ocean Suit Color', emoji: '🖌️', slot: 'color', color: '#38bdf8', target: 'character', rarity: 'Common', dropRate: 75, cost: 5, milestoneUnit: 0, tier: 'immediate', description: 'Tint your explorer suit with ocean blue.' },
             { id: 'pocket-jetpack', name: 'Pocket Jetpack', emoji: '🎒', slot: 'accessory', target: 'character', rarity: 'Uncommon', dropRate: 30, cost: 8, milestoneUnit: 2, tier: 'milestone', description: 'Adds motion and makes travel mode feel earned.' },
+            { id: 'comet-tool', name: 'Comet Tool', emoji: '🛠️', slot: 'tool', target: 'character', rarity: 'Uncommon', dropRate: 35, cost: 8, milestoneUnit: 0, tier: 'immediate', description: 'A mission-ready tool for your explorer.' },
+            { id: 'moon-boots', name: 'Moon Boots', emoji: '🥾', slot: 'shoes', target: 'character', rarity: 'Uncommon', dropRate: 30, cost: 10, milestoneUnit: 0, tier: 'immediate', description: 'A pair of sturdy boots for low-gravity adventures.' },
             { id: 'orbit-helmet', name: 'Orbit Helmet', emoji: '⛑️', slot: 'hat', target: 'character', rarity: 'Uncommon', dropRate: 26, cost: 10, milestoneUnit: 3, tier: 'milestone', description: 'Mid-game headgear unlocked by steady progress.' },
+            { id: 'crystal-skin', name: 'Crystal Explorer Skin', emoji: '💎', slot: 'skin', color: '#c084fc', target: 'character', rarity: 'Rare', dropRate: 20, cost: 12, milestoneUnit: 0, tier: 'milestone', description: 'Give your explorer a glowing crystal suit finish.' },
             { id: 'particle-trail', name: 'Particle Trail', emoji: '💫', slot: 'trail', target: 'pet', rarity: 'Rare', dropRate: 18, cost: 12, milestoneUnit: 4, tier: 'milestone', description: 'An animated streak that follows your sidekick.' },
             { id: 'cosmic-crown', name: 'Cosmic Crown', emoji: '👑', slot: 'hat', target: 'character', rarity: 'Legendary', dropRate: 6, cost: 25, milestoneUnit: 5, tier: 'mastery', description: 'A long-term flex item for high-point learners.' },
             { id: 'holo-companion', name: 'Holo Companion', emoji: '🪐', slot: 'aura', target: 'pet', rarity: 'Legendary', dropRate: 4, cost: 30, milestoneUnit: 6, tier: 'mastery', description: 'Projects a holographic buddy around your pet.' }
@@ -708,6 +713,7 @@
         };
         let floatTimer = null;
         let completedStations = [];
+        let accountInventoryLoaded = false;
         let hangarSceneMode = 'idle';
         let hangarRotation = 0;
         let previewGearId = null;
@@ -797,6 +803,60 @@
                 ...normalizeProfile(studentProfile),
             };
             localStorage.setItem('6th_grade_quest_state', JSON.stringify(parsed));
+        }
+
+        function applyAccountCharacterState(data) {
+            coins = data.coins;
+            studentProfile = normalizeProfile({
+                ownedCharacters: data.owned.character,
+                equippedCharacter: data.equipped.character,
+                ownedMerch: data.owned.gear,
+                equippedGear: data.equipped.gear,
+                ownedPets: data.owned.pet,
+                equippedPet: data.equipped.pet,
+            });
+            accountInventoryLoaded = true;
+            saveState();
+        }
+
+        async function loadAccountCharacterState() {
+            const response = await fetch('/api/account/character', {
+                credentials: 'same-origin',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Could not load your account character data.');
+            }
+            applyAccountCharacterState(data);
+        }
+
+        async function performAccountCharacterAction(itemType, itemKey, action) {
+            const body = new URLSearchParams({
+                csrf_token: window.accountCoinContext.csrfToken,
+                item_type: itemType,
+                item_key: itemKey,
+                action,
+            });
+            const response = await fetch('/api/account/character/action', {
+                method: 'POST',
+                body,
+                credentials: 'same-origin',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Could not update your character.');
+            }
+            applyAccountCharacterState(data);
+            updateHUD();
+            renderCharacterShop();
+            renderMerchShop();
+            renderPetShop();
+        }
+
+        function showShopError(feedback, error) {
+            console.error('Character shop action failed:', error);
+            feedback.textContent = error.message || 'Could not update your character. Please try again.';
+            feedback.style.color = '#ef4444';
         }
 
         function getCharacterById(id) {
@@ -1019,10 +1079,31 @@
         }
 
         function decorateLoadedAlienBody(root, character) {
+            const paint = getCharacterPaint();
+            if (paint) {
+                root.traverse((object) => {
+                    if (!object.isMesh || !object.material) return;
+                    const materials = Array.isArray(object.material) ? object.material : [object.material];
+                    const tintedMaterials = materials.map((material) => {
+                        const tinted = material.clone();
+                        if (tinted.color) {
+                            tinted.color.lerp(new THREE.Color(paint.color), 0.42);
+                        }
+                        return tinted;
+                    });
+                    object.material = Array.isArray(object.material) ? tintedMaterials : tintedMaterials[0];
+                });
+            }
             const badge = buildCharacterBadge(character);
             badge.position.set(0, 1.55, 0.42);
             root.add(badge);
             return root;
+        }
+
+        function getCharacterPaint() {
+            return getEquippedGear('character').find((item) => item.slot === 'skin')
+                || getEquippedGear('character').find((item) => item.slot === 'color')
+                || null;
         }
 
         function createStarField() {
@@ -1052,8 +1133,9 @@
 
         function buildHumanoid(character) {
             const group = new THREE.Group();
-            const bodyColor = new THREE.Color(0xf472b6);
-            const accentColor = new THREE.Color(0xdb2777);
+            const paint = getCharacterPaint();
+            const bodyColor = paint ? new THREE.Color(paint.color) : new THREE.Color(0xf472b6);
+            const accentColor = bodyColor.clone().offsetHSL(0.02, 0.08, -0.15);
             const glowColor = new THREE.Color(0xf9a8d4);
 
             function createLimb(material) {
@@ -1177,6 +1259,34 @@
                     mesh = createTrailLine();
                     mesh.position.set(-0.1, 0.42, -0.22);
                     mesh.material.opacity = item.isPreview ? 0.28 : 0.82;
+                } else if (item.slot === 'color' || item.slot === 'skin') {
+                    mesh = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.72, 0.84, 0.3),
+                        createMaterial(new THREE.Color(item.color), emissive, item.isPreview ? 0.36 : 0.62)
+                    );
+                    mesh.position.set(0, 0.86, 0.34);
+                } else if (item.slot === 'tool') {
+                    mesh = new THREE.Group();
+                    const handle = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.045, 0.055, 0.62, 8),
+                        createMaterial(new THREE.Color(0xb45309), emissive, opacity)
+                    );
+                    const head = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.34, 0.16, 0.14),
+                        createMaterial(baseColor, emissive, opacity)
+                    );
+                    head.position.y = 0.25;
+                    mesh.add(handle, head);
+                    mesh.position.set(0.7, 0.82, 0.28);
+                    mesh.rotation.z = -0.24;
+                } else if (item.slot === 'shoes') {
+                    mesh = new THREE.Group();
+                    const shoeMaterial = createMaterial(baseColor, emissive, opacity);
+                    [-0.23, 0.23].forEach((x) => {
+                        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.16, 0.42), shoeMaterial);
+                        shoe.position.set(x, 0.08, 0.12);
+                        mesh.add(shoe);
+                    });
                 } else {
                     mesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.86, 0.18), createMaterial(baseColor, emissive, opacity));
                     mesh.position.set(0, 0.92, 0.38);
@@ -1544,6 +1654,19 @@
                     const id = button.getAttribute('data-character-id');
                     const character = getCharacterById(id);
                     const owned = studentProfile.ownedCharacters.includes(id);
+                    if (window.accountCoinContext) {
+                        if (!accountInventoryLoaded) {
+                            showShopError(feedback, new Error('Your account wallet is not available. Please reload and try again.'));
+                            return;
+                        }
+                        performAccountCharacterAction('character', id, owned ? 'equip' : 'buy')
+                            .then(() => {
+                                feedback.textContent = `${character.name} is ready for launch.`;
+                                feedback.style.color = '#10b981';
+                            })
+                            .catch((error) => showShopError(feedback, error));
+                        return;
+                    }
                     if (!owned) {
                         if (coins < character.cost) {
                             feedback.textContent = 'Not enough coins for that character yet.';
@@ -1604,6 +1727,22 @@
                     if (!isGearUnlocked(item)) {
                         feedback.textContent = `Finish every station in Unit ${item.milestoneUnit} to unlock this gear.`;
                         feedback.style.color = '#fbbf24';
+                        return;
+                    }
+                    if (window.accountCoinContext) {
+                        if (!accountInventoryLoaded) {
+                            showShopError(feedback, new Error('Your account wallet is not available. Please reload and try again.'));
+                            return;
+                        }
+                        const action = equipped ? 'unequip' : owned ? 'equip' : 'buy';
+                        performAccountCharacterAction('gear', id, action)
+                            .then(() => {
+                                feedback.textContent = action === 'unequip'
+                                    ? `${item.name} returned to your locker.`
+                                    : `${item.name} is ready for your ${item.target === 'pet' ? 'companion' : 'explorer'}.`;
+                                feedback.style.color = '#10b981';
+                            })
+                            .catch((error) => showShopError(feedback, error));
                         return;
                     }
                     if (!studentProfile.ownedMerch.includes(id) && coins < item.cost) {
@@ -1672,6 +1811,19 @@
                     const id = button.getAttribute('data-pet-id');
                     const pet = getPetById(id);
                     const owned = studentProfile.ownedPets.includes(id);
+                    if (window.accountCoinContext) {
+                        if (!accountInventoryLoaded) {
+                            showShopError(feedback, new Error('Your account wallet is not available. Please reload and try again.'));
+                            return;
+                        }
+                        performAccountCharacterAction('pet', id, owned ? 'equip' : 'buy')
+                            .then(() => {
+                                feedback.textContent = `${pet.name} is now your active sidekick.`;
+                                feedback.style.color = '#10b981';
+                            })
+                            .catch((error) => showShopError(feedback, error));
+                        return;
+                    }
                     if (!owned) {
                         if (coins < pet.cost) {
                             feedback.textContent = 'Not enough coins to adopt that pet yet.';
@@ -1802,9 +1954,16 @@
             if (floatTimer) window.clearInterval(floatTimer);
         });
 
-        function init() {
+        async function init() {
             studentProfile = normalizeProfile(studentProfile);
             loadState();
+            if (window.accountCoinContext) {
+                try {
+                    await loadAccountCharacterState();
+                } catch (error) {
+                    showShopError(document.getElementById('pet-land-feedback'), error);
+                }
+            }
             updateHUD();
             renderCharacterShop();
             renderMerchShop();

@@ -50,6 +50,45 @@ CHATBOT_HISTORY_LIMIT = 6
 PROFILE_SUBJECTS = {'math', 'ela', 'science', 'not_set'}
 PROFILE_GOALS = {'math_practice', 'reading', 'science_exploration', 'general'}
 PROFILE_COLORS = {'sage', 'sky', 'lavender', 'coral', 'gold', 'teal'}
+SIGNUP_COIN_BONUS = 25
+DAILY_LOGIN_COIN_BONUS = 10
+DAILY_GAME_COIN_BONUS = 5
+QUEST_UNIT_UNLOCK_COST = 15
+
+CHARACTER_SHOP_ITEMS = {
+    'nova-cadet': ('character', 'character', 0),
+    'rover-scout': ('character', 'character', 0),
+    'alien-explorer': ('character', 'character', 0),
+    'ion-pilot': ('character', 'character', 8),
+    'galaxy-engineer': ('character', 'character', 12),
+    'stellar-ninja': ('character', 'character', 22),
+}
+GEAR_SHOP_ITEMS = {
+    'starlight-glow': ('character:aura', 1),
+    'sun-spex': ('character:hat', 2),
+    'rookie-cap': ('pet:hat', 3),
+    'pocket-jetpack': ('character:accessory', 8),
+    'orbit-helmet': ('character:hat', 10),
+    'particle-trail': ('pet:trail', 12),
+    'cosmic-crown': ('character:hat', 25),
+    'holo-companion': ('pet:aura', 30),
+    'aurora-color': ('character:color', 5),
+    'ocean-color': ('character:color', 5),
+    'crystal-skin': ('character:skin', 12),
+    'comet-tool': ('character:tool', 8),
+    'moon-boots': ('character:shoes', 10),
+}
+PET_SHOP_ITEMS = {
+    'pixel-pup': ('pet', 3),
+    'mochi-mooncat': ('pet', 6),
+    'orbit-otter': ('pet', 12),
+    'nebula-axolotl': ('pet', 22),
+}
+QUEST_TOPIC_COIN_REWARDS = {
+    f'{unit}_{topic}': (10, 12, 15)[topic - 1]
+    for unit in range(1, 11)
+    for topic in range(1, 4)
+}
 LEADERBOARD_GAMES = {
     'math-practice': 'Math Practice',
     'math-blast': 'Math Blast',
@@ -925,7 +964,7 @@ def get_db_connection():
 
 
 def ensure_account_tables():
-    """Create account/progress tables and migrate accounts to name-based sign-in."""
+    """Create account, progress, reward, and character-inventory tables."""
     with closing(get_db_connection()) as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -961,6 +1000,12 @@ def ensure_account_tables():
             )
             cur.execute(
                 "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS profile_public BOOLEAN NOT NULL DEFAULT FALSE"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS coin_balance INTEGER NOT NULL DEFAULT 0"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS last_daily_bonus_date DATE"
             )
             cur.execute(
                 """
@@ -1009,6 +1054,52 @@ def ensure_account_tables():
                 """
                 CREATE UNIQUE INDEX IF NOT EXISTS account_game_scores_account_game_idx
                 ON account_game_scores (account_id, game_key)
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_game_coin_rewards (
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    game_key TEXT NOT NULL,
+                    reward_date DATE NOT NULL DEFAULT CURRENT_DATE,
+                    coins_awarded INTEGER NOT NULL,
+                    PRIMARY KEY (account_id, game_key, reward_date)
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_quest_coin_rewards (
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    topic_id TEXT NOT NULL,
+                    coins_awarded INTEGER NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (account_id, topic_id)
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_map_unit_unlocks (
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    unit_id INTEGER NOT NULL CHECK (unit_id BETWEEN 2 AND 10),
+                    coins_spent INTEGER NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (account_id, unit_id)
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS account_character_inventory (
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    item_type TEXT NOT NULL CHECK (item_type IN ('character', 'gear', 'pet')),
+                    item_key TEXT NOT NULL,
+                    slot TEXT NOT NULL,
+                    is_equipped BOOLEAN NOT NULL DEFAULT FALSE,
+                    purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (account_id, item_type, item_key)
+                )
                 """
             )
             conn.commit()
@@ -1167,12 +1258,19 @@ def account_register():
                     with conn.cursor() as cur:
                         cur.execute(
                             """
-                            INSERT INTO learning_accounts (login_name, display_name, password_hash)
-                            VALUES (%s, %s, %s)
+                            INSERT INTO learning_accounts
+                                (login_name, display_name, password_hash,
+                                 coin_balance, last_daily_bonus_date)
+                            VALUES (%s, %s, %s, %s, (NOW() AT TIME ZONE 'UTC')::date)
                             ON CONFLICT DO NOTHING
                             RETURNING id, display_name
                             """,
-                            (display_name, display_name, hash_account_password(password)),
+                            (
+                                display_name,
+                                display_name,
+                                hash_account_password(password),
+                                SIGNUP_COIN_BONUS,
+                            ),
                         )
                         account = cur.fetchone()
                         conn.commit()
@@ -1183,6 +1281,10 @@ def account_register():
                     session.permanent = True
                     session['account_id'] = account[0]
                     session['account_name'] = account[1]
+                    flash(
+                        f'Welcome! You earned {SIGNUP_COIN_BONUS} sign-up coins.',
+                        'success',
+                    )
                     return redirect(url_for('account_dashboard'))
             except Exception:
                 app.logger.exception('Failed creating learner account.')
@@ -1234,11 +1336,28 @@ def account_login():
                         if account and verify_account_password(password, account[2]):
                             cur.execute(
                                 """
-                                UPDATE learning_accounts
-                                SET last_login_at = NOW()
+                                SELECT last_daily_bonus_date = (NOW() AT TIME ZONE 'UTC')::date
+                                FROM learning_accounts
                                 WHERE id = %s
+                                FOR UPDATE
                                 """,
                                 (account[0],),
+                            )
+                            already_received_daily_bonus = cur.fetchone()[0]
+                            cur.execute(
+                                """
+                                UPDATE learning_accounts
+                                SET coin_balance = coin_balance
+                                        + CASE
+                                            WHEN last_daily_bonus_date
+                                                IS DISTINCT FROM (NOW() AT TIME ZONE 'UTC')::date
+                                            THEN %s ELSE 0
+                                          END,
+                                    last_daily_bonus_date = (NOW() AT TIME ZONE 'UTC')::date,
+                                    last_login_at = NOW()
+                                WHERE id = %s
+                                """,
+                                (DAILY_LOGIN_COIN_BONUS, account[0]),
                             )
                             conn.commit()
                         else:
@@ -1250,6 +1369,11 @@ def account_login():
                     session.permanent = True
                     session['account_id'] = account[0]
                     session['account_name'] = account[1]
+                    if not already_received_daily_bonus:
+                        flash(
+                            f'You earned {DAILY_LOGIN_COIN_BONUS} daily login coins!',
+                            'success',
+                        )
                     return redirect(url_for('account_dashboard'))
             except Exception:
                 app.logger.exception('Failed authenticating learner account.')
@@ -1345,7 +1469,8 @@ def account_dashboard():
                 cur.execute(
                     """
                     SELECT id, display_name, created_at, last_login_at,
-                           bio, favorite_subject, learning_goal, profile_color, profile_public
+                           bio, favorite_subject, learning_goal, profile_color, profile_public,
+                           coin_balance, last_daily_bonus_date
                     FROM learning_accounts
                     WHERE id = %s
                     """,
@@ -1415,11 +1540,272 @@ def account_dashboard():
             'learning_goal': account[6],
             'profile_color': account[7],
             'profile_public': account[8],
+            'coin_balance': account[9],
+            'last_daily_bonus_date': account[10],
         },
         progress=progress,
         recent_attempts=recent_attempts,
+        signup_coin_bonus=SIGNUP_COIN_BONUS,
+        daily_login_coin_bonus=DAILY_LOGIN_COIN_BONUS,
         error_message=None,
     )
+
+
+def ensure_starter_character_inventory(cur, account_id):
+    """Grant the free starter explorers to accounts that open Character Port."""
+    for character_id in ('nova-cadet', 'rover-scout', 'alien-explorer'):
+        cur.execute(
+            """
+            INSERT INTO account_character_inventory
+                (account_id, item_type, item_key, slot, is_equipped)
+            VALUES (%s, 'character', %s, 'character', %s)
+            ON CONFLICT (account_id, item_type, item_key) DO NOTHING
+            """,
+            (account_id, character_id, character_id == 'nova-cadet'),
+        )
+
+
+def fetch_account_character_state(cur, account_id):
+    cur.execute(
+        "SELECT coin_balance FROM learning_accounts WHERE id = %s",
+        (account_id,),
+    )
+    account = cur.fetchone()
+    if account is None:
+        return None
+
+    cur.execute(
+        """
+        SELECT item_type, item_key, slot, is_equipped
+        FROM account_character_inventory
+        WHERE account_id = %s
+        """,
+        (account_id,),
+    )
+    owned = {'character': [], 'gear': [], 'pet': []}
+    equipped = {'character': None, 'gear': {}, 'pet': None}
+    for item_type, item_key, slot, is_equipped in cur.fetchall():
+        owned[item_type].append(item_key)
+        if not is_equipped:
+            continue
+        if item_type == 'gear':
+            equipped['gear'][slot] = item_key
+        else:
+            equipped[item_type] = item_key
+    return {'coins': account[0], 'owned': owned, 'equipped': equipped}
+
+
+@app.route('/api/account/character', methods=['GET'])
+@login_required
+def account_character_state():
+    """Return a signed-in learner's persistent wallet and character inventory."""
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                ensure_starter_character_inventory(cur, session['account_id'])
+                state_data = fetch_account_character_state(cur, session['account_id'])
+                if state_data is None:
+                    session.clear()
+                    return jsonify({'error': 'Account not found.'}), 404
+                conn.commit()
+        return jsonify(state_data)
+    except Exception:
+        app.logger.exception('Failed loading learner character inventory.')
+        return jsonify({'error': 'Could not load your character inventory.'}), 503
+
+
+@app.route('/api/account/character/action', methods=['POST'])
+@login_required
+def account_character_action():
+    """Purchase, equip, or unequip a catalog item using the account wallet."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+
+    item_type = request.form.get('item_type', '')
+    item_key = request.form.get('item_key', '')
+    action = request.form.get('action', '')
+    if item_type == 'character':
+        catalog = CHARACTER_SHOP_ITEMS
+        item = catalog.get(item_key)
+        slot, cost = (item[1], item[2]) if item else (None, None)
+    elif item_type == 'gear':
+        item = GEAR_SHOP_ITEMS.get(item_key)
+        slot, cost = item if item else (None, None)
+    elif item_type == 'pet':
+        item = PET_SHOP_ITEMS.get(item_key)
+        slot, cost = item if item else (None, None)
+    else:
+        item = None
+        slot, cost = None, None
+
+    if item is None or action not in {'buy', 'equip', 'unequip'}:
+        return jsonify({'error': 'Choose a valid character item and action.'}), 400
+
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s FOR UPDATE",
+                    (session['account_id'],),
+                )
+                account = cur.fetchone()
+                if account is None:
+                    session.clear()
+                    return jsonify({'error': 'Account not found.'}), 404
+
+                ensure_starter_character_inventory(cur, session['account_id'])
+                cur.execute(
+                    """
+                    SELECT 1 FROM account_character_inventory
+                    WHERE account_id = %s AND item_type = %s AND item_key = %s
+                    """,
+                    (session['account_id'], item_type, item_key),
+                )
+                already_owned = cur.fetchone() is not None
+
+                if action == 'buy' and not already_owned:
+                    if account[0] < cost:
+                        return jsonify({'error': 'Not enough coins for that item.'}), 400
+                    cur.execute(
+                        """
+                        UPDATE learning_accounts
+                        SET coin_balance = coin_balance - %s
+                        WHERE id = %s
+                        """,
+                        (cost, session['account_id']),
+                    )
+                    cur.execute(
+                        """
+                        INSERT INTO account_character_inventory
+                            (account_id, item_type, item_key, slot)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (session['account_id'], item_type, item_key, slot),
+                    )
+                    action = 'equip'
+                elif action in {'equip', 'unequip'} and not already_owned:
+                    return jsonify({'error': 'Buy this item before equipping it.'}), 400
+
+                if action in {'equip', 'unequip'}:
+                    if action == 'equip':
+                        cur.execute(
+                            """
+                            UPDATE account_character_inventory
+                            SET is_equipped = FALSE
+                            WHERE account_id = %s AND slot = %s
+                            """,
+                            (session['account_id'], slot),
+                        )
+                    cur.execute(
+                        """
+                        UPDATE account_character_inventory
+                        SET is_equipped = %s
+                        WHERE account_id = %s AND item_type = %s AND item_key = %s
+                        """,
+                        (
+                            action == 'equip',
+                            session['account_id'],
+                            item_type,
+                            item_key,
+                        ),
+                    )
+                state_data = fetch_account_character_state(cur, session['account_id'])
+                conn.commit()
+        return jsonify(state_data)
+    except Exception:
+        app.logger.exception('Failed updating learner character inventory.')
+        return jsonify({'error': 'Could not update your character right now.'}), 503
+
+
+@app.route('/api/account/coins', methods=['GET'])
+@login_required
+def account_coin_balance():
+    """Return the signed-in learner's current wallet balance."""
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s",
+                    (session['account_id'],),
+                )
+                account = cur.fetchone()
+        if account is None:
+            return jsonify({'error': 'Account not found.'}), 404
+        return jsonify({'coin_balance': account[0]})
+    except Exception:
+        app.logger.exception('Failed loading learner coin balance.')
+        return jsonify({'error': 'Could not load your coin balance.'}), 503
+
+
+@app.route('/api/account/coins/unit-unlock', methods=['POST'])
+@login_required
+def spend_account_coins_on_unit():
+    """Deduct coins once when a learner unlocks a Quest Map unit."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+    try:
+        unit_id = int(request.form.get('unit_id', ''))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Choose a valid Quest Map unit.'}), 400
+    if unit_id not in range(2, 11):
+        return jsonify({'error': 'Choose a valid Quest Map unit.'}), 400
+
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s FOR UPDATE",
+                    (session['account_id'],),
+                )
+                account = cur.fetchone()
+                if account is None:
+                    return jsonify({'error': 'Account not found.'}), 404
+                cur.execute(
+                    """
+                    SELECT 1 FROM account_map_unit_unlocks
+                    WHERE account_id = %s AND unit_id = %s
+                    """,
+                    (session['account_id'], unit_id),
+                )
+                already_unlocked = cur.fetchone() is not None
+                if not already_unlocked:
+                    if account[0] < QUEST_UNIT_UNLOCK_COST:
+                        return jsonify({'error': 'Not enough coins to unlock that unit.'}), 400
+                    cur.execute(
+                        """
+                        UPDATE learning_accounts
+                        SET coin_balance = coin_balance - %s
+                        WHERE id = %s
+                        """,
+                        (QUEST_UNIT_UNLOCK_COST, session['account_id']),
+                    )
+                    cur.execute(
+                        """
+                        INSERT INTO account_map_unit_unlocks
+                            (account_id, unit_id, coins_spent)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (account_id, unit_id) DO NOTHING
+                        """,
+                        (session['account_id'], unit_id, QUEST_UNIT_UNLOCK_COST),
+                    )
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s",
+                    (session['account_id'],),
+                )
+                balance = cur.fetchone()[0]
+                conn.commit()
+        return jsonify({
+            'ok': True,
+            'coins_spent': 0 if already_unlocked else QUEST_UNIT_UNLOCK_COST,
+            'coin_balance': balance,
+        })
+    except Exception:
+        app.logger.exception('Failed spending learner coins on a Quest Map unit.')
+        return jsonify({'error': 'Could not unlock that unit right now.'}), 503
 
 
 @app.route('/leaderboards')
@@ -1481,7 +1867,7 @@ def leaderboards():
 @app.route('/api/leaderboards/scores', methods=['POST'])
 @login_required
 def save_game_score():
-    """Save a client-reported score for an allow-listed game and signed-in account."""
+    """Save a best score and award one daily coin bonus for a played game."""
     if not valid_csrf_token(request.form.get('csrf_token', '')):
         abort(400, description='This form expired. Please refresh and try again.')
     game_key = request.form.get('game_key', '')
@@ -1505,11 +1891,93 @@ def save_game_score():
                     """,
                     (session['account_id'], game_key, score),
                 )
+                cur.execute(
+                    """
+                    INSERT INTO account_game_coin_rewards
+                        (account_id, game_key, reward_date, coins_awarded)
+                    VALUES (%s, %s, (NOW() AT TIME ZONE 'UTC')::date, %s)
+                    ON CONFLICT (account_id, game_key, reward_date) DO NOTHING
+                    RETURNING account_id
+                    """,
+                    (session['account_id'], game_key, DAILY_GAME_COIN_BONUS),
+                )
+                reward = cur.fetchone()
+                coins_awarded = DAILY_GAME_COIN_BONUS if reward else 0
+                if reward:
+                    cur.execute(
+                        """
+                        UPDATE learning_accounts
+                        SET coin_balance = coin_balance + %s
+                        WHERE id = %s
+                        """,
+                        (coins_awarded, session['account_id']),
+                    )
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s",
+                    (session['account_id'],),
+                )
+                coin_balance = cur.fetchone()[0]
                 conn.commit()
     except Exception:
         app.logger.exception('Failed saving game score.')
         return jsonify({'error': 'Could not save your score right now.'}), 503
-    return jsonify({'ok': True})
+    return jsonify({
+        'ok': True,
+        'coins_awarded': coins_awarded,
+        'coin_balance': coin_balance,
+    })
+
+
+@app.route('/api/account/coins/quest-topic', methods=['POST'])
+@login_required
+def award_quest_topic_coins():
+    """Award the fixed one-time coin amount for a completed Quest Map topic."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+
+    topic_id = request.form.get('topic_id', '')
+    coins_awarded = QUEST_TOPIC_COIN_REWARDS.get(topic_id)
+    if coins_awarded is None:
+        return jsonify({'error': 'Choose a valid Quest Map topic.'}), 400
+
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO account_quest_coin_rewards
+                        (account_id, topic_id, coins_awarded)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (account_id, topic_id) DO NOTHING
+                    RETURNING account_id
+                    """,
+                    (session['account_id'], topic_id, coins_awarded),
+                )
+                awarded = bool(cur.fetchone())
+                if awarded:
+                    cur.execute(
+                        """
+                        UPDATE learning_accounts
+                        SET coin_balance = coin_balance + %s
+                        WHERE id = %s
+                        """,
+                        (coins_awarded, session['account_id']),
+                    )
+                cur.execute(
+                    "SELECT coin_balance FROM learning_accounts WHERE id = %s",
+                    (session['account_id'],),
+                )
+                coin_balance = cur.fetchone()[0]
+                conn.commit()
+    except Exception:
+        app.logger.exception('Failed awarding Quest Map coin reward.')
+        return jsonify({'error': 'Could not save your Quest Map reward.'}), 503
+    return jsonify({
+        'ok': True,
+        'coins_awarded': coins_awarded if awarded else 0,
+        'coin_balance': coin_balance,
+    })
 
 
 @app.route('/community')

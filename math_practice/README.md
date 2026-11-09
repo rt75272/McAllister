@@ -37,6 +37,8 @@ A comprehensive web-based learning and practice platform featuring interactive m
 
 ### 👤 Learner Accounts
 - **Sign up, log in, and log out** - Create an account with a unique name and password (no email required); passwords are salted and hashed, and account sessions use secure, HTTP-only cookies.
+- **Account coin wallet** - New accounts receive 25 coins, and the first sign-in each UTC day earns 10 more. Quest Map topic completions and the first saved score for each tracked game per UTC day also award coins.
+- **Persistent character customization** - Spend account coins in Pet Land on characters, suit colors and skins, hats, tools, shoes, gear, and pets. Purchases and equipped choices follow the learner account across devices.
 - **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
 - **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
 - **Private learner profiles** - Optionally save a short bio, favorite subject, learning goal, and accent color. No last name, birth date, school, or contact details are requested; profile bio guidance reminds learners not to share identifying information.
@@ -48,7 +50,7 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.
 - **Solar System Explorer** - Scale planetary map with authentic NASA imagery and astronomy facts.
 - **Orientation Sun** - Module 0 onboarding (Canvas navigation, calendar, and inbox skills). The Sun at the center of the Quest Map is the Orientation planet; fly close and press Enter to land. Curriculum planets are numbered starting at 1.
-- **Pet Land** - Pet adoption and equipment center earned via quest achievements.
+- **Pet Land** - Character wardrobe, color/skin upgrades, hats, tools, shoes, pet adoption, and equipment. Signed-in learners spend and save items with their account coin wallet.
 - **Grand Finale** - 3-day end-of-year math celebration slideshow with interactive mini-games.
 
 ### 🕹️ Arcade Hub

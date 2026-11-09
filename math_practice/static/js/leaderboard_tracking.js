@@ -52,7 +52,30 @@
             credentials: 'same-origin',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             keepalive: true,
-        }).then((response) => response.ok);
+        }).then(async (response) => {
+            if (!response.ok) return false;
+            const result = await response.json();
+            if (result.coins_awarded > 0) {
+                const notice = document.createElement('div');
+                notice.setAttribute('role', 'status');
+                notice.textContent = `🪙 +${result.coins_awarded} game coins earned!`;
+                Object.assign(notice.style, {
+                    position: 'fixed',
+                    right: '16px',
+                    bottom: '16px',
+                    zIndex: '10000',
+                    padding: '10px 14px',
+                    borderRadius: '12px',
+                    background: '#166534',
+                    color: '#fff',
+                    font: '700 14px sans-serif',
+                    boxShadow: '0 4px 16px rgba(0,0,0,.3)',
+                });
+                document.body.appendChild(notice);
+                window.setTimeout(() => notice.remove(), 3500);
+            }
+            return true;
+        });
     };
 
     function readScore(element) {

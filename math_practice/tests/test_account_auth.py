@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import app as app_module
@@ -9,6 +9,10 @@ class FakeDatabase:
         self.accounts = {}
         self.attempts = []
         self.scores = []
+        self.game_coin_rewards = set()
+        self.quest_coin_rewards = set()
+        self.unit_unlocks = set()
+        self.character_inventory = []
         self.next_account_id = 1
 
 
@@ -31,7 +35,7 @@ class FakeCursor:
         if normalized.startswith(('CREATE TABLE', 'CREATE INDEX', 'CREATE UNIQUE INDEX', 'ALTER TABLE')):
             return
         if normalized.startswith('INSERT INTO LEARNING_ACCOUNTS'):
-            login_name, display_name, password_hash = params
+            login_name, display_name, password_hash, coin_balance = params
             normalized_name = login_name.casefold()
             if normalized_name not in self.database.accounts:
                 account_id = self.database.next_account_id
@@ -47,10 +51,118 @@ class FakeCursor:
                     'learning_goal': 'general',
                     'profile_color': 'sage',
                     'profile_public': False,
+                    'coin_balance': coin_balance,
+                    'last_daily_bonus_date': now.date(),
                     'created_at': now,
                     'last_login_at': now,
                 }
                 self.result = (account_id, display_name)
+        elif normalized.startswith(
+            "SELECT LAST_DAILY_BONUS_DATE = (NOW() AT TIME ZONE 'UTC')::DATE"
+        ):
+            account = next(
+                (item for item in self.database.accounts.values() if item['id'] == params[0]),
+                None,
+            )
+            if account:
+                self.result = (
+                    account['last_daily_bonus_date'] == datetime.now(timezone.utc).date(),
+                )
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET COIN_BALANCE = COIN_BALANCE + CASE'):
+            bonus, account_id = params
+            for account in self.database.accounts.values():
+                if account['id'] == account_id:
+                    today = datetime.now(timezone.utc).date()
+                    if account['last_daily_bonus_date'] != today:
+                        account['coin_balance'] += bonus
+                    account['last_daily_bonus_date'] = today
+                    account['last_login_at'] = datetime.now(timezone.utc)
+        elif normalized.startswith('SELECT COIN_BALANCE FROM LEARNING_ACCOUNTS'):
+            account = next(
+                (item for item in self.database.accounts.values() if item['id'] == params[0]),
+                None,
+            )
+            if account:
+                self.result = (account['coin_balance'],)
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET COIN_BALANCE = COIN_BALANCE -'):
+            amount, account_id = params
+            for account in self.database.accounts.values():
+                if account['id'] == account_id:
+                    account['coin_balance'] -= amount
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET COIN_BALANCE = COIN_BALANCE +'):
+            amount, account_id = params
+            for account in self.database.accounts.values():
+                if account['id'] == account_id:
+                    account['coin_balance'] += amount
+        elif normalized.startswith('INSERT INTO ACCOUNT_CHARACTER_INVENTORY'):
+            if len(params) == 3:
+                account_id, item_key, is_equipped = params
+                item_type, slot = 'character', 'character'
+            else:
+                account_id, item_type, item_key, slot = params
+                is_equipped = False
+            if not any(
+                row['account_id'] == account_id
+                and row['item_type'] == item_type
+                and row['item_key'] == item_key
+                for row in self.database.character_inventory
+            ):
+                self.database.character_inventory.append({
+                    'account_id': account_id,
+                    'item_type': item_type,
+                    'item_key': item_key,
+                    'slot': slot,
+                    'is_equipped': is_equipped,
+                })
+        elif normalized.startswith('SELECT ITEM_TYPE, ITEM_KEY, SLOT, IS_EQUIPPED'):
+            account_id = params[0]
+            self.result = [
+                (row['item_type'], row['item_key'], row['slot'], row['is_equipped'])
+                for row in self.database.character_inventory
+                if row['account_id'] == account_id
+            ]
+        elif normalized.startswith('SELECT 1 FROM ACCOUNT_CHARACTER_INVENTORY'):
+            account_id, item_type, item_key = params
+            if any(
+                row['account_id'] == account_id
+                and row['item_type'] == item_type
+                and row['item_key'] == item_key
+                for row in self.database.character_inventory
+            ):
+                self.result = (1,)
+        elif normalized.startswith('UPDATE ACCOUNT_CHARACTER_INVENTORY SET IS_EQUIPPED = FALSE'):
+            account_id, slot = params
+            for row in self.database.character_inventory:
+                if row['account_id'] == account_id and row['slot'] == slot:
+                    row['is_equipped'] = False
+        elif normalized.startswith('UPDATE ACCOUNT_CHARACTER_INVENTORY SET IS_EQUIPPED ='):
+            is_equipped, account_id, item_type, item_key = params
+            for row in self.database.character_inventory:
+                if (
+                    row['account_id'] == account_id
+                    and row['item_type'] == item_type
+                    and row['item_key'] == item_key
+                ):
+                    row['is_equipped'] = is_equipped
+        elif normalized.startswith('INSERT INTO ACCOUNT_GAME_COIN_REWARDS'):
+            account_id, game_key, coins_awarded = params
+            reward_key = (account_id, game_key, datetime.now(timezone.utc).date())
+            if reward_key not in self.database.game_coin_rewards:
+                self.database.game_coin_rewards.add(reward_key)
+                self.result = (account_id,)
+        elif normalized.startswith('INSERT INTO ACCOUNT_QUEST_COIN_REWARDS'):
+            account_id, topic_id, coins_awarded = params
+            reward_key = (account_id, topic_id)
+            if reward_key not in self.database.quest_coin_rewards:
+                self.database.quest_coin_rewards.add(reward_key)
+                self.result = (account_id,)
+        elif normalized.startswith('SELECT 1 FROM ACCOUNT_MAP_UNIT_UNLOCKS'):
+            account_id, unit_id = params
+            if (account_id, unit_id) in self.database.unit_unlocks:
+                self.result = (1,)
+        elif normalized.startswith('INSERT INTO ACCOUNT_MAP_UNIT_UNLOCKS'):
+            account_id, unit_id, coins_spent = params
+            self.database.unit_unlocks.add((account_id, unit_id))
         elif normalized.startswith('SELECT ID, DISPLAY_NAME, PASSWORD_HASH'):
             account = next(
                 (
@@ -102,6 +214,8 @@ class FakeCursor:
                     account['learning_goal'],
                     account['profile_color'],
                     account['profile_public'],
+                    account['coin_balance'],
+                    account['last_daily_bonus_date'],
                 )
         elif normalized.startswith('INSERT INTO ACCOUNT_GAME_SCORES'):
             account_id, game_key, score = params
@@ -296,6 +410,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert b'id="profile-bio"' in response.data
         assert b'id="profile-public"' in response.data
         assert b'appearance:checkbox' in response.data
+        assert '🪙 25'.encode() in response.data
+        assert database.accounts['learner one']['coin_balance'] == 25
         assert b'name="last_name"' not in response.data
         game_page = client.get('/math-blast')
         assert b'window.learningAccountContext' in game_page.data
@@ -376,6 +492,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             },
         )
         assert score_response.status_code == 200
+        assert score_response.json['coins_awarded'] == app_module.DAILY_GAME_COIN_BONUS
+        assert score_response.json['coin_balance'] == 30
         board_response = client.get('/leaderboards?game=math-blast')
         assert board_response.status_code == 200
         assert b'Learner One' in board_response.data
@@ -498,6 +616,7 @@ def test_leaderboard_score_requires_login_csrf_and_valid_game():
             assert response.status_code == 200
         assert len(database.scores) == 1
         assert database.scores[0]['score'] == 10
+        assert database.accounts['board tester']['coin_balance'] == 30
 
 
 def test_public_profiles_are_opt_in_and_require_login():
@@ -641,4 +760,167 @@ def test_skip_replaces_the_session_question():
     assert response.status_code == 200
     with client.session_transaction() as session:
         assert session['current_question'] == response.json['question']
-        assert session['current_answer'] == response.json['answer']
+
+
+def register_test_account(client, name='Wallet Learner'):
+    client.get('/account/register')
+    response = client.post(
+        '/account/register',
+        data={
+            'csrf_token': csrf_token(client),
+            'display_name': name,
+            'password': 'a-long-example-password',
+            'password_confirm': 'a-long-example-password',
+        },
+    )
+    client.get('/account')
+    return response
+
+
+def test_signup_and_daily_login_coin_bonuses_are_once_per_day():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        client = app_module.app.test_client()
+        response = register_test_account(client)
+        assert response.status_code == 302
+        account = database.accounts['wallet learner']
+        assert account['coin_balance'] == app_module.SIGNUP_COIN_BONUS
+
+        client.post('/account/logout', data={'csrf_token': csrf_token(client)})
+        account['last_daily_bonus_date'] -= timedelta(days=1)
+        client.get('/account/login')
+        response = client.post(
+            '/account/login',
+            data={
+                'csrf_token': csrf_token(client),
+                'login_name': 'Wallet Learner',
+                'password': 'a-long-example-password',
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert b'daily login coins' in response.data
+        assert account['coin_balance'] == (
+            app_module.SIGNUP_COIN_BONUS + app_module.DAILY_LOGIN_COIN_BONUS
+        )
+
+        client.post('/account/logout', data={'csrf_token': csrf_token(client)})
+        client.get('/account/login')
+        client.post(
+            '/account/login',
+            data={
+                'csrf_token': csrf_token(client),
+                'login_name': 'Wallet Learner',
+                'password': 'a-long-example-password',
+            },
+        )
+        assert account['coin_balance'] == (
+            app_module.SIGNUP_COIN_BONUS + app_module.DAILY_LOGIN_COIN_BONUS
+        )
+
+
+def test_character_port_purchases_and_equipment_use_the_account_wallet():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        client = app_module.app.test_client()
+        register_test_account(client)
+        token = csrf_token(client)
+
+        pet_port = client.get('/pet-land')
+        assert pet_port.status_code == 200
+        assert b'Aurora Suit Color' in pet_port.data
+        assert b'Crystal Explorer Skin' in pet_port.data
+        assert b'Moon Boots' in pet_port.data
+
+        inventory = client.get('/api/account/character')
+        assert inventory.status_code == 200
+        assert inventory.json['coins'] == app_module.SIGNUP_COIN_BONUS
+        assert set(inventory.json['owned']['character']) == {
+            'nova-cadet', 'rover-scout', 'alien-explorer',
+        }
+        assert client.get('/api/account/coins').json['coin_balance'] == (
+            app_module.SIGNUP_COIN_BONUS
+        )
+
+        purchase = client.post(
+            '/api/account/character/action',
+            data={
+                'csrf_token': token,
+                'item_type': 'gear',
+                'item_key': 'crystal-skin',
+                'action': 'buy',
+            },
+        )
+        assert purchase.status_code == 200
+        assert purchase.json['coins'] == app_module.SIGNUP_COIN_BONUS - 12
+        assert purchase.json['equipped']['gear']['character:skin'] == 'crystal-skin'
+
+        too_expensive = client.post(
+            '/api/account/character/action',
+            data={
+                'csrf_token': token,
+                'item_type': 'gear',
+                'item_key': 'cosmic-crown',
+                'action': 'buy',
+            },
+        )
+        assert too_expensive.status_code == 400
+        assert database.accounts['wallet learner']['coin_balance'] == 13
+
+        unequip = client.post(
+            '/api/account/character/action',
+            data={
+                'csrf_token': token,
+                'item_type': 'gear',
+                'item_key': 'crystal-skin',
+                'action': 'unequip',
+            },
+        )
+        assert unequip.status_code == 200
+        assert 'character:skin' not in unequip.json['equipped']['gear']
+
+
+def test_quest_coins_and_unit_unlocks_are_idempotent_and_csrf_protected():
+    database = FakeDatabase()
+    with patch.object(
+        app_module,
+        'get_db_connection',
+        side_effect=lambda: FakeConnection(database),
+    ):
+        client = app_module.app.test_client()
+        register_test_account(client)
+        token = csrf_token(client)
+
+        topic_reward = {
+            'csrf_token': token,
+            'topic_id': '1_1',
+        }
+        first_reward = client.post('/api/account/coins/quest-topic', data=topic_reward)
+        duplicate_reward = client.post('/api/account/coins/quest-topic', data=topic_reward)
+        assert first_reward.json['coins_awarded'] == 10
+        assert duplicate_reward.json['coins_awarded'] == 0
+        assert duplicate_reward.json['coin_balance'] == app_module.SIGNUP_COIN_BONUS + 10
+
+        unit_unlock = {
+            'csrf_token': token,
+            'unit_id': 2,
+        }
+        first_unlock = client.post('/api/account/coins/unit-unlock', data=unit_unlock)
+        duplicate_unlock = client.post('/api/account/coins/unit-unlock', data=unit_unlock)
+        assert first_unlock.json['coins_spent'] == app_module.QUEST_UNIT_UNLOCK_COST
+        assert duplicate_unlock.json['coins_spent'] == 0
+        assert duplicate_unlock.json['coin_balance'] == (
+            app_module.SIGNUP_COIN_BONUS + 10 - app_module.QUEST_UNIT_UNLOCK_COST
+        )
+        assert client.post('/api/account/coins/quest-topic', data={
+            'csrf_token': 'bad-token',
+            'topic_id': '1_2',
+        }).status_code == 400

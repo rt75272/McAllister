@@ -122,6 +122,17 @@
                 </form>
             </section>
             <section class="account-card">
+                <h2>Coin wallet</h2>
+                <div class="account-stat">
+                    <span>Coins available for character upgrades</span>
+                    <strong>🪙 {{ account.coin_balance }}</strong>
+                </div>
+                <p class="account-note">Earn {{ signup_coin_bonus }} coins when you sign up and {{ daily_login_coin_bonus }} coins the first time you log in each UTC day. Complete Quest Map topics or earn 5 coins on the first saved score for each tracked game per day.</p>
+                <div class="account-actions">
+                    <a href="{{ url_for('pet_land') }}">Customize my character</a>
+                </div>
+            </section>
+            <section class="account-card">
                 <h2>Math Practice progress</h2>
                 <div class="account-stats">
                     <div class="account-stat"><span>Questions answered</span><strong>{{ progress.attempt_count }}</strong></div>
