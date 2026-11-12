@@ -303,6 +303,7 @@
             playSound('fail');
             return;
         }
+        name = window.studentDisplayName(name);
 
         // Grab answers from all three groups
         let optBoy = document.querySelector('input[name="starTestBOY"]:checked');

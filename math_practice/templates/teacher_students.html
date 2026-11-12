@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Teacher Student Progress - Learning Center{% endblock %}
+{% block extra_styles %}
+<style>
+    .teacher-shell { max-width: 1350px; margin: 0 auto; padding: 75px 20px 60px; color: #19352a; }
+    .teacher-shell a { color: #245c3b; }
+    .teacher-header h1 { margin: 8px 0; }
+    .teacher-panel { margin-top: 20px; padding: 20px; background: #fbfbf8; border: 1px solid #c4d5c5; border-radius: 12px; }
+    .teacher-note { color: #40594a; }
+    .teacher-error { color: #8b2f25; background: #fff0ee; padding: 12px; border-radius: 8px; }
+    .teacher-table-wrap { overflow-x: auto; }
+    .teacher-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .teacher-table th, .teacher-table td { padding: 12px; vertical-align: top; border-bottom: 1px solid #d5e0d5; }
+    .teacher-table th { color: #344d3d; }
+    .teacher-table details { min-width: 190px; }
+    .teacher-table summary { cursor: pointer; color: #245c3b; font-weight: 700; }
+    .teacher-games { padding-left: 0; margin: 10px 0 0; }
+    .teacher-games li { margin-bottom: 10px; }
+    .teacher-games small { display: block; color: #40594a; }
+    @media (max-width: 700px) { .teacher-shell { padding: 85px 14px 40px; } .teacher-table { min-width: 850px; } }
+</style>
+{% endblock %}
+{% block content %}
+<main class="teacher-shell">
+    <header class="teacher-header">
+        <a href="{{ url_for('account_dashboard') }}">← My Account</a>
+        <h1>Teacher Student Progress</h1>
+        <p>Saved activity for learner accounts.</p>
+    </header>
+    {% if error_message %}
+        <p class="teacher-error" role="alert">{{ error_message }}</p>
+    {% else %}
+        <section class="teacher-panel" aria-labelledby="student-progress-heading">
+            <h2 id="student-progress-heading">Students ({{ students|length }})</h2>
+            <p class="teacher-note">Math totals count saved, signed-in Math Practice answers only. Game entries are games with a saved best score, not a count of plays; some games and answers are not recorded. Other devices' browser-only progress is not included.</p>
+            {% if students %}
+            <div class="teacher-table-wrap">
+                <table class="teacher-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Student</th>
+                            <th scope="col">Math answers</th>
+                            <th scope="col">Correct</th>
+                            <th scope="col">Incorrect</th>
+                            <th scope="col">Accuracy</th>
+                            <th scope="col">Last Math Practice</th>
+                            <th scope="col">Last sign-in</th>
+                            <th scope="col">Games with saved scores</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <th scope="row">{{ student.name }}</th>
+                            <td>{{ student.attempts }}</td>
+                            <td>{{ student.correct }}</td>
+                            <td>{{ student.incorrect }}</td>
+                            <td>{{ student.accuracy ~ '%' if student.accuracy is not none else '—' }}</td>
+                            <td>{{ student.last_attempt.strftime('%b %d, %Y') if student.last_attempt else 'None saved' }}</td>
+                            <td>{{ student.last_login.strftime('%b %d, %Y') if student.last_login else 'Not available' }}</td>
+                            <td>
+                                {% if student.games %}
+                                <details>
+                                    <summary>{{ student.game_count }} saved {{ 'game' if student.game_count == 1 else 'games' }}</summary>
+                                    <ul class="teacher-games">
+                                        {% for game in student.games %}
+                                        <li><strong>{{ game.name }}</strong>: {{ game.score }} best score
+                                            <small>Last score submission: {{ game.updated_at.strftime('%b %d, %Y') }}</small>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                                {% else %}None saved{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No learner accounts found.</p>
+            {% endif %}
+        </section>
+    {% endif %}
+</main>
+{% endblock %}

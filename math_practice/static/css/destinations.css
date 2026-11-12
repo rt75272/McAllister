@@ -1,0 +1,51 @@
+.hero-panel {
+    position: relative;
+    overflow: hidden;
+    background-image:
+        radial-gradient(ellipse at 50% 0, rgba(56, 189, 248, .2), transparent 60%),
+        linear-gradient(145deg, rgba(25, 39, 67, .94), rgba(8, 12, 24, .98));
+    border-color: rgba(125, 211, 252, .4);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45), inset 0 1px rgba(255, 255, 255, .1);
+}
+
+.hero-panel::before {
+    content: "";
+    display: block;
+    width: 52px;
+    height: 4px;
+    margin: 0 auto 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #67e8f9, #a78bfa, #fbbf24);
+}
+
+.activity-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .3);
+    box-shadow: inset 0 0 0 1000px rgba(4, 12, 30, .58), 0 10px 24px rgba(0, 0, 0, .3) !important;
+}
+
+.activity-card::after {
+    content: "";
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    top: -55px;
+    right: -25px;
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 50%;
+    box-shadow: 0 0 0 12px rgba(255, 255, 255, .05), 0 0 0 25px rgba(255, 255, 255, .04);
+    pointer-events: none;
+}
+
+.activity-card h3, .activity-card p { color: #fff !important; }
+.activity-card:focus-visible, .hero-links a:focus-visible, .back-link:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .activity-card { transition: none; }
+    .activity-card:hover { transform: none; }
+}

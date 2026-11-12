@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase, isRealSupabase } from '../auth/supabaseClient.js';
+import { studentDisplayName } from '../studentDisplayName.js';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, AreaChart, Area
@@ -89,7 +90,7 @@ export default function TeacherDashboard() {
           // Format DB json schemas into visualization arrays
           const formatted = data.map(s => ({
             id: s.id,
-            first_name: s.first_name, // strictly no last name (FERPA safe)
+            first_name: studentDisplayName(s.first_name),
             total_points: s.total_points || 0,
             progress: {
               completed_stations: s.progress?.completed_stations || [],

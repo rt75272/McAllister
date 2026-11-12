@@ -42,10 +42,13 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
 - **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
 - **Private learner profiles** - Optionally save a short bio, favorite subject, learning goal, and accent color. No last name, birth date, school, or contact details are requested; profile bio guidance reminds learners not to share identifying information.
+- **Student name displays** - Account, leaderboard, community, teacher, check-in, and supported local-game name displays show the first name followed by initials for later name components. Existing account login identifiers and database records are not changed, so learners can continue to sign in as before. Free-text fields cannot reliably detect every name; do not enter full names in bios, answers, or other free text.
 - **Game leaderboards and community profiles** - Signed-in learners can see the best saved scores by game. Scores are tied to accounts; Math Practice ranks saved correct answers and other games report their visible score counters. Profiles remain private unless the learner opts in; only the display name and selected profile fields are shown to other signed-in learners.
+- **Teacher student progress** - A server-configured teacher account can view all other account names, saved Math Practice answer totals and accuracy, and saved best scores for tracked games, even for private profiles. The site does not record every game play or every answer outside Math Practice; browser-only activity is not included.
 
 ### 🪐 3D Space Flight & Quest Map
 - **Cosmic Flight Quest Map** - 3D space flight navigation across the curriculum planets, special planets (Pet Land, Baking Club, Game, ELA, Science, Decimal Life, Chess, Town Planner, Math Games), and a black-hole portal to the Solar System Flight Explorer.
+- **Touch flight controls** - On small screens or touch devices, hold Fly, Back, Left, Right, Rise, or Down to pilot the ship; combine controls to steer while moving. Release to coast, use Reset to return to the start, and tap the landing button when near a planet.
 - **Customizable Ship** - A "🚀 Customize Ship" tab at the top of the Quest Map and Flight Explorer lets students pick a style (Jet, Rocket, Saucer), body/wing/exhaust colors, and size. Choices are saved in the browser (`localStorage`) and shared by both pages.
 - **Curriculum Planet Hubs** - Constellation pathway stations covering all 6th-grade math standards.
 - **Solar System Explorer** - Scale planetary map with authentic NASA imagery and astronomy facts.
@@ -195,6 +198,8 @@ uv run gunicorn app:app
 ```
 
 For Render, configure `DATABASE_URL` to the PostgreSQL database connection string and set a strong, persistent `SECRET_KEY` environment variable. Account tables are created automatically when account features are used. Store the database in managed PostgreSQL rather than relying on an application disk for database persistence.
+
+To enable the private teacher dashboard, first create and verify Mrs. McAllister's account through the normal account flow. Using trusted database administration access, find that verified account's numeric `learning_accounts.id` (for example, inspect `SELECT id, login_name FROM learning_accounts ORDER BY id;`), then set `TEACHER_ACCOUNT_ID` to that exact ID in the server's environment and restart the app. Confirm ownership independently; never authorize by a self-selected display name alone. Only that signed-in account can open `/teacher/students`; access is denied when the setting is absent or invalid. Protect the teacher account password, `SECRET_KEY`, database, and deployment settings. Changing the configured ID transfers access; no one can configure it from the website.
 
 ## 🎮 Game Descriptions
 

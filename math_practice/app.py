@@ -356,10 +356,32 @@ def inject_current_year():
 @app.context_processor
 def inject_account_navigation():
     """Provide account links and the session-bound form token to templates."""
+    account_name = session.get('account_name')
+    if account_name:
+        account_name = student_display_name(account_name)
+        session['account_name'] = account_name
     return {
-        'current_account_name': session.get('account_name'),
+        'current_account_name': account_name,
         'csrf_token': issue_csrf_token(),
+        'teacher_access': is_teacher_account(),
     }
+
+
+def student_display_name(name):
+    """Keep the first name and abbreviate all subsequent name components."""
+    if not isinstance(name, str) or '@' in name:
+        return 'Learner'
+    parts = re.findall(r"[^\W_]+(?:['’][^\W_]+)*", name, flags=re.UNICODE)
+    if not parts:
+        return 'Learner'
+    return parts[0] + ''.join(f' {part[0].upper()}.' for part in parts[1:])
+
+
+def redact_profile_name(bio, name):
+    """Avoid displaying an account's full stored name inside its own bio."""
+    if not bio or not isinstance(name, str) or student_display_name(name) == name:
+        return bio
+    return re.sub(re.escape(name), lambda match: student_display_name(name), bio, flags=re.IGNORECASE)
 
 
 @app.after_request
@@ -1216,6 +1238,19 @@ def login_required(view_function):
     return wrapped_view
 
 
+def is_teacher_account():
+    """Authorize only the account ID explicitly configured by the operator."""
+    configured_id = os.environ.get('TEACHER_ACCOUNT_ID', '')
+    account_id = session.get('account_id')
+    return (
+        type(account_id) is int
+        and 0 < account_id <= 2_147_483_647
+        and configured_id.isascii()
+        and configured_id.isdecimal()
+        and configured_id == str(account_id)
+    )
+
+
 def save_account_math_attempt(account_id, difficulty, was_correct, ability_after, ability_peak):
     """Persist one signed-in Math Practice answer without storing the answer text."""
     with closing(get_db_connection()) as conn:
@@ -1307,7 +1342,7 @@ def account_register():
                     session.clear()
                     session.permanent = True
                     session['account_id'] = account[0]
-                    session['account_name'] = account[1]
+                    session['account_name'] = student_display_name(account[1])
                     flash(
                         f'Welcome! You earned {SIGNUP_COIN_BONUS} sign-up coins.',
                         'success',
@@ -1395,7 +1430,7 @@ def account_login():
                     session.clear()
                     session.permanent = True
                     session['account_id'] = account[0]
-                    session['account_name'] = account[1]
+                    session['account_name'] = student_display_name(account[1])
                     if not already_received_daily_bonus:
                         flash(
                             f'You earned {DAILY_LOGIN_COIN_BONUS} daily login coins!',
@@ -1559,10 +1594,10 @@ def account_dashboard():
         'account_dashboard.html',
         account={
             'id': account[0],
-            'display_name': account[1],
+            'display_name': student_display_name(account[1]),
             'created_at': account[2],
             'last_login_at': account[3],
-            'bio': account[4],
+            'bio': redact_profile_name(account[4], account[1]),
             'favorite_subject': account[5],
             'learning_goal': account[6],
             'profile_color': account[7],
@@ -1576,6 +1611,85 @@ def account_dashboard():
         daily_login_coin_bonus=DAILY_LOGIN_COIN_BONUS,
         error_message=None,
     )
+
+
+@app.route('/teacher/students')
+@login_required
+def teacher_students():
+    """Show saved learner progress only to the configured teacher account."""
+    if not is_teacher_account():
+        abort(403)
+
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM learning_accounts WHERE id = %s", (session['account_id'],))
+                if cur.fetchone() is None:
+                    session.clear()
+                    return redirect(url_for('account_login'))
+                cur.execute(
+                    """
+                    SELECT a.id, a.display_name, a.last_login_at,
+                           COALESCE(m.attempt_count, 0), COALESCE(m.correct_count, 0),
+                           m.last_attempt, COALESCE(g.game_count, 0)
+                    FROM learning_accounts a
+                    LEFT JOIN (
+                        SELECT account_id, COUNT(*) AS attempt_count,
+                               COUNT(*) FILTER (WHERE was_correct) AS correct_count,
+                               MAX(created_at) AS last_attempt
+                        FROM account_math_attempts GROUP BY account_id
+                    ) m ON m.account_id = a.id
+                    LEFT JOIN (
+                        SELECT account_id, COUNT(*) AS game_count
+                        FROM account_game_scores GROUP BY account_id
+                    ) g ON g.account_id = a.id
+                    WHERE a.id <> %s
+                    ORDER BY LOWER(a.display_name), a.id
+                    """,
+                    (session['account_id'],),
+                )
+                rows = cur.fetchall()
+                cur.execute(
+                    """
+                    SELECT account_id, game_key, score, created_at
+                    FROM account_game_scores
+                    WHERE account_id <> %s
+                    ORDER BY account_id, game_key
+                    """,
+                    (session['account_id'],),
+                )
+                game_rows = cur.fetchall()
+        games_by_account = {}
+        for account_id, game_key, score, updated_at in game_rows:
+            games_by_account.setdefault(account_id, []).append({
+                'name': LEADERBOARD_GAMES.get(game_key, game_key),
+                'score': score,
+                'updated_at': updated_at,
+            })
+        students = []
+        for account_id, name, last_login, attempts, correct, last_attempt, game_count in rows:
+            students.append({
+                'name': student_display_name(name),
+                'last_login': last_login,
+                'attempts': attempts,
+                'correct': correct,
+                'incorrect': attempts - correct,
+                'accuracy': round(100 * correct / attempts) if attempts else None,
+                'last_attempt': last_attempt,
+                'game_count': game_count,
+                'games': games_by_account.get(account_id, []),
+            })
+        response = app.make_response(render_template(
+            'teacher_students.html', students=students, error_message=None,
+        ))
+    except Exception:
+        app.logger.exception('Failed loading teacher student dashboard.')
+        response = app.make_response((render_template(
+            'teacher_students.html', students=[], error_message='Could not load student progress. Please try again.',
+        ), 503))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 def ensure_starter_character_inventory(cur, account_id):
@@ -1975,7 +2089,10 @@ def leaderboards():
                         """,
                         (selected_game,),
                     )
-                scores = cur.fetchall()
+                scores = [
+                    (row[0], student_display_name(row[1]), row[2], row[3])
+                    for row in cur.fetchall()
+                ]
     except Exception:
         app.logger.exception('Failed loading game leaderboard.')
         return render_template(
@@ -2127,7 +2244,10 @@ def community_profiles():
                     LIMIT 100
                     """
                 )
-                profiles = cur.fetchall()
+                profiles = [
+                    (row[0], student_display_name(row[1]), redact_profile_name(row[2], row[1]), *row[3:])
+                    for row in cur.fetchall()
+                ]
     except Exception:
         app.logger.exception('Failed loading public learner profiles.')
         return render_template('community_profiles.html', profiles=[], error_message='We could not load profiles right now.'), 503
@@ -2156,6 +2276,7 @@ def public_profile(account_id):
         return render_template('public_profile.html', profile=None, error_message='We could not load this profile right now.'), 503
     if profile is None:
         abort(404)
+    profile = (profile[0], student_display_name(profile[1]), redact_profile_name(profile[2], profile[1]), *profile[3:])
     return render_template('public_profile.html', profile=profile, error_message=None)
 
 
@@ -2323,6 +2444,7 @@ def save_star360_checkin():
 
     if not student_name:
         return jsonify({'error': 'Student name is required.'}), 400
+    student_name = student_display_name(student_name)
 
     try:
         earned_points = int(earned_points_raw)
@@ -2381,7 +2503,7 @@ def list_star360_checkins_for_teacher():
     records = [
         {
             'id': row[0],
-            'student_name': row[1],
+            'student_name': student_display_name(row[1]),
             'boy_status': row[2],
             'moy_status': row[3],
             'eoy_status': row[4],

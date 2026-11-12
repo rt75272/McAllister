@@ -65,7 +65,8 @@
 
     function renderPreview() {
         $('crew-preview').replaceChildren(makeAvatar({ color: $('crew-color').value, hat: $('crew-hat').value }));
-        $('preview-name').textContent = $('crew-name').value.trim() || 'Your space explorer';
+        $('preview-name').textContent = $('crew-name').value.trim()
+            ? window.studentDisplayName($('crew-name').value) : 'Your space explorer';
     }
 
     function renderRoster() {

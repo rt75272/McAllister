@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+from flask import template_rendered
 
 import app as app_module
 
@@ -212,6 +214,26 @@ class FakeCursor:
                     account['display_name'],
                     account['password_hash'],
                 )
+        elif normalized.startswith('SELECT 1 FROM LEARNING_ACCOUNTS WHERE ID'):
+            if any(account['id'] == params[0] for account in self.database.accounts.values()):
+                self.result = (1,)
+        elif normalized.startswith('SELECT A.ID, A.DISPLAY_NAME, A.LAST_LOGIN_AT'):
+            self.result = []
+            for account in sorted(self.database.accounts.values(), key=lambda item: (item['display_name'].lower(), item['id'])):
+                if account['id'] == params[0]:
+                    continue
+                attempts = [item for item in self.database.attempts if item['account_id'] == account['id']]
+                scores = [item for item in self.database.scores if item['account_id'] == account['id']]
+                self.result.append((
+                    account['id'], account['display_name'], account['last_login_at'],
+                    len(attempts), sum(item['was_correct'] for item in attempts),
+                    max((item['created_at'] for item in attempts), default=None), len(scores),
+                ))
+        elif normalized.startswith('SELECT ACCOUNT_ID, GAME_KEY, SCORE, CREATED_AT FROM ACCOUNT_GAME_SCORES'):
+            self.result = [
+                (item['account_id'], item['game_key'], item['score'], item['created_at'])
+                for item in self.database.scores if item['account_id'] != params[0]
+            ]
         elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET BIO'):
             bio, favorite_subject, learning_goal, profile_color, profile_public, account_id = params
             account = next(
@@ -261,9 +283,11 @@ class FakeCursor:
             )
             if existing:
                 existing['score'] = max(existing['score'], score)
+                existing['created_at'] = datetime.now(timezone.utc)
             else:
                 self.database.scores.append(
-                    {'account_id': account_id, 'game_key': game_key, 'score': score}
+                    {'account_id': account_id, 'game_key': game_key, 'score': score,
+                     'created_at': datetime.now(timezone.utc)}
                 )
         elif normalized.startswith('SELECT S.ACCOUNT_ID, A.DISPLAY_NAME, A.PROFILE_PUBLIC'):
             game_key = params[0]
@@ -415,6 +439,53 @@ def test_password_hashing_uses_unique_salts_and_verifies_password():
     assert not app_module.verify_account_password('a-long-example-password', 'invalid')
 
 
+def test_student_display_names_abbreviate_every_later_component():
+    assert app_module.student_display_name('Alex Morgan') == 'Alex M.'
+    assert app_module.student_display_name('Ana María del Mar') == 'Ana M. D. M.'
+    assert app_module.student_display_name("Jean-Luc O'Brien") == 'Jean L. O.'
+    assert app_module.student_display_name('Sam') == 'Sam'
+    assert app_module.student_display_name('student@example.com') == 'Learner'
+
+
+def test_existing_names_are_shortened_in_legacy_sessions_and_profile_bios():
+    database = FakeDatabase()
+    with patch.object(app_module, 'get_db_connection', side_effect=lambda: FakeConnection(database)):
+        client = app_module.app.test_client()
+        register_test_account(client, 'Alex Morgan')
+        database.accounts['alex morgan']['bio'] = 'I am Alex Morgan and I like math.'
+        database.accounts['alex morgan']['profile_public'] = True
+        account_id = database.accounts['alex morgan']['id']
+        with client.session_transaction() as state:
+            state['account_name'] = 'Alex Morgan'
+        for path in ('/account', '/community', f'/users/{account_id}'):
+            response = client.get(path)
+            assert response.status_code == 200
+            assert b'Alex M.' in response.data
+            assert b'Alex Morgan' not in response.data
+        with client.session_transaction() as state:
+            assert state['account_name'] == 'Alex M.'
+
+
+def test_star360_names_are_shortened_when_saved_and_read():
+    now = datetime.now(timezone.utc)
+    connection = MagicMock()
+    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor.fetchone.return_value = (1, now)
+    cursor.fetchall.return_value = [(1, 'Alex Morgan', 'BOY', 'NONE', 'EOY', 10, now)]
+    with patch.object(app_module, 'ensure_star360_checkins_table'), \
+            patch.object(app_module, 'get_db_connection', return_value=connection), \
+            patch.dict(app_module.os.environ, {'TEACHER_DASHBOARD_TOKEN': 'test-token'}):
+        client = app_module.app.test_client()
+        response = client.post('/api/star360-checkin', json={
+            'student_name': 'Alex Morgan', 'boy_status': 'BOY', 'moy_status': 'NONE',
+            'eoy_status': 'EOY', 'earned_points': 10,
+        })
+        assert response.status_code == 200
+        assert cursor.execute.call_args.args[1][0] == 'Alex M.'
+        response = client.get('/api/teacher/star360-checkins', headers={'X-Teacher-Token': 'test-token'})
+        assert response.get_json()['items'][0]['student_name'] == 'Alex M.'
+
+
 def test_account_lifecycle_and_math_progress_are_private_and_persisted():
     database = FakeDatabase()
     with patch.object(
@@ -440,7 +511,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert b'Learner One' in response.data
+        assert b'Learner O.' in response.data
+        assert b'Learner One' not in response.data
         assert b'0%' in response.data
         assert b'id="profile-bio"' in response.data
         assert b'id="profile-public"' in response.data
@@ -517,7 +589,7 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             follow_redirects=True,
         )
         assert login.status_code == 200
-        assert b'Learner One' in login.data
+        assert b'Learner O.' in login.data
         score_response = client.post(
             '/api/leaderboards/scores',
             data={
@@ -531,7 +603,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert score_response.json['coin_balance'] == 30
         board_response = client.get('/leaderboards?game=math-blast')
         assert board_response.status_code == 200
-        assert b'Learner One' in board_response.data
+        assert b'Learner O.' in board_response.data
+        assert b'Learner One' not in board_response.data
         assert b'>120</td>' in board_response.data
         public_profile_response = client.get(
             f"/users/{database.accounts['learner one']['id']}"
@@ -701,16 +774,17 @@ def test_public_profiles_are_opt_in_and_require_login():
         )
         owner_community = owner.get('/community')
         assert owner_community.status_code == 200
-        assert b'Private Learner' in owner_community.data
+        assert b'Private L.' in owner_community.data
+        assert b'Private Learner' not in owner_community.data
 
         response = other_learner.get(f'/users/{owner_id}')
         assert response.status_code == 200
-        assert b'Private Learner' in response.data
+        assert b'Private L.' in response.data
         assert b'I like learning.' in response.data
         assert b'last_login_at' not in response.data
         community = other_learner.get('/community')
         assert community.status_code == 200
-        assert b'Private Learner' in community.data
+        assert b'Private L.' in community.data
         assert b'I like learning.' in community.data
 
         anonymous = app_module.app.test_client()
@@ -810,6 +884,100 @@ def register_test_account(client, name='Wallet Learner'):
     )
     client.get('/account')
     return response
+
+
+def test_teacher_dashboard_only_allows_configured_account_and_reports_saved_progress():
+    database = FakeDatabase()
+    with patch.object(app_module, 'get_db_connection', side_effect=lambda: FakeConnection(database)):
+        teacher = app_module.app.test_client()
+        learner = app_module.app.test_client()
+        other = app_module.app.test_client()
+        register_test_account(teacher, 'Teacher Account')
+        register_test_account(learner, 'First Learner')
+        register_test_account(other, 'Second Learner')
+        learner_id = database.accounts['first learner']['id']
+        app_module.save_account_math_attempt(learner_id, 'easy', True, 0.1, 0.1)
+        app_module.save_account_math_attempt(learner_id, 'medium', False, 0.2, 0.2)
+        assert learner.post('/api/leaderboards/scores', data={
+            'csrf_token': csrf_token(learner), 'game_key': 'math-blast', 'score': 15,
+        }).status_code == 200
+        assert learner.post('/api/leaderboards/scores', data={
+            'csrf_token': csrf_token(learner), 'game_key': 'math-blast', 'score': 8,
+        }).status_code == 200
+
+        with patch.dict(app_module.os.environ, {'TEACHER_ACCOUNT_ID': str(database.accounts['teacher account']['id'])}):
+            with learner.session_transaction() as state:
+                state['account_name'] = 'Teacher Account'
+            denied = learner.get('/teacher/students')
+            assert denied.status_code == 403
+            assert b'First Learner' not in denied.data
+            assert b'Teacher View' not in learner.get('/account').data
+            assert b'Teacher View' in teacher.get('/account').data
+
+            captured = []
+            def record_template(sender, template, context, **kwargs):
+                if template.name == 'teacher_students.html':
+                    captured.append(context)
+
+            with template_rendered.connected_to(record_template, app_module.app):
+                response = teacher.get('/teacher/students')
+            assert response.status_code == 200
+            assert response.headers['Cache-Control'] == 'no-store'
+            assert b'First L.' in response.data
+            assert b'Second L.' in response.data
+            assert b'First Learner' not in response.data
+            assert b'Math Blast' in response.data
+            students = captured[0]['students']
+            assert len(students) == 2
+            first = next(student for student in students if student['name'] == 'First L.')
+            assert (first['attempts'], first['correct'], first['incorrect'], first['accuracy']) == (2, 1, 1, 50)
+            assert first['game_count'] == 1
+            assert first['games'][0]['score'] == 15
+            second = next(student for student in students if student['name'] == 'Second L.')
+            assert second['attempts'] == 0
+            assert second['accuracy'] is None
+            assert second['games'] == []
+
+
+def test_teacher_dashboard_fails_closed_without_valid_configuration():
+    client = app_module.app.test_client()
+    assert client.get('/teacher/students').status_code == 302
+    with client.session_transaction() as state:
+        state['account_id'] = 1
+        state['account_name'] = 'Teacher Account'
+    with patch.object(app_module, 'get_db_connection') as connection:
+        for configured in ('', '01', 'teacher', '-1', '2', '1 '):
+            with patch.dict(app_module.os.environ, {'TEACHER_ACCOUNT_ID': configured}):
+                assert client.get('/teacher/students').status_code == 403
+        connection.assert_not_called()
+
+
+def test_teacher_dashboard_rejects_deleted_teacher_account():
+    database = FakeDatabase()
+    client = app_module.app.test_client()
+    with client.session_transaction() as state:
+        state['account_id'] = 1
+        state['account_name'] = 'Teacher Account'
+    with patch.dict(app_module.os.environ, {'TEACHER_ACCOUNT_ID': '1'}), \
+            patch.object(app_module, 'get_db_connection', side_effect=lambda: FakeConnection(database)):
+        response = client.get('/teacher/students')
+    assert response.status_code == 302
+    assert response.location.endswith('/account/login')
+    with client.session_transaction() as state:
+        assert 'account_id' not in state
+
+
+def test_teacher_dashboard_reports_database_failure():
+    client = app_module.app.test_client()
+    with client.session_transaction() as state:
+        state['account_id'] = 1
+        state['account_name'] = 'Teacher Account'
+    with patch.dict(app_module.os.environ, {'TEACHER_ACCOUNT_ID': '1'}), \
+            patch.object(app_module, 'get_db_connection', side_effect=RuntimeError('database unavailable')):
+        response = client.get('/teacher/students')
+    assert response.status_code == 503
+    assert response.headers['Cache-Control'] == 'no-store'
+    assert b'Could not load student progress' in response.data
 
 
 def test_pet_planet_shared_meadow_and_owner_actions():

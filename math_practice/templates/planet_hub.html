@@ -305,24 +305,17 @@
             border-color: #f59e0b;
         }
 
-        .football-launch-button {
-            display: block;
-            width: 100%;
-            margin-top: .75rem;
-            padding: .85rem 1rem;
-            border: 2px solid #facc15;
-            border-radius: .75rem;
-            background: linear-gradient(110deg, #166534, #15803d);
-            color: #fff;
-            font: inherit;
-            font-weight: 800;
-            text-align: center;
-            cursor: pointer;
+        button.station-node.football-station {
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: none;
         }
 
-        .football-launch-button:hover,
-        .football-launch-button:focus-visible {
-            background: linear-gradient(110deg, #15803d, #22c55e);
+        .football-station:focus-visible {
             outline: 3px solid #fde68a;
             outline-offset: 2px;
         }
@@ -582,9 +575,6 @@
         </div>
 
         <!-- 2D Constellation Trail Map -->
-        <button id="football-game-launch" class="football-launch-button" type="button" hidden>
-            🏈 Play Absolute Value Football — Unit 3, Station 11
-        </button>
         <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Unit Constellation Pathway</h3>
         <div id="constellation-map" class="constellation-map" data-theme="cosmic">
             <div class="planet-photo"></div>
@@ -1557,15 +1547,16 @@
 
             activeStations.forEach((station, index) => {
                 const coord = usedCoords[index];
-                const node = document.createElement('div');
+                const isFootballStation = station.activity && station.activity.type === 'football_inequalities';
+                const node = document.createElement(isFootballStation ? 'button' : 'div');
                 node.className = 'station-node';
                 if (completedStations.includes(`${planetId}:${station.id}`) || completedStations.includes(String(station.id))) {
                     node.classList.add('completed');
                 }
                 node.style.left = `${coord.x}%`;
                 node.style.top = `${coord.y}%`;
-                const isFootballStation = station.activity && station.activity.type === 'football_inequalities';
                 if (isFootballStation) {
+                    node.type = 'button';
                     node.classList.add('football-station');
                     node.setAttribute('aria-label', 'Play Absolute Value Football, Station 11');
                     node.title = 'Play Absolute Value Football';
@@ -1582,13 +1573,6 @@
                 node.addEventListener('click', () => launchStation(station));
                 nodesContainer.appendChild(node);
             });
-
-            const footballStation = activeStations.find((station) => station.activity && station.activity.type === 'football_inequalities');
-            const footballLaunchButton = document.getElementById('football-game-launch');
-            if (footballStation && planetId === 3 && footballLaunchButton) {
-                footballLaunchButton.hidden = false;
-                footballLaunchButton.addEventListener('click', () => launchStation(footballStation));
-            }
 
             // Revert back to the default message only when leaving the entire constellation map area
             mapSurface.addEventListener('mouseleave', () => {

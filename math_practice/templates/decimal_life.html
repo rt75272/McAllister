@@ -492,7 +492,8 @@ document.querySelectorAll('.calculator-toggle, #calculatorPopup').forEach((calcu
     });
 
     document.getElementById('startButton').addEventListener('click', () => {
-        const names = [...nameFields.querySelectorAll('input')].map((input, index) => input.value.trim() || `Player ${index + 1}`);
+        const names = [...nameFields.querySelectorAll('input')].map((input, index) =>
+            input.value.trim() ? window.studentDisplayName(input.value) : `Player ${index + 1}`);
         match = {
             players: names.map((name) => ({ name, cents: STARTING_CENTS, position: -1, finished: false })),
             activePlayer: 0,
@@ -570,6 +571,7 @@ document.querySelectorAll('.calculator-toggle, #calculatorPopup').forEach((calcu
         const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
         if (saved && Array.isArray(saved.players) && saved.players.length > 0) {
             match = saved;
+            match.players.forEach(player => { player.name = window.studentDisplayName(player.name); });
             if (match.complete) showResults();
             else if (Number.isInteger(match.activePlayer) && match.players[match.activePlayer]) showGame();
         }

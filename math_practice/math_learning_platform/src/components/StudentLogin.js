@@ -77,10 +77,10 @@ export default function StudentLogin({ onLoginSuccess }) {
     setLoading(true);
     setErrorMessage('');
 
-    const cleanFirstName = firstName.trim().replace(/[^a-zA-Z]/g, ''); // Keep strictly letters
+    const cleanFirstName = firstName.trim();
     const formattedCode = classCode.trim().toUpperCase();
 
-    if (!cleanFirstName) {
+    if (!/^[a-zA-Z]+$/.test(cleanFirstName)) {
       setErrorMessage('Please enter your first name using letters only.');
       setLoading(false);
       return;

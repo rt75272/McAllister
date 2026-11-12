@@ -37,10 +37,10 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             {% if mode == 'register' %}
                 <label for="display-name">Name</label>
-                <input id="display-name" name="display_name" value="{{ display_name }}" maxlength="80" autocomplete="name" required>
+                <input id="display-name" name="display_name" maxlength="80" autocomplete="off" required>
             {% else %}
                 <label for="login-name">Name</label>
-                <input id="login-name" name="login_name" value="{{ login_name }}" maxlength="254" autocomplete="username" required>
+                <input id="login-name" name="login_name" maxlength="254" autocomplete="username" required>
             {% endif %}
             <label for="password">Password</label>
             <input id="password" name="password" type="password" minlength="10" maxlength="1024" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required>
@@ -60,7 +60,7 @@
             <a href="{{ url_for('quest_map') }}">Back to learning</a>
         </div>
         {% if mode == 'register' %}
-            <p class="account-privacy-note">Choose a respectful, unique name using letters, numbers, spaces, hyphens, apostrophes, or periods. Profanity is not allowed. Your password must have at least 10 characters.</p>
+            <p class="account-privacy-note">Choose a respectful, unique login name; use a first name and last initial rather than a full name. Names displayed around the site are shortened to a first name and initials. Your password must have at least 10 characters.</p>
         {% else %}
             <p class="account-privacy-note">If you created an account before name-based sign-in was added, you can still use its email address as the name.</p>
         {% endif %}

@@ -69,7 +69,9 @@
         const pet = pets.find(item => item.id === selectedId);
         details.replaceChildren();
         if (!pet) {
-            details.append(element('p', 'Choose a pet in the meadow to begin.'));
+            const icon = element('div', '🐾', 'empty-pet-icon');
+            icon.setAttribute('aria-hidden', 'true');
+            details.append(icon, element('p', 'Choose a pet in the meadow to begin.'));
         } else {
             const info = catalog[pet.kind];
             details.append(element('div', info.emoji, 'pet-detail-emoji'), element('h3', `${info.name}${pet.mine ? ' ★' : ''}`));
@@ -85,6 +87,7 @@
                 const palette = element('div', undefined, 'colors');
                 Object.keys(colors).forEach(color => {
                     const choice = button(color, () => act(pet.id, 'color', color));
+                    choice.style.setProperty('--swatch-color', colors[color]);
                     choice.setAttribute('aria-pressed', String(pet.color === color));
                     palette.append(choice);
                 });

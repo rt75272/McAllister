@@ -83,7 +83,7 @@
 
         .audio-widget {
             position: absolute;
-            top: 18px;
+            top: 64px;
             right: 18px;
             background: var(--panel);
             border: 1px solid var(--line);
@@ -219,7 +219,22 @@
             color: var(--cyan) !important;
         }
 
+        .top-bar, .audio-widget, .controls-guide, .quick-jump, .landing-banner {
+            border-radius: 18px;
+            box-shadow: 0 16px 38px rgba(0,0,0,.45), inset 0 1px rgba(255,255,255,.1);
+        }
+
+        .top-bar {
+            background: linear-gradient(145deg, rgba(20, 40, 72, .96), rgba(7, 16, 36, .96));
+        }
+
+        .quick-jump a:focus-visible, .landing-banner button:focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
         @media (max-width: 760px) {
+            .top-bar { top: 64px; }
             .controls-guide {
                 display: none;
             }

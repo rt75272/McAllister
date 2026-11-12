@@ -29,12 +29,14 @@
             align-items: center;
             gap: 8px;
             padding: 7px 10px;
-            border: 1px solid rgba(148, 163, 184, .55);
+            max-width: calc(100vw - 24px);
+            box-sizing: border-box;
+            border: 1px solid rgba(125, 211, 252, .48);
             border-radius: 999px;
-            background: rgba(15, 23, 42, .9);
+            background: rgba(7, 18, 38, .96);
             color: #f8fafc;
             font: 600 12px/1.2 'Lexend', sans-serif;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .32), inset 0 1px rgba(255,255,255,.1);
         }
         #account-navigation a,
         #account-navigation button {
@@ -49,9 +51,12 @@
         }
         #account-navigation a:hover,
         #account-navigation button:hover { background: rgba(255, 255, 255, .16); }
+        #account-navigation a:focus-visible,
+        #account-navigation button:focus-visible { outline: 2px solid #67e8f9; outline-offset: 2px; }
         #account-navigation form { margin: 0; }
         @media (max-width: 600px) {
-            #account-navigation { top: 6px; right: 6px; gap: 2px; padding: 5px; font-size: 10px; }
+            #account-navigation { top: 6px; right: 6px; max-width: calc(100vw - 12px); overflow-x: auto; gap: 2px; padding: 5px; font-size: 10px; }
+            #account-navigation a, #account-navigation button { white-space: nowrap; flex-shrink: 0; }
         }
     </style>
 </head>
@@ -62,6 +67,7 @@
     <nav id="account-navigation" aria-label="Account">
         {% if current_account_name %}
             <a href="{{ url_for('account_dashboard') }}">👤 {{ current_account_name }}</a>
+            {% if teacher_access %}<a href="{{ url_for('teacher_students') }}">Teacher View</a>{% endif %}
             <a href="{{ url_for('pet_land') }}">Character Port</a>
             <a href="{{ url_for('pet_planet') }}">Pet Planet</a>
             <a href="{{ url_for('leaderboards') }}">Leaderboards</a>
@@ -81,6 +87,7 @@
     {% else %}
         <script>window.accountCoinContext = null;</script>
     {% endif %}
+    <script src="{{ url_for('static', filename='js/student_display_name.js') }}"></script>
     
     <!-- Calculator JS -->
     <script src="{{ url_for('static', filename='js/calculator.js') }}"></script>

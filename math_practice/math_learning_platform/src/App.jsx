@@ -11,6 +11,7 @@ import QuestMap3D from './gameEngine/QuestMap3D.jsx';
 import MapUI from './components/MapUI.jsx';
 import PacingDashboard from './teacher/PacingDashboard.jsx';
 import { Shield, GraduationCap, Map, Users, LogOut, Loader2 } from 'lucide-react';
+import { studentDisplayName } from './studentDisplayName.js';
 
 function App() {
   const { user, profile, loading, signIn, signUp, signOut } = useAuth();
@@ -120,7 +121,7 @@ function App() {
           <span className="text-2xl">🗺️</span>
           <div>
             <h1 className="text-lg font-bold text-slate-100 leading-tight">3D Educational Math Quest</h1>
-            <p className="text-[10px] text-slate-400 font-medium">Logged in as {profile?.full_name || user.email}</p>
+            <p className="text-[10px] text-slate-400 font-medium">Logged in as {studentDisplayName(profile?.full_name)}</p>
           </div>
         </div>
 

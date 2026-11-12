@@ -5,14 +5,33 @@
 {% endblock %}
 {% block content %}
 <main class="pet-planet">
-    <header class="planet-header">
-        <div>
-            <a href="{{ url_for('quest_map') }}">← Space Flight</a>
-            <p class="eyebrow">A shared world for little companions</p>
-            <h1>🐾 Pet Planet</h1>
+    <header class="planet-header{% if current_account_name %} has-wallet{% endif %}">
+        <div class="planet-intro">
+            <a class="back-to-space" href="{{ url_for('quest_map') }}">← Space Flight</a>
+            <p class="eyebrow">A little world with a lot of heart</p>
+            <h1>Welcome to<br><span>Pet Planet</span> <span aria-hidden="true">🐾</span></h1>
             <p>Meet pets from across the learning center, play together, and make your own companions feel at home.</p>
+            <div class="intro-tags" aria-label="Pet Planet activities"><span>✦ Meet</span><span>✦ Play</span><span>✦ Adopt</span></div>
         </div>
+        <div class="planet-art" aria-hidden="true">
+            <svg viewBox="0 0 360 270" focusable="false">
+                <circle cx="181" cy="135" r="104" fill="#b9e9d8"/>
+                <circle cx="181" cy="135" r="90" fill="#d9f6e8"/>
+                <ellipse cx="181" cy="181" rx="129" ry="25" fill="none" stroke="#679d9c" stroke-width="4" transform="rotate(-13 181 181)"/>
+                <path d="M92 162c18-26 38-32 58-19 18-21 45-23 65-3 19-9 40 1 54 21v19c-15 29-49 45-88 45s-73-16-89-45z" fill="#83cfa1"/>
+                <path d="M103 181c29-16 51-12 72-2 22-18 54-19 84 1-17 26-44 45-78 45-32 0-60-17-78-44z" fill="#55ac7f"/>
+                <path d="M139 119c-12-10-26-8-28 4-2 10 5 20 15 22m97-26c12-10 26-8 28 4 2 10-5 20-15 22" fill="#bd8465" stroke="#5b473f" stroke-width="4" stroke-linecap="round"/>
+                <ellipse cx="181" cy="149" rx="56" ry="46" fill="#f3cda3" stroke="#5b473f" stroke-width="4"/>
+                <ellipse cx="162" cy="145" rx="4" ry="6" fill="#42342f"/><ellipse cx="200" cy="145" rx="4" ry="6" fill="#42342f"/>
+                <path d="M174 158q7-7 14 0-1 6-7 6t-7-6zm7 6q-1 9-9 8m9-8q1 9 9 8" fill="#66483f" stroke="#66483f" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="65" cy="76" r="5" fill="#f3c36d"/><circle cx="282" cy="68" r="6" fill="#f3c36d"/>
+                <path d="M50 131v16m-8-8h16M300 112v18m-9-9h18M245 28v12m-6-6h12" stroke="#d27c83" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="88" cy="211" r="4" fill="#fff"/><circle cx="276" cy="204" r="4" fill="#fff"/>
+            </svg>
+        </div>
+        {% if current_account_name %}
         <div class="wallet">🪙 <span id="planet-coins">—</span> coins</div>
+        {% endif %}
     </header>
 
     {% if not current_account_name %}
@@ -21,6 +40,11 @@
         <p>Sign in to bring your account pets, spend your coins, and play with other pets.</p>
         <a class="planet-link" href="{{ url_for('account_login') }}">Log in</a>
         <a class="planet-link" href="{{ url_for('account_register') }}">Create an account</a>
+        <div class="welcome-highlights" aria-label="Things to do">
+            <div><span aria-hidden="true">🌼</span><strong>Explore the meadow</strong><small>Meet everyone's pets</small></div>
+            <div><span aria-hidden="true">🎾</span><strong>Make a friend</strong><small>Share pats and playtime</small></div>
+            <div><span aria-hidden="true">🏡</span><strong>Grow your family</strong><small>Adopt your own companions</small></div>
+        </div>
     </section>
     {% else %}
     <p class="privacy-note">All account-owned pets appear here, even when their owners are away. Owners stay anonymous; no names or messages are shared. The meadow refreshes every 10 seconds when you are not using its controls.</p>
@@ -42,7 +66,7 @@
             <div id="pet-details"><p>Choose a pet in the meadow to begin.</p></div>
         </section>
     </div>
-    <section class="planet-panel">
+    <section class="planet-panel adoption-panel">
         <p class="eyebrow">Adoption station</p>
         <h2>Bring home a new friend</h2>
         <p>Pets use your existing account wallet and also appear in Character Port.</p>

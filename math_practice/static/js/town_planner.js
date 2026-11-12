@@ -755,14 +755,14 @@
         exportContext.fillText('My Coordinate Town Plan', 30, 22);
         exportContext.fillStyle = '#334155';
         exportContext.font = '20px Arial, sans-serif';
-        const studentName = studentNameInput.value.trim() || 'Not provided';
+        const studentName = studentNameInput.value.trim() ? window.studentDisplayName(studentNameInput.value) : 'Not provided';
         exportContext.fillText(`Student: ${studentName}`, 32, 63);
         renderMap(exportContext, 900, 760, 20, 100);
         drawExportLegend(exportContext, 960, 100, 510, exportHeight - 130);
 
         try {
             const link = document.createElement('a');
-            const safeStudentName = studentNameInput.value.trim().toLowerCase()
+            const safeStudentName = studentName.toLowerCase()
                 .replace(/[^a-z0-9]+/g, '_')
                 .replace(/^_+|_+$/g, '') || 'student';
             link.download = `town_plan_${safeStudentName}.png`;

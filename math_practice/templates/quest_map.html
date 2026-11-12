@@ -36,19 +36,38 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 24px;
+            padding: 24px 24px 90px;
         }
 
         .hud-element {
             pointer-events: auto; /* Re-enable clicks for buttons/controls */
         }
 
-        /* Wood-textured HUD components to match the website style */
-        .wood-hud-panel {
-            background: rgba(30, 41, 59, 0.85);
-            border: 4px solid #8b5a2b;
+        .space-hud > div:first-child,
+        .space-hud > div:nth-child(2) {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .space-hud > div:first-child { align-items: flex-start; padding-top: 40px; }
+        .space-hud > div:nth-child(2) { align-items: flex-end; }
+        .space-hud > div:first-child > .hud-element:first-child { display: flex; gap: 8px; }
+        .space-hud > div:first-child > .hud-element:nth-child(2) {
+            padding: 6px 14px;
+            border: 1px solid rgba(125, 211, 252, .4);
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.05);
+            background: rgba(7, 20, 42, .94);
+        }
+        .space-hud h1 { margin: 0; font-size: clamp(1.1rem, 2vw, 1.6rem); text-align: center; }
+        .hud-subtitle { margin: 0; font-size: .75rem; text-align: center !important; }
+
+        .wood-hud-panel {
+            background: rgba(7, 20, 42, 0.94);
+            border: 1px solid rgba(125, 211, 252, .55);
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.45), inset 0 1px rgba(255,255,255,0.12);
             backdrop-filter: blur(10px);
             padding: 16px;
             color: #eaf2ff;
@@ -56,7 +75,7 @@
 
         .home-btn {
             background: linear-gradient(to right, #4c0519 0%, #881337 100%);
-            border: 2.5px solid #8b5a2b;
+            border: 1px solid rgba(125, 211, 252, .55);
             color: white;
             font-weight: 700;
             padding: 10px 18px;
@@ -76,9 +95,11 @@
         /* Guidance Proximity Alerts */
         .proximity-banner {
             position: absolute;
-            bottom: 40px;
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
+            box-sizing: border-box;
+            max-width: calc(100vw - 20px);
             background: rgba(15, 23, 42, 0.95);
             border: 2.5px solid #38bdf8;
             padding: 14px 28px;
@@ -95,6 +116,10 @@
             0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
             50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.6); }
             100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .proximity-banner { animation: none; }
         }
 
         .descend-btn {
@@ -147,14 +172,15 @@
         }
 
         .controls-panel h4 {
-            font-size: 11px;
+            margin: 0 0 8px;
+            font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.06em;
             color: #93c5fd;
         }
 
         .controls-panel .console-lines {
-            font-size: 9px;
+            font-size: 11px;
             line-height: 1.35;
             color: #f1f5ff;
             font-weight: 500;
@@ -168,8 +194,10 @@
             border-radius: 4px;
         }
 
+        .controls-panel .console-lines p { margin: 3px 0; }
         .controls-panel .console-note {
-            font-size: 8px;
+            margin-top: 8px;
+            font-size: 10px;
             color: #d6e4f5;
         }
 
@@ -204,19 +232,81 @@
         }
 
         .status-panel {
+            font-size: 11px;
+            text-align: right;
             color: #f1f5ff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
         }
 
+        .touch-flight-controls { display: none; }
+
+        @media (max-width: 768px), (pointer: coarse) {
+            .touch-flight-controls {
+                position: fixed;
+                z-index: 15;
+                left: 10px;
+                right: 10px;
+                bottom: 82px;
+                display: flex;
+                justify-content: space-between;
+                align-items: end;
+                pointer-events: none;
+            }
+            .touch-flight-group {
+                display: grid;
+                grid-template-columns: repeat(3, 48px);
+                gap: 5px;
+                pointer-events: auto;
+            }
+            .touch-flight-group.altitude { grid-template-columns: repeat(2, 48px); }
+            .touch-flight-controls button {
+                box-sizing: border-box;
+                width: 48px;
+                min-width: 48px;
+                height: 48px;
+                min-height: 48px;
+                margin: 0;
+                padding: 2px;
+                border: 1px solid #7dd3fc;
+                border-radius: 12px;
+                background: rgba(7, 20, 42, .96);
+                color: #fff;
+                font-size: 10px;
+                line-height: 1.1;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+                touch-action: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            .touch-flight-controls button span {
+                display: block;
+                font-size: 16px;
+                line-height: 1;
+                pointer-events: none;
+            }
+            .touch-flight-controls button.is-pressed { background: #075985; border-color: #e0f2fe; }
+            .touch-flight-controls button:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+            .touch-flight-group .touch-forward { grid-column: 2; }
+            .touch-flight-group .touch-left { grid-column: 1; }
+            .status-panel { display: none; }
+            .proximity-banner { bottom: 200px; }
+        }
+
         /* Mobile responsiveness styles */
         @media (max-width: 768px) {
+            body #ship-custom {
+                top: 45px;
+                left: 10px;
+                transform: none;
+            }
             .space-hud {
-                padding: 10px !important;
+                padding: 10px 10px 82px !important;
             }
             .space-hud > div:first-child {
                 flex-direction: column !important;
-                align-items: center !important;
+                align-items: flex-start !important;
                 gap: 8px !important;
+                padding-top: 90px;
             }
             .space-hud h1 {
                 font-size: 1.25rem !important;
@@ -237,11 +327,7 @@
                 display: none !important; /* Hide flight controls guide on mobile to save screen estate */
             }
             .status-panel {
-                min-width: unset !important;
-                width: 100% !important;
-                text-align: center !important;
-                padding: 8px !important;
-                font-size: 10px !important;
+                display: none !important;
             }
             .home-btn {
                 padding: 6px 10px !important;
@@ -250,7 +336,7 @@
             }
             .space-hud > div:nth-child(2) {
                 flex-direction: column !important;
-                align-items: center !important;
+                align-items: flex-end !important;
                 gap: 8px !important;
             }
         }
@@ -267,8 +353,9 @@
             .proximity-banner {
                 width: 92vw !important;
                 padding: 10px 16px !important;
-                bottom: 20px !important;
+                bottom: 200px !important;
             }
+
             .proximity-banner h3 {
                 font-size: 12px !important;
             }
@@ -279,6 +366,14 @@
                 padding: 6px 10px !important;
                 font-size: 10px !important;
             }
+        }
+
+        @media (max-height: 500px) and (max-width: 768px),
+               (max-height: 500px) and (max-width: 900px) and (pointer: coarse) {
+            .space-hud > div:first-child > .hud-element:nth-child(2),
+            .stats-hud { display: none; }
+            .touch-flight-controls { bottom: 58px; }
+            .proximity-banner { top: 8px; bottom: auto !important; }
         }
     </style>
 {% endblock %}
@@ -345,13 +440,28 @@
     </div>
 </div>
 
+<div class="touch-flight-controls" role="group" aria-label="Touch flight controls">
+    <div class="touch-flight-group">
+        <button type="button" class="touch-forward" data-flight="forward" aria-label="Hold to fly forward"><span aria-hidden="true">▲</span>Fly</button>
+        <button type="button" class="touch-left" data-flight="left" aria-label="Hold to steer left"><span aria-hidden="true">◀</span>Left</button>
+        <button type="button" data-flight="back" aria-label="Hold to brake or reverse"><span aria-hidden="true">▼</span>Back</button>
+        <button type="button" data-flight="right" aria-label="Hold to steer right"><span aria-hidden="true">▶</span>Right</button>
+    </div>
+    <div class="touch-flight-group altitude">
+        <button type="button" data-flight="rise" aria-label="Hold to rise"><span aria-hidden="true">↑</span>Rise</button>
+        <button type="button" data-flight="descend" aria-label="Hold to descend"><span aria-hidden="true">↓</span>Down</button>
+        <button type="button" id="touch-flight-reset" aria-label="Reset flight"><span aria-hidden="true">↺</span>Reset</button>
+    </div>
+</div>
+
 <!-- Dynamic Proximity Descend Overlay banner -->
 <div id="proximity-alert" class="proximity-banner text-slate-100">
     <h3 id="proximity-title" class="font-black text-sm text-yellow-400 tracking-wide">APPROACHING PLANET</h3>
     <p id="proximity-desc" class="text-xs text-slate-300 mt-1 mb-2">Press Enter or choose the landing button to enter this planet.</p>
     <div class="flex gap-3 justify-center">
         <button id="descend-planet-btn" class="descend-btn text-xs font-black">Land on Planet 🪐</button>
-
+    </div>
+</div>
 
 <div id="junk-quiz-modal" class="junk-quiz-modal text-slate-100">
     <div class="flex items-start justify-between gap-3">
@@ -533,6 +643,52 @@
         let spaceJunk = [];
         let stars = [];
         let keys = {};
+        const flightPointers = new Map();
+
+        function touchFlightActive(action) {
+            return Array.from(flightPointers.values()).some((button) => button.dataset.flight === action);
+        }
+
+        function clearTouchFlight() {
+            flightPointers.forEach((button) => button.classList.remove('is-pressed'));
+            flightPointers.clear();
+        }
+
+        function setupTouchFlight() {
+            document.querySelectorAll('[data-flight]').forEach((button) => {
+                button.addEventListener('pointerdown', (event) => {
+                    if (event.pointerType === 'mouse' && event.button !== 0) return;
+                    event.preventDefault();
+                    flightPointers.set(event.pointerId, button);
+                    button.classList.add('is-pressed');
+                    button.setPointerCapture(event.pointerId);
+                });
+                const release = (event) => {
+                    if (flightPointers.get(event.pointerId) !== button) return;
+                    flightPointers.delete(event.pointerId);
+                    if (!Array.from(flightPointers.values()).includes(button)) {
+                        button.classList.remove('is-pressed');
+                    }
+                };
+                button.addEventListener('pointerup', release);
+                button.addEventListener('pointercancel', release);
+                button.addEventListener('lostpointercapture', release);
+            });
+            document.getElementById('touch-flight-reset').addEventListener('click', () => {
+                clearTouchFlight();
+                resetShipFlightState();
+            });
+            window.addEventListener('blur', () => {
+                clearTouchFlight();
+                keys = {};
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearTouchFlight();
+                    keys = {};
+                }
+            });
+        }
         
         let shipVelocity = new THREE.Vector3();
         let shipRotationY = 0;
@@ -665,6 +821,7 @@
             
             // 1. Create Scene & Camera
             scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x040b1b);
             scene.fog = new THREE.FogExp2(0x02040a, 0.015);
 
             camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -691,9 +848,23 @@
             scene.add(directionalLight);
 
             // 4. Center Glowing Star (Sun)
-            const sunGeo = new THREE.SphereGeometry(3.5, 16, 16);
-            const sunMat = new THREE.MeshBasicMaterial({ color: 0xffd700, wireframe: false });
+            const sunGeo = new THREE.SphereGeometry(3.5, 32, 24);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xffc45c, wireframe: false });
             const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+            const glowCanvas = document.createElement('canvas');
+            glowCanvas.width = glowCanvas.height = 128;
+            const glowContext = glowCanvas.getContext('2d');
+            const glowGradient = glowContext.createRadialGradient(64, 64, 8, 64, 64, 64);
+            glowGradient.addColorStop(0, 'rgba(255, 215, 130, .65)');
+            glowGradient.addColorStop(.45, 'rgba(255, 170, 72, .24)');
+            glowGradient.addColorStop(1, 'rgba(255, 170, 72, 0)');
+            glowContext.fillStyle = glowGradient;
+            glowContext.fillRect(0, 0, 128, 128);
+            const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false
+            }));
+            sunGlow.scale.set(12, 12, 1);
+            sunMesh.add(sunGlow);
             scene.add(sunMesh);
 
             // 5. Starfield background
@@ -897,7 +1068,7 @@
             scene.add(ship);
 
             // Setup camera starting point behind ship
-            camera.position.set(0, 7, 21);
+            camera.position.set(0, 3, 20);
 
             // Event Listeners
             window.addEventListener('keydown', (e) => {
@@ -918,6 +1089,7 @@
             window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
             window.addEventListener('resize', onWindowResize);
             window.addEventListener('click', onDocumentClick);
+            setupTouchFlight();
 
             document.getElementById('descend-planet-btn').addEventListener('click', () => {
                 enterApproachedPlanet();
@@ -936,6 +1108,7 @@
         }
 
         function openJunkQuiz(junk) {
+            clearTouchFlight();
             const tier = getJunkDifficultyTier();
             const quiz = chooseJunkQuiz(tier);
             const rewardBase = tier === 'hard' ? 7 : tier === 'medium' ? 5 : 3;
@@ -1024,6 +1197,9 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            if (getComputedStyle(document.querySelector('.touch-flight-controls')).display === 'none') {
+                clearTouchFlight();
+            }
         }
 
         // Main WebGL Game Render Tick
@@ -1042,7 +1218,7 @@
                 p.position.set(planetX, 0, planetZ);
                 if (p.mesh) {
                     p.mesh.position.copy(p.position);
-                    p.mesh.rotation.y += 0.015 * frameScale;
+                    if (!p.data.isSun) p.mesh.rotation.y += 0.015 * frameScale;
                 } else {
                     p.spin.value += 0.015 * frameScale;
                     planetTransform.position.copy(p.position);
@@ -1096,10 +1272,12 @@
             });
 
             // 2. Spaceship Movement Control
-            let steerLeft = Boolean(keys['a'] || keys['arrowleft']);
-            let steerRight = Boolean(keys['d'] || keys['arrowright']);
-            let goForward = Boolean(keys['w'] || keys['arrowup']);
-            let goBackward = Boolean(keys['s'] || keys['arrowdown']);
+            let steerLeft = Boolean(keys['a'] || keys['arrowleft'] || touchFlightActive('left'));
+            let steerRight = Boolean(keys['d'] || keys['arrowright'] || touchFlightActive('right'));
+            let goForward = Boolean(keys['w'] || keys['arrowup'] || touchFlightActive('forward'));
+            let goBackward = Boolean(keys['s'] || keys['arrowdown'] || touchFlightActive('back'));
+            let goUp = Boolean(keys[' '] || touchFlightActive('rise'));
+            let goDown = Boolean(keys.shift || touchFlightActive('descend'));
 
             // Turn the ship and gently guide its momentum in the same direction.
             const turnDirection = Number(steerLeft) - Number(steerRight);
@@ -1118,11 +1296,11 @@
             }
 
             // Vertical thrust to mirror Solar Flight controls.
-            if (keys[' ']) shipVelocity.y += acceleration * frameScale;
-            if (keys.shift) shipVelocity.y -= acceleration * frameScale;
+            if (goUp) shipVelocity.y += acceleration * frameScale;
+            if (goDown) shipVelocity.y -= acceleration * frameScale;
 
             // Stronger drag without thrust makes it easier to stop and line up with a planet.
-            const isThrusting = goForward || goBackward || keys[' '] || keys.shift;
+            const isThrusting = goForward || goBackward || goUp || goDown;
             shipVelocity.multiplyScalar(Math.pow(isThrusting ? drag : coastDrag, frameScale));
 
             // Velocity clamping
