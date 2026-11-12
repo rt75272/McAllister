@@ -944,18 +944,27 @@
                 }
 
                 if (data.blackHole) {
-                    // A transparent, cool-toned texture lets the portal fade naturally into
-                    // the starfield without the previous orange accretion treatment.
-                    const portalTexture = new THREE.TextureLoader().load("{{ url_for('static', filename='img/black_hole_portal.svg') }}");
-                    portalTexture.encoding = THREE.sRGBEncoding;
-                    const portalHalo = new THREE.Sprite(new THREE.SpriteMaterial({
-                        map: portalTexture,
-                        transparent: true,
-                        depthWrite: false,
-                        opacity: 0.96
-                    }));
-                    portalHalo.scale.set(data.size * 4.7, data.size * 4.7, 1);
-                    planetMesh.add(portalHalo);
+                    // Rasterize the SVG before uploading it to WebGL, preserving its transparent edges.
+                    new THREE.ImageLoader().load("{{ url_for('static', filename='img/black_hole_portal.svg') }}", (image) => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = canvas.height = 512;
+                        const context = canvas.getContext('2d');
+                        if (!context) {
+                            console.error('Unable to render the black hole portal texture.');
+                            return;
+                        }
+                        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                        const portalTexture = new THREE.CanvasTexture(canvas);
+                        portalTexture.encoding = THREE.sRGBEncoding;
+                        const portalHalo = new THREE.Sprite(new THREE.SpriteMaterial({
+                            map: portalTexture,
+                            transparent: true,
+                            depthWrite: false,
+                            opacity: 0.96
+                        }));
+                        portalHalo.scale.set(data.size * 4.7, data.size * 4.7, 1);
+                        planetMesh.add(portalHalo);
+                    }, undefined, (error) => console.error('Unable to load the black hole portal texture.', error));
                     const portalGlow = new THREE.PointLight(0x60a5fa, 1.35, 12);
                     planetMesh.add(portalGlow);
                 }
