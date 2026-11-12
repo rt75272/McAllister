@@ -51,6 +51,8 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Solar System Explorer** - Scale planetary map with authentic NASA imagery and astronomy facts.
 - **Orientation Sun** - Module 0 onboarding (Canvas navigation, calendar, and inbox skills). The Sun at the center of the Quest Map is the Orientation planet; fly close and press Enter to land. Curriculum planets are numbered starting at 1.
 - **Pet Land** - Character wardrobe, color/skin upgrades, hats, tools, shoes, pet adoption, and equipment. Signed-in learners spend and save items with their account coin wallet.
+- **Pet Planet** - A shared meadow showing all account-owned pets, including those whose owners are offline. Owners are anonymous. Signed-in learners can pat and play with any pet, adopt pets with their existing wallet, and buy treats or toys and choose a meadow color for their own pets. The meadow refreshes every 10 seconds; existing pet hats, trails, and auras remain available in Character Port.
+- **Planet Polus** - An original space-crew avatar creator and classroom reward picker. Roster entries and assignment passes are stored only in this browser on this device, not in learner accounts or a shared database. Use the same device/browser for student entry and the teacher picker; clearing browser data removes the roster. Teacher mode is a convenience toggle, not authentication, so anyone using the browser can change its records. Enter only a first name and last initial.
 - **Grand Finale** - 3-day end-of-year math celebration slideshow with interactive mini-games.
 
 ### 🕹️ Arcade Hub

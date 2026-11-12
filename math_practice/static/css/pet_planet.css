@@ -1,0 +1,92 @@
+.pet-planet {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 75px 20px 50px;
+    color: #172f36;
+}
+.pet-planet a { color: #075d50; }
+.planet-header, .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+.planet-header h1 { font-size: clamp(2.4rem, 6vw, 4rem); margin: 8px 0; }
+.planet-header p { max-width: 680px; }
+.pet-planet .eyebrow { color: #17604d; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; font-weight: bold; }
+.wallet, .planet-panel {
+    background: #fbfbf8;
+    border: 1px solid #8daea2;
+    border-radius: 20px;
+    padding: 20px;
+}
+.wallet { white-space: nowrap; font-weight: bold; }
+.planet-panel { margin-top: 20px; }
+.planet-panel h2 { margin: 4px 0 10px; }
+.planet-panel p, .privacy-note { color: #334e52; }
+.planet-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(270px, 1fr); gap: 20px; }
+.pet-planet button, .pet-planet a.planet-link {
+    display: inline-block;
+    width: auto;
+    min-height: 44px;
+    margin: 4px;
+    padding: 9px 14px;
+    border: 1px solid #075d50;
+    border-radius: 12px;
+    background: #075d50;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+}
+.pet-planet button:hover, .pet-planet button:focus-visible,
+.pet-planet a.planet-link:hover, .pet-planet a.planet-link:focus-visible {
+    background: #064239;
+    color: #fff;
+    outline: 3px solid #7440a5;
+    outline-offset: 2px;
+}
+.pet-planet button:disabled { opacity: 1; background: #dce7e1; color: #405753; border-color: #9eafa7; cursor: not-allowed; }
+.meadow {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    max-height: 620px;
+    overflow-y: auto;
+    padding: 18px;
+    border-radius: 18px;
+    background: linear-gradient(#c5e8e9, #e1f3dc 48%, #a8d1a2 49%, #8cbc91);
+}
+.meadow .pet-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    width: 100%;
+    margin: 0;
+    color: #142a32;
+    background: var(--pet-color, #d1fae5);
+    border: 3px solid transparent;
+    box-shadow: 0 4px 10px #174c3e55;
+}
+.meadow .pet-card[aria-pressed="true"] { border-color: #7644bc; }
+.meadow .pet-card:hover, .meadow .pet-card:focus-visible {
+    color: #142a32;
+    background: var(--pet-color, #d1fae5);
+}
+.meadow .pet-card:disabled { color: #142a32; background: var(--pet-color, #d1fae5); }
+.pet-emoji { font-size: 3rem; line-height: 1.2; }
+.pet-card:hover .pet-emoji { transform: translateY(-5px) rotate(-5deg); }
+.pet-card .pet-emoji { transition: transform .2s; }
+.pet-detail-emoji { font-size: 4rem; }
+.activity-buttons, .colors { display: flex; flex-wrap: wrap; }
+.adoption-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.adoption-card { padding: 14px; background: #e6f1eb; border: 1px solid #bdd3c5; border-radius: 14px; }
+.adoption-card h3 { margin: 4px 0; }
+#planet-feedback { min-height: 1.5em; color: #754100; }
+@media (max-width: 760px) {
+    .planet-layout { grid-template-columns: 1fr; }
+    .planet-header { align-items: flex-start; flex-direction: column; }
+    .pet-planet { padding-top: 85px; }
+}
+@media (prefers-reduced-motion: reduce) { .pet-card .pet-emoji { transition: none; } }

@@ -68,6 +68,18 @@ def test_quest_map_has_one_science_planet_and_all_subjects():
     assert b'Natural Selection Planet' not in response.data
 
 
+def test_planet_polus_is_accessible_from_quest_map():
+    client = app.test_client()
+    response = client.get('/planet-polus')
+    assert response.status_code == 200
+    assert b'Suit Up' in response.data
+    assert b'Emergency Meeting' in response.data
+    assert b'planet_polus.js' in response.data
+    quest_map = client.get('/quest-map')
+    assert b'Planet Polus' in quest_map.data
+    assert b'/planet-polus' in quest_map.data
+
+
 def test_science_simulation_is_not_listed_as_a_math_game():
     client = app.test_client()
 

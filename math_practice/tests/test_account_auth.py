@@ -13,6 +13,7 @@ class FakeDatabase:
         self.quest_coin_rewards = set()
         self.unit_unlocks = set()
         self.character_inventory = []
+        self.planet_pets = []
         self.next_account_id = 1
 
 
@@ -84,6 +85,12 @@ class FakeCursor:
             )
             if account:
                 self.result = (account['coin_balance'],)
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET COIN_BALANCE = COIN_BALANCE -') and 'RETURNING COIN_BALANCE' in normalized:
+            amount, account_id, minimum = params
+            account = next((item for item in self.database.accounts.values() if item['id'] == account_id), None)
+            if account and account['coin_balance'] >= minimum:
+                account['coin_balance'] -= amount
+                self.result = (account['coin_balance'],)
         elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET COIN_BALANCE = COIN_BALANCE -'):
             amount, account_id = params
             for account in self.database.accounts.values():
@@ -144,6 +151,34 @@ class FakeCursor:
                     and row['item_key'] == item_key
                 ):
                     row['is_equipped'] = is_equipped
+        elif normalized.startswith('INSERT INTO PET_PLANET_PETS'):
+            for item in self.database.character_inventory:
+                if item['item_type'] == 'pet' and not any(
+                    pet['account_id'] == item['account_id'] and pet['kind'] == item['item_key']
+                    for pet in self.database.planet_pets
+                ):
+                    self.database.planet_pets.append({
+                        'id': len(self.database.planet_pets) + 1,
+                        'account_id': item['account_id'], 'kind': item['item_key'],
+                        'color': 'mint', 'pats': 0, 'plays': 0, 'treats': 0, 'toys': 0,
+                    })
+        elif normalized.startswith('SELECT P.ID, P.ITEM_KEY, P.COLOR'):
+            self.result = [
+                (pet['id'], pet['kind'], pet['color'], pet['pats'], pet['plays'],
+                 pet['treats'], pet['toys'], pet['account_id'] == params[0])
+                for pet in self.database.planet_pets
+            ]
+        elif normalized.startswith('SELECT P.ACCOUNT_ID FROM PET_PLANET_PETS'):
+            pet = next((pet for pet in self.database.planet_pets if pet['id'] == params[0]), None)
+            if pet:
+                self.result = (pet['account_id'],)
+        elif normalized.startswith('UPDATE PET_PLANET_PETS SET COLOR'):
+            color, pet_id = params
+            next(pet for pet in self.database.planet_pets if pet['id'] == pet_id)['color'] = color
+        elif normalized.startswith('UPDATE PET_PLANET_PETS SET'):
+            column = normalized.split()[3].lower()
+            pet = next(pet for pet in self.database.planet_pets if pet['id'] == params[0])
+            pet[column] += 1
         elif normalized.startswith('INSERT INTO ACCOUNT_GAME_COIN_REWARDS'):
             account_id, game_key, coins_awarded = params
             reward_key = (account_id, game_key, datetime.now(timezone.utc).date())
@@ -775,6 +810,67 @@ def register_test_account(client, name='Wallet Learner'):
     )
     client.get('/account')
     return response
+
+
+def test_pet_planet_shared_meadow_and_owner_actions():
+    database = FakeDatabase()
+    with patch.object(app_module, 'get_db_connection', side_effect=lambda: FakeConnection(database)):
+        owner = app_module.app.test_client()
+        visitor = app_module.app.test_client()
+        register_test_account(owner, 'Meadow Owner')
+        register_test_account(visitor, 'Meadow Visitor')
+        owner_token = csrf_token(owner)
+        visitor_token = csrf_token(visitor)
+        for client, token, pet in (
+            (owner, owner_token, 'pixel-pup'),
+            (visitor, visitor_token, 'mochi-mooncat'),
+        ):
+            assert client.post('/api/account/character/action', data={
+                'csrf_token': token, 'item_type': 'pet', 'item_key': pet, 'action': 'buy',
+            }).status_code == 200
+
+        state = owner.get('/api/pet-planet').get_json()
+        assert state['coins'] == 22
+        assert len(state['pets']) == 2
+        assert set(state['pets'][0]) == {'id', 'kind', 'color', 'pats', 'plays', 'treats', 'toys', 'mine'}
+        mine = next(pet for pet in state['pets'] if pet['mine'])
+        other = next(pet for pet in state['pets'] if not pet['mine'])
+        assert visitor.get('/api/pet-planet').get_json()['pets'][0]['mine'] is False
+
+        def action(client, token, pet, name, **extra):
+            return client.post(f"/api/pet-planet/pets/{pet['id']}", data={
+                'csrf_token': token, 'action': name, **extra,
+            })
+
+        assert action(owner, owner_token, other, 'pat').status_code == 200
+        assert action(owner, owner_token, other, 'play').status_code == 200
+        assert action(owner, owner_token, other, 'treat').status_code == 403
+        assert action(owner, owner_token, other, 'color', color='sky').status_code == 403
+        assert action(owner, owner_token, mine, 'color', color='invalid').status_code == 400
+        assert action(owner, owner_token, mine, 'color', color='sky').status_code == 200
+        assert action(owner, owner_token, mine, 'treat').status_code == 200
+        assert action(owner, owner_token, mine, 'toy').status_code == 200
+        updated = owner.get('/api/pet-planet').get_json()
+        assert updated['coins'] == 16
+        assert updated['pets'][0]['color'] == 'sky'
+        assert (updated['pets'][0]['treats'], updated['pets'][0]['toys']) == (1, 1)
+        assert (updated['pets'][1]['pats'], updated['pets'][1]['plays']) == (1, 1)
+        database.accounts['meadow owner']['coin_balance'] = 1
+        assert action(owner, owner_token, mine, 'treat').status_code == 400
+        assert owner.get('/api/pet-planet').get_json()['pets'][0]['treats'] == 1
+        assert action(owner, 'wrong', mine, 'pat').status_code == 400
+        assert owner.post('/api/pet-planet/pets/999', data={
+            'csrf_token': owner_token, 'action': 'pat',
+        }).status_code == 404
+
+
+def test_pet_planet_guest_page_and_api_require_login():
+    client = app_module.app.test_client()
+    page = client.get('/pet-planet')
+    assert page.status_code == 200
+    assert b'Sign in to bring your account pets' in page.data
+    assert client.get('/api/pet-planet').status_code == 302
+    assert client.post('/api/pet-planet/pets/1').status_code == 302
 
 
 def test_signup_and_daily_login_coin_bonuses_are_once_per_day():

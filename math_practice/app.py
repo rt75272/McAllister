@@ -84,6 +84,8 @@ PET_SHOP_ITEMS = {
     'orbit-otter': ('pet', 12),
     'nebula-axolotl': ('pet', 22),
 }
+PET_PLANET_COLORS = {'mint', 'sky', 'lavender', 'peach', 'gold'}
+PET_PLANET_ACTION_COSTS = {'pat': 0, 'play': 0, 'treat': 2, 'toy': 4}
 QUEST_TOPIC_COIN_REWARDS = {
     f'{unit}_{topic}': (10, 12, 15)[topic - 1]
     for unit in range(1, 11)
@@ -907,6 +909,16 @@ def pet_land():
     """Dedicated pet adoption and pet equipment world."""
     return render_template('pet_land.html')
 
+@app.route('/pet-planet')
+def pet_planet():
+    """A shared meadow for account pets."""
+    return render_template('pet_planet.html')
+
+@app.route('/planet-polus')
+def planet_polus():
+    """Local classroom crew creator and reward station."""
+    return render_template('planet_polus.html')
+
 @app.route('/solar-system')
 def solar_system():
     """Freely explorable solar-system enrichment map."""
@@ -1099,6 +1111,21 @@ def ensure_account_tables():
                     is_equipped BOOLEAN NOT NULL DEFAULT FALSE,
                     purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                     PRIMARY KEY (account_id, item_type, item_key)
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS pet_planet_pets (
+                    id BIGSERIAL PRIMARY KEY,
+                    account_id INTEGER NOT NULL REFERENCES learning_accounts(id) ON DELETE CASCADE,
+                    item_key TEXT NOT NULL,
+                    color TEXT NOT NULL DEFAULT 'mint',
+                    pats INTEGER NOT NULL DEFAULT 0,
+                    plays INTEGER NOT NULL DEFAULT 0,
+                    treats INTEGER NOT NULL DEFAULT 0,
+                    toys INTEGER NOT NULL DEFAULT 0,
+                    UNIQUE (account_id, item_key)
                 )
                 """
             )
@@ -1717,6 +1744,109 @@ def account_character_action():
     except Exception:
         app.logger.exception('Failed updating learner character inventory.')
         return jsonify({'error': 'Could not update your character right now.'}), 503
+
+
+@app.route('/api/pet-planet', methods=['GET'])
+@login_required
+def pet_planet_state():
+    """Show all account-owned pets without exposing their owners' identities."""
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO pet_planet_pets (account_id, item_key)
+                    SELECT i.account_id, i.item_key FROM account_character_inventory i
+                    WHERE i.item_type = 'pet' AND NOT EXISTS (
+                        SELECT 1 FROM pet_planet_pets p
+                        WHERE p.account_id = i.account_id AND p.item_key = i.item_key
+                    )
+                    ON CONFLICT (account_id, item_key) DO NOTHING
+                    """
+                )
+                cur.execute(
+                    """
+                    SELECT p.id, p.item_key, p.color, p.pats, p.plays,
+                           p.treats, p.toys, p.account_id = %s
+                    FROM pet_planet_pets p
+                    JOIN account_character_inventory i
+                      ON i.account_id = p.account_id AND i.item_key = p.item_key
+                     AND i.item_type = 'pet'
+                    ORDER BY p.id
+                    """,
+                    (session['account_id'],),
+                )
+                pets = [
+                    dict(zip(('id', 'kind', 'color', 'pats', 'plays', 'treats', 'toys', 'mine'), row))
+                    for row in cur.fetchall()
+                ]
+                cur.execute("SELECT coin_balance FROM learning_accounts WHERE id = %s", (session['account_id'],))
+                account = cur.fetchone()
+                if account is None:
+                    session.clear()
+                    return jsonify({'error': 'Account not found.'}), 404
+                conn.commit()
+        return jsonify({'pets': pets, 'coins': account[0]})
+    except Exception:
+        app.logger.exception('Failed loading Pet Planet.')
+        return jsonify({'error': 'Could not load Pet Planet right now.'}), 503
+
+
+@app.route('/api/pet-planet/pets/<int:pet_id>', methods=['POST'])
+@login_required
+def pet_planet_pet_action(pet_id):
+    """Interact with a pet, or customize and buy care for one's own pet."""
+    if not valid_csrf_token(request.form.get('csrf_token', '')):
+        abort(400, description='This form expired. Please refresh and try again.')
+    action = request.form.get('action', '')
+    color = request.form.get('color', '')
+    if action not in PET_PLANET_ACTION_COSTS and action != 'color':
+        return jsonify({'error': 'Choose a valid pet activity.'}), 400
+    if action == 'color' and color not in PET_PLANET_COLORS:
+        return jsonify({'error': 'Choose a valid color.'}), 400
+
+    try:
+        ensure_account_tables()
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT p.account_id FROM pet_planet_pets p
+                    JOIN account_character_inventory i
+                      ON i.account_id = p.account_id AND i.item_key = p.item_key
+                     AND i.item_type = 'pet'
+                    WHERE p.id = %s FOR UPDATE OF p
+                    """,
+                    (pet_id,),
+                )
+                pet = cur.fetchone()
+                if pet is None:
+                    return jsonify({'error': 'Pet not found.'}), 404
+                if action in {'color', 'treat', 'toy'} and pet[0] != session['account_id']:
+                    return jsonify({'error': 'Only the owner can do that.'}), 403
+                if action == 'color':
+                    cur.execute("UPDATE pet_planet_pets SET color = %s WHERE id = %s", (color, pet_id))
+                else:
+                    cost = PET_PLANET_ACTION_COSTS[action]
+                    if cost:
+                        cur.execute(
+                            """
+                            UPDATE learning_accounts SET coin_balance = coin_balance - %s
+                            WHERE id = %s AND coin_balance >= %s RETURNING coin_balance
+                            """,
+                            (cost, session['account_id'], cost),
+                        )
+                        if cur.fetchone() is None:
+                            return jsonify({'error': 'Not enough coins for that activity.'}), 400
+                    # The column name is selected only from the fixed action catalog.
+                    column = {'pat': 'pats', 'play': 'plays', 'treat': 'treats', 'toy': 'toys'}[action]
+                    cur.execute(f"UPDATE pet_planet_pets SET {column} = {column} + 1 WHERE id = %s", (pet_id,))
+                conn.commit()
+        return jsonify({'ok': True})
+    except Exception:
+        app.logger.exception('Failed updating Pet Planet pet.')
+        return jsonify({'error': 'Could not update that pet right now.'}), 503
 
 
 @app.route('/api/account/coins', methods=['GET'])

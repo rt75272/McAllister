@@ -63,6 +63,7 @@
         {% if current_account_name %}
             <a href="{{ url_for('account_dashboard') }}">👤 {{ current_account_name }}</a>
             <a href="{{ url_for('pet_land') }}">Character Port</a>
+            <a href="{{ url_for('pet_planet') }}">Pet Planet</a>
             <a href="{{ url_for('leaderboards') }}">Leaderboards</a>
             <a href="{{ url_for('community_profiles') }}">Community</a>
             <form method="post" action="{{ url_for('account_logout') }}">

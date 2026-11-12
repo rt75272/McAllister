@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Pet Planet - Learning Center{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pet_planet.css') }}">
+{% endblock %}
+{% block content %}
+<main class="pet-planet">
+    <header class="planet-header">
+        <div>
+            <a href="{{ url_for('quest_map') }}">← Space Flight</a>
+            <p class="eyebrow">A shared world for little companions</p>
+            <h1>🐾 Pet Planet</h1>
+            <p>Meet pets from across the learning center, play together, and make your own companions feel at home.</p>
+        </div>
+        <div class="wallet">🪙 <span id="planet-coins">—</span> coins</div>
+    </header>
+
+    {% if not current_account_name %}
+    <section class="planet-panel welcome">
+        <h2>Ready to visit the meadow?</h2>
+        <p>Sign in to bring your account pets, spend your coins, and play with other pets.</p>
+        <a class="planet-link" href="{{ url_for('account_login') }}">Log in</a>
+        <a class="planet-link" href="{{ url_for('account_register') }}">Create an account</a>
+    </section>
+    {% else %}
+    <p class="privacy-note">All account-owned pets appear here, even when their owners are away. Owners stay anonymous; no names or messages are shared. The meadow refreshes every 10 seconds when you are not using its controls.</p>
+    <p id="planet-feedback" role="status" aria-live="polite"></p>
+    <div class="planet-layout">
+        <section class="planet-panel meadow-panel">
+            <div class="section-heading">
+                <div><p class="eyebrow">Community meadow</p><h2>Meet the pets</h2></div>
+                <button id="refresh-meadow" type="button">↻ Refresh</button>
+            </div>
+            <p>Choose any pet to say hello. Your pets have a star.</p>
+            <div id="meadow" class="meadow" aria-label="All pets in the meadow">
+                <p>Loading the meadow…</p>
+            </div>
+        </section>
+        <section class="planet-panel activity-panel">
+            <p class="eyebrow">Play & care</p>
+            <h2>Pet activity</h2>
+            <div id="pet-details"><p>Choose a pet in the meadow to begin.</p></div>
+        </section>
+    </div>
+    <section class="planet-panel">
+        <p class="eyebrow">Adoption station</p>
+        <h2>Bring home a new friend</h2>
+        <p>Pets use your existing account wallet and also appear in Character Port.</p>
+        <div id="adoption" class="adoption-grid"></div>
+        <p>Want a hat, trail, or aura for your active sidekick? Visit <a href="{{ url_for('pet_land') }}">Character Port</a>.</p>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}
+{% block extra_scripts %}
+{% if current_account_name %}
+<script src="{{ url_for('static', filename='js/pet_planet.js') }}"></script>
+{% endif %}
+{% endblock %}

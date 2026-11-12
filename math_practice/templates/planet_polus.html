@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Planet Polus - Crew Headquarters{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/planet_polus.css') }}">
+{% endblock %}
+{% block content %}
+<main class="crew-hq">
+    <header class="hq-header">
+        <a href="{{ url_for('quest_map') }}">← Space Flight</a>
+        <p class="hq-kicker">❄ Icy orbit · Crew headquarters</p>
+        <h1>Planet Polus</h1>
+        <p>Suit up, practice your classroom expectations, and celebrate your crew.</p>
+    </header>
+    <p class="storage-notice"><strong>Shared-device classroom tool:</strong> The roster and passes stay in this browser on this device. Use the same browser for student entries and the picker; clearing browser data deletes them. Teacher mode is not password-protected, and anyone using this browser can change its records. Enter a first name and last initial only.</p>
+    <div class="mode-switch" aria-label="Headquarters view">
+        <button type="button" id="student-mode" aria-pressed="true">🧑‍🚀 Student: Suit Up</button>
+        <button type="button" id="teacher-mode" aria-pressed="false">📋 Teacher: Meeting</button>
+    </div>
+    <p id="hq-status" role="status" aria-live="polite"></p>
+
+    <section id="student-view" class="hq-panel" aria-labelledby="student-title">
+        <p class="hq-kicker">Your mission starts here</p>
+        <h2 id="student-title">Suit Up</h2>
+        <div class="creator-grid">
+            <form id="crew-form">
+                <label for="crew-name">First name and last initial</label>
+                <input id="crew-name" name="name" type="text" maxlength="34" placeholder="Example: Alex M." autocomplete="off" required>
+                <small>Only one first name and one last initial, please.</small>
+                <label for="crew-section">Class section</label>
+                <select id="crew-section" name="section" required>
+                    <option value="Section 1">Section 1</option>
+                    <option value="Section 2">Section 2</option>
+                    <option value="Section 3">Section 3</option>
+                </select>
+                <label for="crew-color">Suit color</label>
+                <select id="crew-color" name="color">
+                    <option>Red</option><option>Blue</option><option>Green</option><option>Pink</option>
+                    <option>Orange</option><option>Yellow</option><option>Black</option><option>Cyan</option>
+                </select>
+                <label for="crew-hat">Accessory</label>
+                <select id="crew-hat" name="hat">
+                    <option value="none">None</option><option value="sprout">Sprout</option>
+                    <option value="party">Party Hat</option><option value="note">Sticky Note</option>
+                    <option value="robot">Mini Robot</option>
+                </select>
+                <button class="primary" type="submit">Save Character</button>
+            </form>
+            <div class="preview-card">
+                <h3>Live suit preview</h3>
+                <div id="crew-preview" class="avatar" aria-label="Suit preview"></div>
+                <p id="preview-name">Your space explorer</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="teacher-view" class="hq-panel" aria-labelledby="teacher-title" hidden>
+        <p class="hq-kicker">Mission control</p>
+        <h2 id="teacher-title">Emergency Meeting</h2>
+        <p>Choose a section, then select an outcome for the crew member picked.</p>
+        <label for="meeting-section">Class section</label>
+        <select id="meeting-section">
+            <option>Section 1</option><option>Section 2</option><option>Section 3</option>
+        </select>
+        <button type="button" id="call-meeting" class="meeting-button">🚨 Call Emergency Meeting</button>
+        <div id="meeting-stage" class="meeting-stage">
+            <p id="meeting-message" aria-live="polite">Ready for a meeting.</p>
+            <div id="meeting-avatar" class="avatar meeting-avatar"></div>
+            <h3 id="meeting-name"></h3>
+            <div id="meeting-actions" hidden>
+                <button type="button" id="confirm-crew" class="primary">✓ Crewmate Confirmed (Followed Expectations)</button>
+                <button type="button" id="eject-crew" class="secondary">↗ Ejected (Off-Task)</button>
+            </div>
+            <div id="meeting-reward" aria-live="polite"></div>
+        </div>
+        <h3>Assignment pass tracker</h3>
+        <p>Showing the selected section. Change the section above to view another roster.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th scope="col">Student</th><th scope="col">Suit</th><th scope="col">Assignment passes</th></tr></thead>
+                <tbody id="crew-roster"></tbody>
+            </table>
+        </div>
+        <button type="button" id="clear-roster" class="secondary">Clear this browser's roster</button>
+    </section>
+</main>
+
+<template id="explorer-template">
+    <svg viewBox="0 0 200 240" role="img" aria-label="Space explorer" xmlns="http://www.w3.org/2000/svg">
+        <g class="accessory" data-hat="sprout" hidden>
+            <path d="M100 48V25 M100 33 Q78 32 79 19 Q96 19 100 33 M100 28 Q104 12 120 15 Q120 28 100 28" fill="#58b86b" stroke="#154d3b" stroke-width="4" stroke-linejoin="round"/>
+        </g>
+        <g class="accessory" data-hat="party" hidden>
+            <path d="M77 46 L99 9 L122 46 Z" fill="#ffb347" stroke="#513f76" stroke-width="4"/>
+            <path d="M87 31 L112 31 M83 39 L117 39" stroke="#a73b79" stroke-width="4"/><circle cx="99" cy="8" r="5" fill="#e7669e"/>
+        </g>
+        <g class="accessory" data-hat="note" hidden>
+            <rect x="76" y="12" width="48" height="35" rx="3" fill="#fff1a6" stroke="#8c6b25" stroke-width="3"/><text x="100" y="35" text-anchor="middle" fill="#523b0a" font-size="15" font-weight="bold">GO!</text>
+        </g>
+        <g class="accessory" data-hat="robot" hidden>
+            <path d="M100 11V5 M92 47V40 M108 47V40" stroke="#354d69" stroke-width="4"/><circle cx="100" cy="5" r="3" fill="#e45f82"/>
+            <rect x="81" y="13" width="38" height="29" rx="6" fill="#bbdce5" stroke="#354d69" stroke-width="3"/><circle cx="93" cy="27" r="3" fill="#354d69"/><circle cx="107" cy="27" r="3" fill="#354d69"/>
+        </g>
+        <path d="M68 127 L43 148 L50 166 L74 151 M132 127 L157 148 L150 166 L126 151" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M75 186 L69 218 H89 L98 190 M102 190 L111 218 H131 L125 186" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M65 124 L75 103 H125 L135 124 L128 187 H72 Z" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="100" cy="80" r="38" fill="#e5f7fb" stroke="#243754" stroke-width="6"/>
+        <circle cx="100" cy="80" r="27" fill="#a9dce7" stroke="#4b8092" stroke-width="3"/>
+        <circle cx="91" cy="77" r="3.5" fill="#243754"/><circle cx="109" cy="77" r="3.5" fill="#243754"/>
+        <path d="M93 89 Q100 94 107 89" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/>
+        <rect x="85" y="137" width="30" height="22" rx="4" fill="#e5f7fb" stroke="#243754" stroke-width="3"/>
+        <path d="M91 148 H109 M100 142 V154" stroke="#4b8092" stroke-width="3"/>
+    </svg>
+</template>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/planet_polus.js') }}"></script>
+{% endblock %}
