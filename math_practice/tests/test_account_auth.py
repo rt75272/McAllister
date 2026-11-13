@@ -54,6 +54,8 @@ class FakeCursor:
                     'learning_goal': 'general',
                     'profile_color': 'sage',
                     'profile_public': False,
+                    'favorite_planet': 'not_set',
+                    'favorite_pet': 'not_set',
                     'coin_balance': coin_balance,
                     'last_daily_bonus_date': now.date(),
                     'created_at': now,
@@ -234,8 +236,8 @@ class FakeCursor:
                 (item['account_id'], item['game_key'], item['score'], item['created_at'])
                 for item in self.database.scores if item['account_id'] != params[0]
             ]
-        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET BIO'):
-            bio, favorite_subject, learning_goal, profile_color, profile_public, account_id = params
+        elif normalized.startswith('UPDATE LEARNING_ACCOUNTS SET FAVORITE_SUBJECT'):
+            favorite_subject, learning_goal, profile_color, profile_public, favorite_planet, favorite_pet, account_id = params
             account = next(
                 (item for item in self.database.accounts.values() if item['id'] == account_id),
                 None,
@@ -243,12 +245,15 @@ class FakeCursor:
             self.rowcount = 1 if account else 0
             if account:
                 account.update(
-                    bio=bio,
                     favorite_subject=favorite_subject,
                     learning_goal=learning_goal,
                     profile_color=profile_color,
                     profile_public=profile_public,
                 )
+                if favorite_planet is not None:
+                    account['favorite_planet'] = favorite_planet
+                if favorite_pet is not None:
+                    account['favorite_pet'] = favorite_pet
         elif normalized.startswith('UPDATE LEARNING_ACCOUNTS'):
             account_id = params[0]
             for account in self.database.accounts.values():
@@ -266,13 +271,14 @@ class FakeCursor:
                     account['display_name'],
                     account['created_at'],
                     account['last_login_at'],
-                    account['bio'],
                     account['favorite_subject'],
                     account['learning_goal'],
                     account['profile_color'],
                     account['profile_public'],
                     account['coin_balance'],
                     account['last_daily_bonus_date'],
+                    account['favorite_planet'],
+                    account['favorite_pet'],
                 )
         elif normalized.startswith('INSERT INTO ACCOUNT_GAME_SCORES'):
             account_id, game_key, score = params
@@ -326,7 +332,7 @@ class FakeCursor:
                     grouped_scores.items(), key=lambda item: -item[1]
                 )
             ][:50]
-        elif normalized.startswith('SELECT ID, DISPLAY_NAME, BIO, FAVORITE_SUBJECT'):
+        elif normalized.startswith('SELECT ID, DISPLAY_NAME, FAVORITE_SUBJECT'):
             if 'WHERE ID = %S AND PROFILE_PUBLIC = TRUE' in normalized:
                 account = next(
                     (item for item in self.database.accounts.values()
@@ -335,16 +341,16 @@ class FakeCursor:
                 )
                 if account:
                     self.result = (
-                        account['id'], account['display_name'], account['bio'],
+                        account['id'], account['display_name'],
                         account['favorite_subject'], account['learning_goal'],
-                        account['profile_color'],
+                        account['profile_color'], account['favorite_planet'], account['favorite_pet'],
                     )
             else:
                 self.result = [
                     (
-                        account['id'], account['display_name'], account['bio'],
+                        account['id'], account['display_name'],
                         account['favorite_subject'], account['learning_goal'],
-                        account['profile_color'],
+                        account['profile_color'], account['favorite_planet'], account['favorite_pet'],
                     )
                     for account in self.database.accounts.values()
                     if account['profile_public']
@@ -447,12 +453,13 @@ def test_student_display_names_abbreviate_every_later_component():
     assert app_module.student_display_name('student@example.com') == 'Learner'
 
 
-def test_existing_names_are_shortened_in_legacy_sessions_and_profile_bios():
+def test_existing_names_are_shortened_and_legacy_bios_not_displayed():
     database = FakeDatabase()
     with patch.object(app_module, 'get_db_connection', side_effect=lambda: FakeConnection(database)):
         client = app_module.app.test_client()
         register_test_account(client, 'Alex Morgan')
-        database.accounts['alex morgan']['bio'] = 'I am Alex Morgan and I like math.'
+        legacy_bio = 'BIO_PRIVATE_MARKER: Alex Morgan and another person.'
+        database.accounts['alex morgan']['bio'] = legacy_bio
         database.accounts['alex morgan']['profile_public'] = True
         account_id = database.accounts['alex morgan']['id']
         with client.session_transaction() as state:
@@ -462,6 +469,9 @@ def test_existing_names_are_shortened_in_legacy_sessions_and_profile_bios():
             assert response.status_code == 200
             assert b'Alex M.' in response.data
             assert b'Alex Morgan' not in response.data
+            assert b'BIO_PRIVATE_MARKER' not in response.data
+            assert b'profile-bio' not in response.data
+        assert database.accounts['alex morgan']['bio'] == legacy_bio
         with client.session_transaction() as state:
             assert state['account_name'] == 'Alex M.'
 
@@ -514,7 +524,9 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
         assert b'Learner O.' in response.data
         assert b'Learner One' not in response.data
         assert b'0%' in response.data
-        assert b'id="profile-bio"' in response.data
+        assert b'id="profile-bio"' not in response.data
+        assert b'id="favorite-planet"' in response.data
+        assert b'id="favorite-pet"' in response.data
         assert b'id="profile-public"' in response.data
         assert b'appearance:checkbox' in response.data
         assert '🪙 25'.encode() in response.data
@@ -534,17 +546,32 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
                 'learning_goal': 'science_exploration',
                 'profile_color': 'teal',
                 'profile_public': 'yes',
+                'favorite_planet': 'pet',
+                'favorite_pet': 'otter',
             },
             follow_redirects=True,
         )
         assert profile_update.status_code == 200
         assert b'id="profile-public" type="checkbox" name="profile_public" value="yes" checked' in profile_update.data
-        assert b'I enjoy puzzles and science.' in profile_update.data
+        assert b'I enjoy puzzles and science.' not in profile_update.data
+        assert b'Favorite planet:</strong> Pet Planet' in profile_update.data
+        assert b'Favorite pet:</strong> Orbit Otter' in profile_update.data
         assert b'Explore science' in profile_update.data
         saved_profile = database.accounts['learner one']
-        assert saved_profile['bio'] == 'I enjoy puzzles and science.'
+        assert saved_profile['bio'] == ''
+        assert saved_profile['favorite_planet'] == 'pet'
+        assert saved_profile['favorite_pet'] == 'otter'
         assert saved_profile['profile_color'] == 'teal'
         assert saved_profile['profile_public'] is True
+        client.post('/account/profile', data={
+            'csrf_token': csrf_token(client),
+            'favorite_subject': 'science',
+            'learning_goal': 'science_exploration',
+            'profile_color': 'teal',
+            'profile_public': 'yes',
+        })
+        assert saved_profile['favorite_planet'] == 'pet'
+        assert saved_profile['favorite_pet'] == 'otter'
 
         assert client.get('/math-practice').status_code == 200
         with client.session_transaction() as session:
@@ -610,7 +637,8 @@ def test_account_lifecycle_and_math_progress_are_private_and_persisted():
             f"/users/{database.accounts['learner one']['id']}"
         )
         assert public_profile_response.status_code == 200
-        assert b'I enjoy puzzles and science.' in public_profile_response.data
+        assert b'I enjoy puzzles and science.' not in public_profile_response.data
+        assert b'Favorite pet:</strong> Orbit Otter' in public_profile_response.data
         assert client.get('/math-practice').status_code == 200
         with client.session_transaction() as session:
             assert session['ability'] == saved_ability
@@ -633,7 +661,7 @@ def test_account_actions_reject_requests_without_csrf_token():
     assert client.post('/account/profile').status_code == 302
 
 
-def test_profile_updates_reject_invalid_values_and_oversized_bio():
+def test_profile_updates_reject_invalid_values():
     database = FakeDatabase()
     with patch.object(
         app_module,
@@ -652,27 +680,39 @@ def test_profile_updates_reject_invalid_values_and_oversized_bio():
             },
         )
         client.get('/account')
-        long_bio = 'a' * 241
         response = client.post(
             '/account/profile',
             data={
                 'csrf_token': csrf_token(client),
-                'bio': long_bio,
                 'favorite_subject': 'math',
                 'learning_goal': 'general',
                 'profile_color': 'sage',
+                'favorite_planet': 'a private address',
             },
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert b'240 characters or fewer' in response.data
-        assert database.accounts['profile learner']['bio'] == ''
+        assert b'Choose a valid favorite planet.' in response.data
+        assert database.accounts['profile learner']['favorite_planet'] == 'not_set'
 
         response = client.post(
             '/account/profile',
             data={
                 'csrf_token': csrf_token(client),
-                'bio': '',
+                'favorite_subject': 'math',
+                'learning_goal': 'general',
+                'profile_color': 'sage',
+                'favorite_pet': 'a private name',
+            },
+            follow_redirects=True,
+        )
+        assert b'Choose a valid favorite pet.' in response.data
+        assert database.accounts['profile learner']['favorite_pet'] == 'not_set'
+
+        response = client.post(
+            '/account/profile',
+            data={
+                'csrf_token': csrf_token(client),
                 'favorite_subject': 'unapproved-value',
                 'learning_goal': 'general',
                 'profile_color': 'sage',
@@ -765,11 +805,12 @@ def test_public_profiles_are_opt_in_and_require_login():
             '/account/profile',
             data={
                 'csrf_token': csrf_token(owner),
-                'bio': 'I like learning.',
                 'favorite_subject': 'math',
                 'learning_goal': 'general',
                 'profile_color': 'sage',
                 'profile_public': 'yes',
+                'favorite_planet': 'science',
+                'favorite_pet': 'mooncat',
             },
         )
         owner_community = owner.get('/community')
@@ -780,12 +821,14 @@ def test_public_profiles_are_opt_in_and_require_login():
         response = other_learner.get(f'/users/{owner_id}')
         assert response.status_code == 200
         assert b'Private L.' in response.data
-        assert b'I like learning.' in response.data
+        assert b'Science Planet' in response.data
+        assert b'Mochi Mooncat' in response.data
         assert b'last_login_at' not in response.data
         community = other_learner.get('/community')
         assert community.status_code == 200
         assert b'Private L.' in community.data
-        assert b'I like learning.' in community.data
+        assert b'Science Planet' in community.data
+        assert b'Mochi Mooncat' in community.data
 
         anonymous = app_module.app.test_client()
         assert anonymous.get(f'/users/{owner_id}').status_code == 302

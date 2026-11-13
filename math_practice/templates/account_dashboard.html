@@ -14,10 +14,8 @@
     .account-card { padding:20px; border:1px solid var(--account-line); border-radius:12px; background:white; box-shadow:0 10px 26px rgba(26,55,38,.06); }
     .account-card h2 { margin:0 0 16px; font-size:1.1rem; }
     .profile-card { border-top:5px solid var(--profile-accent, var(--account-green)); }
-    .profile-bio { margin:0 0 14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
     .profile-editor label { display:block; margin:14px 0 6px; font-size:.85rem; font-weight:700; }
-    .profile-editor textarea, .profile-editor select { box-sizing:border-box; width:100%; border:1px solid #b7c7b9; border-radius:8px; padding:10px; font:inherit; }
-    .profile-editor textarea { min-height:88px; resize:vertical; }
+    .profile-editor select { box-sizing:border-box; width:100%; border:1px solid #b7c7b9; border-radius:8px; padding:10px; font:inherit; }
     .profile-editor .profile-visibility-option { display:flex; align-items:center; gap:10px; margin:18px 0 8px; cursor:pointer; }
     .profile-editor input[type="checkbox"] {
         appearance:checkbox;
@@ -79,16 +77,15 @@
                     <dt>Member since</dt><dd>{{ account.created_at.strftime('%b %d, %Y') }}</dd>
                     <dt>Last login</dt><dd>{{ account.last_login_at.strftime('%b %d, %Y at %I:%M %p UTC') }}</dd>
                 </dl>
-                {% if account.bio %}<h3>About me</h3><p class="profile-bio">{{ account.bio }}</p>{% endif %}
                 {% if account.favorite_subject != 'not_set' %}<p><strong>Favorite subject:</strong> {{ {'math':'Math','ela':'ELA','science':'Science'}.get(account.favorite_subject, 'Not set') }}</p>{% endif %}
                 <p><strong>Learning goal:</strong> {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(account.learning_goal, 'General learning') }}</p>
+                {% if account.favorite_planet != 'not_set' %}<p><strong>Favorite planet:</strong> {{ profile_planets.get(account.favorite_planet, 'Not set') }}</p>{% endif %}
+                {% if account.favorite_pet != 'not_set' %}<p><strong>Favorite pet:</strong> {{ profile_pets.get(account.favorite_pet, 'Not set') }}</p>{% endif %}
             </section>
             <section class="account-card profile-editor">
                 <h2>Customize my profile</h2>
                 <form method="post" action="{{ url_for('update_account_profile') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <label for="profile-bio">Short bio (optional)</label>
-                    <textarea id="profile-bio" name="bio" maxlength="240" aria-describedby="profile-privacy-note">{{ account.bio }}</textarea>
                     <label for="favorite-subject">Favorite subject (optional)</label>
                     <select id="favorite-subject" name="favorite_subject">
                         <option value="not_set" {{ 'selected' if account.favorite_subject == 'not_set' }}>Choose later</option>
@@ -112,12 +109,24 @@
                         <option value="gold" {{ 'selected' if account.profile_color == 'gold' }}>Golden</option>
                         <option value="teal" {{ 'selected' if account.profile_color == 'teal' }}>Teal</option>
                     </select>
+                    <label for="favorite-planet">Favorite planet (optional)</label>
+                    <select id="favorite-planet" name="favorite_planet">
+                        {% for value, label in profile_planets.items() %}
+                        <option value="{{ value }}" {{ 'selected' if account.favorite_planet == value }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="favorite-pet">Favorite pet (optional)</label>
+                    <select id="favorite-pet" name="favorite_pet">
+                        {% for value, label in profile_pets.items() %}
+                        <option value="{{ value }}" {{ 'selected' if account.favorite_pet == value }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
                     <label class="profile-visibility-option" for="profile-public">
                         <input id="profile-public" type="checkbox" name="profile_public" value="yes" {{ 'checked' if account.profile_public }}>
                         Allow signed-in learners to view my profile
                     </label>
-                    <p class="account-note" id="profile-privacy-note">For your privacy, do not include a last name, school, birth date, address, phone number, email, or other identifying details in your bio. The site does not ask for a last name.</p>
-                    <p class="account-note">Your profile is visible only to you unless you opt in above. Public profiles show only your chosen display name, bio, favorite subject, and learning goal. This setting is off by default.</p>
+                    <p class="account-note">Profile options use preset choices rather than free text. Names are displayed as a first name and initials; do not include private details in your account name.</p>
+                    <p class="account-note">Your profile is visible only to you unless you opt in above. Signed-in learners can then see your abbreviated name, favorite subject, learning goal, favorite planet, favorite pet, and accent color. This setting is off by default.</p>
                     <p class="account-note">The configured teacher can view account names and saved learning progress, including when a profile is private.</p>
                     <button type="submit">Save profile</button>
                 </form>

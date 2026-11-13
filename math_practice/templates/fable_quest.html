@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Fable Quest Planet{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fable_quest.css') }}">
+{% endblock %}
+{% block content %}
+<main class="fable">
+    <header class="fable-header">
+        <div>
+            <a class="fable-back" href="{{ url_for('quest_map') }}">← Return to the Quest Map</a>
+            <p class="fable-eyebrow">A planet of stories and starlight</p>
+            <h1>Fable Quest <span>Planet</span></h1>
+            <p>The Star Lantern has gone dark. Make a hero, explore three mysterious places, and bring its light home.</p>
+        </div>
+        <div class="fable-emblem" aria-hidden="true">✦<span>🏰</span>✦</div>
+    </header>
+    <p class="fable-note">This is an original fantasy adventure. Progress is saved in this browser on this device and is shared by anyone using it. Shards are game-only and are not account coins. Clearing browser data removes the save.</p>
+    <div class="fable-layout">
+        <section class="fable-panel hero-panel" aria-labelledby="hero-heading">
+            <p class="fable-eyebrow">Your adventurer</p>
+            <h2 id="hero-heading">Create your hero</h2>
+            <div class="hero-preview">
+                <svg viewBox="0 0 160 170" role="img" aria-label="Hero portrait" class="hero-svg">
+                    <circle cx="80" cy="85" r="73" fill="#e9ddff"/>
+                    <path d="M56 96 Q35 119 35 150 H125 Q125 119 104 96" fill="var(--hero-color)" stroke="#44345d" stroke-width="4"/>
+                    <path d="M59 96 L80 129 L101 96" fill="#fff5d5" stroke="#44345d" stroke-width="4" stroke-linejoin="round"/>
+                    <circle cx="80" cy="66" r="30" fill="#f3cda7" stroke="#44345d" stroke-width="4"/>
+                    <path d="M51 62 Q54 25 80 28 Q107 25 109 62 Q80 48 51 62" fill="#554362" stroke="#44345d" stroke-width="4"/>
+                    <circle cx="70" cy="68" r="3" fill="#44345d"/><circle cx="90" cy="68" r="3" fill="#44345d"/>
+                    <path d="M72 81 Q80 87 88 81" fill="none" stroke="#44345d" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="80" cy="120" r="9" fill="#ffda79" stroke="#44345d" stroke-width="3"/>
+                </svg>
+                <p id="hero-preview-text">Nova · Warden · 🦊 Fox</p>
+            </div>
+            <form id="hero-form">
+                <label for="hero-alias">Hero nickname</label>
+                <select id="hero-alias"><option>Nova</option><option>Ember</option><option>Moss</option><option>Comet</option></select>
+                <label for="hero-role">Adventure role</label>
+                <select id="hero-role"><option value="warden">Warden · sturdy shield</option><option value="weaver">Rune Weaver · strong magic</option><option value="scout">Trail Scout · quick strike</option></select>
+                <label for="hero-color">Cloak color</label>
+                <select id="hero-color"><option value="teal">Teal</option><option value="purple">Purple</option><option value="rose">Rose</option><option value="gold">Gold</option><option value="blue">Blue</option></select>
+                <label for="hero-companion">Travel companion</label>
+                <select id="hero-companion"><option value="fox">🦊 Fox</option><option value="owl">🦉 Owl</option><option value="frog">🐸 Frog</option><option value="beetle">🪲 Beetle</option></select>
+                <p class="fable-small">Your companion is decorative. Nicknames are preset for privacy.</p>
+                <button class="fable-primary" id="save-hero" type="submit">Begin adventure</button>
+                <p id="hero-edit-note" class="fable-small">You can change your hero at camp.</p>
+            </form>
+        </section>
+
+        <section class="fable-panel quest-panel" aria-labelledby="quest-heading">
+            <p class="fable-eyebrow">The Star Lantern quest</p>
+            <h2 id="quest-heading">Adventure journal</h2>
+            <div id="hero-stats" class="hero-stats"></div>
+            <p id="fable-save-status" class="fable-save-status" role="status" aria-live="polite"></p>
+            <p id="quest-feedback" class="quest-feedback" role="status" aria-live="polite"></p>
+            <div id="quest-scene"><p>Create your hero to begin.</p></div>
+        </section>
+    </div>
+    <section class="fable-panel guide">
+        <h2>Adventurer's guide</h2>
+        <p>Explore each place in order. Investigate for an optional puzzle and bonus shards, then face its guardian. In a battle, roll a die to strike, use your role skill, guard to restore focus and reduce damage, or use a potion. You can retreat or rest at camp for free. A defeat returns you to camp without taking your shards.</p>
+    </section>
+</main>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/fable_engine.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fable_quest.js') }}"></script>
+{% endblock %}

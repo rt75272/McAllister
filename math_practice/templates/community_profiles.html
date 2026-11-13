@@ -18,16 +18,17 @@
 <main class="community-shell">
     <a href="{{ url_for('account_dashboard') }}">← My Account</a>
     <h1>Public learner profiles</h1>
-    <p class="community-note">Only profiles whose owners opted in appear here. We show only their chosen name and profile details, not account history or identifying information.</p>
+    <p class="community-note">Only profiles whose owners opted in appear here. Signed-in learners can see abbreviated names and selected profile choices, but not account history.</p>
     {% if error_message %}<p role="alert">{{ error_message }}</p>
     {% elif profiles %}
         <div class="profile-list">
         {% for profile in profiles %}
-            <article class="profile-tile" style="--profile-accent: {{ {'sage':'#6b8e6e','sky':'#4d8caf','lavender':'#8b75b7','coral':'#d97968','gold':'#c49a35','teal':'#398c83'}.get(profile[5], '#6b8e6e') }}">
-                <h2><a href="{{ url_for('public_profile', account_id=profile[0]) }}">{{ profile[1] }}</a></h2>
-                {% if profile[2] %}<p>{{ profile[2] }}</p>{% endif %}
-                {% if profile[3] != 'not_set' %}<p>Favorite subject: {{ {'math':'Math','ela':'ELA','science':'Science'}.get(profile[3], 'Not set') }}</p>{% endif %}
-                <p>Goal: {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(profile[4], 'General learning') }}</p>
+            <article class="profile-tile" style="--profile-accent: {{ {'sage':'#6b8e6e','sky':'#4d8caf','lavender':'#8b75b7','coral':'#d97968','gold':'#c49a35','teal':'#398c83'}.get(profile.profile_color, '#6b8e6e') }}">
+                <h2><a href="{{ url_for('public_profile', account_id=profile.id) }}">{{ profile.display_name }}</a></h2>
+                {% if profile.favorite_subject != 'not_set' %}<p>Favorite subject: {{ {'math':'Math','ela':'ELA','science':'Science'}.get(profile.favorite_subject, 'Not set') }}</p>{% endif %}
+                <p>Goal: {{ {'math_practice':'Practice math','reading':'Build reading skills','science_exploration':'Explore science','general':'General learning'}.get(profile.learning_goal, 'General learning') }}</p>
+                {% if profile.favorite_planet != 'not_set' %}<p>Favorite planet: {{ profile_planets.get(profile.favorite_planet, 'Not set') }}</p>{% endif %}
+                {% if profile.favorite_pet != 'not_set' %}<p>Favorite pet: {{ profile_pets.get(profile.favorite_pet, 'Not set') }}</p>{% endif %}
             </article>
         {% endfor %}
         </div>

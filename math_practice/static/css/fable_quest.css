@@ -1,0 +1,52 @@
+body { margin: 0; background: #e9e9f4; color: #24233c; }
+.fable { max-width: 1200px; margin: auto; padding: 75px 18px 60px; box-sizing: border-box; }
+.fable-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: clamp(24px, 4vw, 42px); border-radius: 26px; background: linear-gradient(125deg, #24224c, #49346c 70%, #67508e); color: #fff; box-shadow: 0 14px 30px #29234833; }
+.fable-header h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); margin: .2rem 0; color: #fff6db; }
+.fable-header h1 span { color: #f9d783; }
+.fable-header p { max-width: 680px; }
+.fable-back { color: #fff5d3; font-weight: 700; }
+.fable-eyebrow { color: #684094; text-transform: uppercase; font-weight: 800; font-size: .75rem; letter-spacing: .12em !important; }
+.fable-header .fable-eyebrow { color: #fce4a8; }
+.fable-emblem { display: grid; place-items: center; flex: 0 0 150px; height: 150px; border: 2px solid #e8c97e; border-radius: 50%; color: #f9dc91; font-size: 1.5rem; background: #ffffff18; }
+.fable-emblem span { font-size: 3.3rem; }
+.fable-note { padding: 12px 16px; border-left: 4px solid #76549f; border-radius: 10px; background: #fff; font-size: .85rem; }
+.fable-save-status { min-height: 1.6em; color: #754100; font-weight: 700; }
+.fable-layout { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.fable-panel { padding: clamp(20px, 3vw, 28px); border: 1px solid #d5c9e6; border-radius: 20px; background: #fffefa; box-shadow: 0 9px 24px #29234818; }
+.fable-panel h2, .fable-panel h3 { color: #352453; margin: .2rem 0 .8rem; }
+.fable-panel p { color: #3a384b; }
+.hero-preview { text-align: center; padding: 12px; border-radius: 16px; background: #f0eafa; }
+.hero-preview p { text-align: center !important; font-weight: 700; margin: 0; }
+.hero-svg { display: block; width: min(160px, 100%); margin: auto; --hero-color: #3b958a; }
+.hero-panel label { display: block; margin: 12px 0 5px; font-weight: 700; }
+.hero-panel select { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px; border: 1px solid #8e7ca7; border-radius: 8px; background: #fff; color: #252136; font: inherit; }
+.fable button { min-height: 44px; padding: 9px 14px; margin: 4px; border: 1px solid #573b78; border-radius: 10px; background: #56377a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.fable button:hover { background: #3e285c; }
+.fable button:focus-visible, .fable select:focus-visible, .fable a:focus-visible { outline: 3px solid #a35400; outline-offset: 3px; }
+.fable button:disabled { background: #e4dfea; color: #5f5868; border-color: #aaa1b4; cursor: not-allowed; }
+.fable button.fable-secondary { color: #37254f; background: #f3edfa; }
+.fable button.fable-secondary:hover { background: #e4d6f1; }
+.fable button.fable-primary { background: #125f54; border-color: #125f54; }
+.fable button.fable-primary:hover { background: #0c493f; }
+.fable-small { font-size: .85rem; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-stats span { padding: 6px 10px; border-radius: 10px; background: #f0eafa; font-weight: 700; font-size: .9rem; }
+.quest-feedback { min-height: 1.6em; font-weight: 700; }
+.scene-card { padding: 18px; border: 1px solid #d3c4e3; border-radius: 16px; background: #f9f6fc; }
+.scene-card h3 { margin-top: 0; }
+.scene-card button { margin-left: 0; }
+.scene-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.zone-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 14px 0; }
+.zone-card { padding: 13px; border: 1px solid #d8cce5; border-radius: 12px; background: #fff; }
+.zone-card h4 { margin: 0 0 4px; color: #352453; }
+.zone-card p { margin: 4px 0; font-size: .85rem; }
+.battle-foe { padding: 12px; border-radius: 12px; background: #f3e8ec; color: #4a2d3d; font-weight: 700; }
+.battle-foe span { font-size: 2rem; }
+.guide { margin-top: 18px; }
+@media (max-width: 700px) {
+    .fable { padding: 70px 12px 45px; }
+    .fable-layout { grid-template-columns: 1fr; }
+    .fable-emblem { flex-basis: 100px; height: 100px; }
+    .fable-emblem span { font-size: 2.2rem; }
+}
+@media (max-width: 450px) { .fable-emblem { display: none; } }

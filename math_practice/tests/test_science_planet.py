@@ -92,6 +92,18 @@ def test_golden_algebra_planet_is_accessible_from_quest_map():
     assert b'/golden-algebra' in quest_map.data
 
 
+def test_fable_quest_planet_is_accessible_from_quest_map():
+    client = app.test_client()
+    response = client.get('/fable-quest')
+    assert response.status_code == 200
+    assert b'Fable Quest' in response.data
+    assert b'fable_engine.js' in response.data
+    assert b'fable_quest.js' in response.data
+    quest_map = client.get('/quest-map')
+    assert b'Fable Quest Planet' in quest_map.data
+    assert b'/fable-quest' in quest_map.data
+
+
 def test_science_simulation_is_not_listed_as_a_math_game():
     client = app.test_client()
 

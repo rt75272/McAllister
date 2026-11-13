@@ -1,7 +1,7 @@
 /**
  * Learning Center Chatbot Widget.
  *
- * Implements an interactive AI support chatbot for students with FAQ fast-path
+ * Implements an interactive AI support chatbot for students with FAQ fallback
  * matching, Gemini language model completions, dragging capabilities, and responsive UI.
  */
 
@@ -15,20 +15,29 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleButton.id = 'chatbot-toggle';
     toggleButton.innerHTML = '&#128172;'; // Chat bubble icon.
     toggleButton.title = 'Ask a question';
+    toggleButton.setAttribute('aria-label', 'Open learning helper');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.setAttribute('aria-controls', 'chatbot-window');
     
     // Chat Window.
     const chatWindow = document.createElement('div');
     chatWindow.id = 'chatbot-window';
     chatWindow.style.display = 'none';
+    chatWindow.setAttribute('role', 'region');
+    chatWindow.setAttribute('aria-label', 'Learning helper chat');
     
     // Header.
     const header = document.createElement('div');
     header.id = 'chatbot-header';
-    header.innerHTML = '<span>Ask Common Questions</span><span id="chatbot-close">&times;</span>';
+    header.innerHTML = '<span>Learning Helper</span><button type="button" id="chatbot-close" aria-label="Close learning helper">&times;</button>';
     
     // Messages.
     const messages = document.createElement('div');
     messages.id = 'chatbot-messages';
+    messages.setAttribute('role', 'log');
+    messages.setAttribute('aria-live', 'polite');
+    messages.setAttribute('aria-label', 'Chat messages');
+    messages.tabIndex = 0;
     
     // Input Area.
     const inputArea = document.createElement('div');
@@ -38,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     inputField.id = 'chatbot-input';
     inputField.type = 'text';
     inputField.placeholder = 'Ask a question...';
+    inputField.setAttribute('aria-label', 'Your question');
     
     const sendButton = document.createElement('button');
     sendButton.id = 'chatbot-send';
@@ -55,18 +65,25 @@ document.addEventListener('DOMContentLoaded', function() {
     container.appendChild(toggleButton);
     
     document.body.appendChild(container);
+    container.addEventListener('click', (event) => event.stopPropagation());
+    container.addEventListener('keydown', (event) => event.stopPropagation());
     
     // State management.
     let isChatOpen = false;
     let isSending = false;
     
     // Add initial bot message.
-    appendMessage('bot', 'Hi there. I can help with this website, school navigation questions, and short math or ELA hints. Try asking things like "How do I play this game?", "Where do I find my work?", or "Can you give me a hint?".');
+    appendMessage('bot', 'Hi! I can help you find games, navigate schoolwork, or get a learning hint. What would you like to try?\n\nPlease keep personal information private, and double-check my answers.');
     
     // Event listeners.
+    const ensurePosition = setupChatbotDrag(container, toggleButton, header);
+
     toggleButton.addEventListener('click', () => {
         isChatOpen = !isChatOpen;
         chatWindow.style.display = isChatOpen ? 'flex' : 'none';
+        toggleButton.setAttribute('aria-expanded', String(isChatOpen));
+        toggleButton.setAttribute('aria-label', isChatOpen ? 'Close learning helper' : 'Open learning helper');
+        ensurePosition();
         if (isChatOpen) {
             inputField.focus();
         }
@@ -75,18 +92,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('chatbot-close').addEventListener('click', () => {
         isChatOpen = false;
         chatWindow.style.display = 'none';
+        toggleButton.setAttribute('aria-expanded', 'false');
+        toggleButton.setAttribute('aria-label', 'Open learning helper');
+        ensurePosition();
+        toggleButton.focus();
     });
     
     sendButton.addEventListener('click', () => {
         sendMessage();
     });
-    inputField.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    inputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.isComposing) {
             sendMessage();
         }
     });
-
-    setupChatbotDrag(container, toggleButton, header);
 
     function appendMessage(sender, text) {
         const msgElement = document.createElement('div');
@@ -96,9 +115,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             msgElement.classList.add('bot-message');
         }
-        msgElement.innerText = text;
+        msgElement.textContent = text;
         messages.appendChild(msgElement);
-        messages.scrollTop = messages.scrollHeight;
+        if (sender === 'bot') {
+            messages.scrollTop += msgElement.getBoundingClientRect().top - messages.getBoundingClientRect().top - 10;
+        } else {
+            messages.scrollTop = messages.scrollHeight;
+        }
     }
     
     async function sendMessage() {
@@ -125,14 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             pendingMessage.remove();
             if (response.ok && data.answer) {
-                appendMessage('bot', data.answer);
+                appendMessage('bot', (data.source === 'faq-fallback' ? 'Offline help:\n' : '') + data.answer);
             } else {
-                appendMessage('bot', 'Sorry, I ran into a problem answering that. Please try again.');
+                appendMessage('bot', data.error || 'Sorry, I ran into a problem answering that. Please try again.');
             }
         } catch (error) {
             console.error('Chatbot error:', error);
             pendingMessage.remove();
-            appendMessage('bot', 'Sorry, I am offline right now.');
+            appendMessage('bot', "I couldn't connect right now. Please check your connection and try again.");
         } finally {
             setSendingState(false);
         }
@@ -146,16 +169,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupChatbotDrag(wrapper, toggle, dragHeader) {
-        let isDragging = false;
+        let drag = null;
         let dragMoved = false;
         let suppressToggleClick = false;
-        let offsetX = 0;
-        let offsetY = 0;
 
         function applyPosition(x, y) {
             const pad = 10;
-            const width = wrapper.offsetWidth || 70;
-            const height = isChatOpen ? Math.max(toggle.offsetHeight, chatWindow.offsetHeight) : toggle.offsetHeight;
+            const width = wrapper.offsetWidth;
+            const height = wrapper.offsetHeight;
             const clampedX = Math.max(pad, Math.min(x, window.innerWidth - width - pad));
             const clampedY = Math.max(pad, Math.min(y, window.innerHeight - height - pad));
             wrapper.classList.add('positioned');
@@ -164,24 +185,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return { x: clampedX, y: clampedY };
         }
 
-        function startDrag(clientX, clientY, target) {
-            if (target.closest('#chatbot-close') || target.closest('#chatbot-input-area')) return;
-            isDragging = true;
+        function startDrag(event) {
+            if (event.target.closest('#chatbot-close') || event.button !== 0) return;
             dragMoved = false;
             const rect = wrapper.getBoundingClientRect();
-            offsetX = clientX - rect.left;
-            offsetY = clientY - rect.top;
+            drag = {
+                id: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                offsetX: event.clientX - rect.left,
+                offsetY: event.clientY - rect.top
+            };
         }
 
-        function moveDrag(clientX, clientY) {
-            if (!isDragging) return;
+        function moveDrag(event) {
+            if (!drag || drag.id !== event.pointerId) return;
+            if (!dragMoved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return;
             dragMoved = true;
-            applyPosition(clientX - offsetX, clientY - offsetY);
+            applyPosition(event.clientX - drag.offsetX, event.clientY - drag.offsetY);
         }
 
-        function endDrag() {
-            if (!isDragging) return;
-            isDragging = false;
+        function endDrag(event) {
+            if (!drag || drag.id !== event.pointerId) return;
+            drag = null;
             if (dragMoved) {
                 suppressToggleClick = true;
                 setTimeout(() => { suppressToggleClick = false; }, 50);
@@ -196,21 +222,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }, true);
 
         [toggle, dragHeader].forEach((handle) => {
-            handle.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY, e.target));
-            handle.addEventListener('touchstart', (e) => {
-                if (e.touches.length !== 1) return;
-                startDrag(e.touches[0].clientX, e.touches[0].clientY, e.target);
-                e.preventDefault();
-            }, { passive: false });
+            handle.addEventListener('pointerdown', startDrag);
         });
 
-        document.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
-        document.addEventListener('mouseup', endDrag);
-        document.addEventListener('touchmove', (e) => {
-            if (!isDragging || e.touches.length !== 1) return;
-            moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-            e.preventDefault();
-        }, { passive: false });
-        document.addEventListener('touchend', endDrag);
+        document.addEventListener('pointermove', moveDrag);
+        document.addEventListener('pointerup', endDrag);
+        document.addEventListener('pointercancel', endDrag);
+
+        function ensurePosition() {
+            if (!wrapper.classList.contains('positioned')) return;
+            const rect = wrapper.getBoundingClientRect();
+            applyPosition(rect.left, rect.top);
+        }
+        window.addEventListener('resize', ensurePosition);
+        return ensurePosition;
     }
 });

@@ -41,8 +41,8 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Persistent character customization** - Spend account coins in Pet Land on characters, suit colors and skins, hats, tools, shoes, gear, and pets. Purchases and equipped choices follow the learner account across devices.
 - **My Account dashboard** - View profile details, recent sign-ins, and saved Math Practice answer counts, accuracy, difficulty, and recent results.
 - **Persistent progress** - Signed-in Math Practice ability and answer history are saved in PostgreSQL via `DATABASE_URL`.
-- **Private learner profiles** - Optionally save a short bio, favorite subject, learning goal, and accent color. No last name, birth date, school, or contact details are requested; profile bio guidance reminds learners not to share identifying information.
-- **Student name displays** - Account, leaderboard, community, teacher, check-in, and supported local-game name displays show the first name followed by initials for later name components. Existing account login identifiers and database records are not changed, so learners can continue to sign in as before. Free-text fields cannot reliably detect every name; do not enter full names in bios, answers, or other free text.
+- **Private learner profiles** - Select a favorite subject, learning goal, accent color, favorite planet, and favorite pet from preset options. Profiles are private unless the learner opts in to share them with signed-in users. The bio is no longer editable or displayed; existing bio data remains in the database.
+- **Student name displays** - Account, leaderboard, community, teacher, check-in, and supported local-game name displays show the first name followed by initials for later name components. Existing account login identifiers and database records are not changed, so learners can continue to sign in as before. Free-text fields cannot reliably detect every name; do not enter full names in answers or other free text.
 - **Game leaderboards and community profiles** - Signed-in learners can see the best saved scores by game. Scores are tied to accounts; Math Practice ranks saved correct answers and other games report their visible score counters. Profiles remain private unless the learner opts in; only the display name and selected profile fields are shown to other signed-in learners.
 - **Teacher student progress** - A server-configured teacher account can view all other account names, saved Math Practice answer totals and accuracy, and saved best scores for tracked games, even for private profiles. The site does not record every game play or every answer outside Math Practice; browser-only activity is not included.
 
@@ -57,6 +57,7 @@ A comprehensive web-based learning and practice platform featuring interactive m
 - **Pet Planet** - A shared meadow showing all account-owned pets, including those whose owners are offline. Owners are anonymous. Signed-in learners can pat and play with any pet, adopt pets with their existing wallet, and buy treats or toys and choose a meadow color for their own pets. The free Toy Hunt and Follow the Paw playground games work with any selected pet; their progress is page-session only and does not change coins or shared pet stats. The meadow refreshes every 10 seconds; existing pet hats, trails, and auras remain available in Character Port.
 - **Planet Polus** - An original space-crew avatar creator and classroom reward picker. Roster entries and assignment passes are stored only in this browser on this device, not in learner accounts or a shared database. Use the same device/browser for student entry and the teacher picker; clearing browser data removes the roster. Teacher mode is a convenience toggle, not authentication, so anyone using the browser can change its records. Enter only a first name and last initial.
 - **Golden Algebra Planet** - An escape room with three algebra security stages and hints. Submitting a completed mission saves the latest agent's first name, last initial, and completion time only in the current browser; it is not sent to a teacher or learner account. Clearing browser data removes the record.
+- **Fable Quest Planet** - An original fantasy adventure with customizable heroes, puzzles, turn-based encounters, and equipment upgrades. Its progress and in-game shards are saved only in the current browser, are shared by users of that browser, and are separate from account coins. Clearing browser data removes the save.
 - **Grand Finale** - 3-day end-of-year math celebration slideshow with interactive mini-games.
 
 ### 🕹️ Arcade Hub
@@ -235,7 +236,7 @@ Real-world word problem scenarios that require exponent calculations to solve. C
 
 ### Gemini Chatbot
 
-The chatbot uses the `gemini-2.5-flash` model through a Flask backend route. The API key must be provided as the `GEMINI_API_KEY` environment variable so it stays on the server and never gets exposed to the browser.
+The chatbot uses the `gemini-2.5-flash` model through a Flask backend route. The API key must be provided as the `GEMINI_API_KEY` environment variable so it stays on the server and never gets exposed to the browser. The chat window scrolls through long responses and can be dragged; if the AI service is unavailable, clearly labeled offline help is provided for recognized questions.
 
 ### Customizing Difficulty Settings
 

@@ -50,6 +50,21 @@ CHATBOT_HISTORY_LIMIT = 6
 PROFILE_SUBJECTS = {'math', 'ela', 'science', 'not_set'}
 PROFILE_GOALS = {'math_practice', 'reading', 'science_exploration', 'general'}
 PROFILE_COLORS = {'sage', 'sky', 'lavender', 'coral', 'gold', 'teal'}
+PROFILE_PLANETS = {
+    'not_set': 'Choose later',
+    'pet': 'Pet Planet',
+    'math_games': 'Math Games Planet',
+    'science': 'Science Planet',
+    'golden_algebra': 'Golden Algebra Planet',
+    'polus': 'Planet Polus',
+}
+PROFILE_PETS = {
+    'not_set': 'Choose later',
+    'pup': 'Pixel Pup',
+    'mooncat': 'Mochi Mooncat',
+    'otter': 'Orbit Otter',
+    'axolotl': 'Nebula Axolotl',
+}
 SIGNUP_COIN_BONUS = 25
 DAILY_LOGIN_COIN_BONUS = 10
 DAILY_GAME_COIN_BONUS = 5
@@ -172,9 +187,9 @@ CHATBOT_FAQ = {
     "can't get into class": "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
     'loading forever': "1. Refresh the page. 2. Use Google Chrome. 3. Try an Incognito Window. 4. Message your teacher in the Canvas Inbox if you still can't get in.",
     'technical difficulties': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
-    'late': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
-    'due date': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
-    '2 weeks': "You have 2 weeks after the due date to turn in any assignment for full credit. After 2 weeks, the assignment will lock and you won't be able to turn it in!",
+    'late': "Check the assignment details in Canvas for the due date and submission status. Late-work rules can vary, so ask Mrs. McAllister if you are unsure.",
+    'due date': "Check the assignment details in Canvas for the due date and submission status. Late-work rules can vary, so ask Mrs. McAllister if you are unsure.",
+    '2 weeks': "Check the assignment details in Canvas for the due date and submission status. Late-work rules can vary, so ask Mrs. McAllister if you are unsure.",
     'turn in': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
     'submit': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
     'upload': "Click the big Submit Assignment button at the top right. Select your file and click Submit again. Look for the confetti!",
@@ -193,21 +208,21 @@ CHATBOT_FAQ = {
     'student number': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
     'email': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
     'username': 'Click Account > Profile for your ID number. Click Account > Settings to see your school email address on the right side.',
-    'newsletter': 'You can find our March Newsletter at this link: https://www.smore.com/ Check it for important dates and school updates!',
+    'newsletter': 'Check Canvas or ask Mrs. McAllister for the current newsletter and school updates.',
     'contact': 'You can email Jmcallister@onlineoregon.org or use the Inbox icon on the left side of Canvas to send a message.',
     'talk to my teacher': "It sounds like you need a human expert. Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email Jmcallister@onlineoregon.org or click the Canvas Inbox.",
     "i'm confused": "It sounds like you need a human expert. Since I'm just an AI, I might not have the exact answer you need. Here is how to reach Mrs. McAllister: Email Jmcallister@onlineoregon.org or click the Canvas Inbox.",
     'tech support': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
     'help desk': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
     'phone number': 'Call Stride Tech Support at 866-512-2273 or visit help.k12.com. They are open 7 days a week!',
-    'break': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'holiday': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'no school': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'spring break': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'easter': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'when is school over': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'last day': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
-    'days off': 'Looking for a break? Here are the upcoming days with No School: Spring Break: March 23-27, Teacher Work Day: April 3, Memorial Day: May 25, Last Day of School: June 5.',
+    'break': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
+    'holiday': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
+    'no school': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
+    'spring break': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
+    'easter': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
+    'when is school over': 'Check your current school calendar in Canvas for the last day of school. Ask Mrs. McAllister if the dates are unclear.',
+    'last day': 'Check your current school calendar in Canvas for the last day of school. Ask Mrs. McAllister if the dates are unclear.',
+    'days off': 'Check your current school calendar in Canvas for upcoming days off. Ask Mrs. McAllister if the dates are unclear.',
     'canvas down': "Sometimes Canvas has a hiccup. Wait 5 minutes and try again. Make sure your Wi-Fi is still connected. Use this time to read your school book or practice math facts offline!",
     'pacing': "Try to finish at least one lesson in each subject every day. Look at the To-Do list on your Dashboard. It's better to do one lesson correctly than three lessons too fast.",
     'done for the day': 'Did you submit all your assignments and see the confetti? Did you check Canvas Inbox? Is your laptop plugged in? Great job. See you at the next Engageli session!',
@@ -221,9 +236,21 @@ CHATBOT_FAQ = {
     'math help': "I can help with steps and hints, but you should double-check the final answer and show your work.",
     'math adventure': "Math Adventure is a graphical map quest game where you choose a character (Knight, Wizard, Ninja, or Astronaut) and difficulty level, then solve math challenges to move across the map from the Starting Village to the Castle of Triumph!",
     'adventure map': "Math Adventure is a graphical map quest game where you choose a character (Knight, Wizard, Ninja, or Astronaut) and difficulty level, then solve math challenges to move across the map from the Starting Village to the Castle of Triumph!",
+    'pet planet': "From the Quest Map, fly to Pet Planet and land there. Sign in to meet pets, adopt a companion, or select a meadow pet and play Toy Hunt or Follow the Paw in the Pet Playground.",
+    'golden algebra': "On the Quest Map, visit Golden Algebra Planet for an escape room. Translate and simplify the clues to open the vault; use lowercase x and no spaces in your codes.",
+    'football': "Absolute Value Football is on the Quest Map at Unit 3, Bathhouse Battle. Open Station 11 using the circular football button to play.",
+    'planet polus': "On the Quest Map, land on Planet Polus to create a space explorer or use the classroom meeting picker. The roster stays in this browser on this device.",
+    'emergency meeting': "On Planet Polus, choose Teacher: Meeting, select a section, and call an emergency meeting. Its roster stays in this browser on this device.",
+    'quest map': "The Quest Map is the space flight map. Fly close to a planet and use Enter or the landing button to visit; on mobile, hold the on-screen flight controls.",
     'grand finale': "The Grand Finale is our 3-day end-of-year math celebration! It features interactive slides, quick-fire challenges, Blooket Gold Quest, Gimkit Lava Rising, Coordinate BINGO, and teacher trivia. Use the navigation buttons to jump to Day 1, 2, or 3!",
     'finale': "The Grand Finale is our 3-day end-of-year math celebration! It features interactive slides, quick-fire challenges, Blooket Gold Quest, Gimkit Lava Rising, Coordinate BINGO, and teacher trivia. Use the navigation buttons to jump to Day 1, 2, or 3!",
     'help': "I can help with website games, Canvas questions, assignment steps, grades, class links, school tools, and simple math or ELA hints."
+}
+
+CHATBOT_EXACT_FAQ_KEYS = {
+    'hi', 'hello', 'hey', 'help', 'link', 'join', 'meeting', 'module', 'score',
+    'testing', 'submit', 'email', 'id', 'username', 'contact', 'newsletter',
+    'late', 'break', 'holiday', 'calculate', 'plus', 'equals', 'math help', 'finale',
 }
 
 CHATBOT_SYSTEM_PROMPT = """
@@ -231,12 +258,14 @@ You are the student helper chatbot for Mrs. McAllister's learning website.
 
 Audience and tone:
 - Write for students in simple, encouraging language.
-- Keep answers short: usually 2 to 5 sentences.
+- Answer the student's actual question first, in clear, complete sentences.
+- Usually use 2 to 5 sentences. For instructions, use short numbered steps on separate lines.
+- Write plain text without Markdown formatting. Give one useful next step or example rather than a generic reminder.
 - You can talk about anything the student wants to talk about, including telling jokes, sharing fun facts, and having general conversations.
 
 Behavior rules:
 - Give hints, steps, and explanations instead of only final answers when a student asks for academic help.
-- If the student asks about Canvas, grades, assignments, class links, or school routines, use the known site information provided.
+- If the student asks about this site or school routines, use known information only when it fits their question. Do not invent directions, dates, or policies.
 - If you are uncertain about a school policy or a site-specific fact, say so briefly and suggest asking Mrs. McAllister or tech support.
 - Never ask for or encourage sharing personal, private, or account information.
 - If a student shares private information, remind them to keep it private.
@@ -256,6 +285,8 @@ def get_faq_response(user_message):
     """Return a deterministic FAQ response for obvious site questions."""
     normalized_message = user_message.lower()
     for key in sorted(CHATBOT_FAQ.keys(), key=len, reverse=True):
+        if key in CHATBOT_EXACT_FAQ_KEYS and normalized_message.strip(' \t\r\n?!.,') != key:
+            continue
         pattern = rf'(?<!\w){re.escape(key)}(?!\w)'
         if re.search(pattern, normalized_message):
             return CHATBOT_FAQ[key]
@@ -273,6 +304,10 @@ def get_chatbot_history():
 def save_chatbot_history(history):
     """Persist a capped chatbot history in the session."""
     session['chatbot_history'] = history[-CHATBOT_HISTORY_LIMIT:]
+
+
+class ChatbotIncompleteReply(RuntimeError):
+    """The provider stopped before completing the response."""
 
 
 def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
@@ -315,7 +350,7 @@ def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
         'contents': contents,
         'generationConfig': {
             'temperature': 0.4,
-            'maxOutputTokens': 220,
+            'maxOutputTokens': 2048,
             'topP': 0.9,
             'topK': 20
         }
@@ -341,8 +376,16 @@ def generate_gemini_reply(user_message, page_path, history, faq_reply=None):
     if not candidates:
         raise RuntimeError('Gemini returned no candidates.')
 
-    parts = candidates[0].get('content', {}).get('parts', [])
-    answer = ' '.join(part.get('text', '').strip() for part in parts if part.get('text')).strip()
+    candidate = candidates[0]
+    if candidate.get('finishReason') == 'MAX_TOKENS':
+        raise ChatbotIncompleteReply('Gemini response reached the output limit.')
+    if candidate.get('finishReason') not in (None, 'STOP'):
+        raise RuntimeError('Gemini did not complete the response.')
+    parts = candidate.get('content', {}).get('parts', [])
+    answer = '\n'.join(
+        part.get('text', '').strip()
+        for part in parts if part.get('text') and not part.get('thought')
+    ).strip()
     if not answer:
         raise RuntimeError('Gemini returned an empty answer.')
     return answer
@@ -375,13 +418,6 @@ def student_display_name(name):
     if not parts:
         return 'Learner'
     return parts[0] + ''.join(f' {part[0].upper()}.' for part in parts[1:])
-
-
-def redact_profile_name(bio, name):
-    """Avoid displaying an account's full stored name inside its own bio."""
-    if not bio or not isinstance(name, str) or student_display_name(name) == name:
-        return bio
-    return re.sub(re.escape(name), lambda match: student_display_name(name), bio, flags=re.IGNORECASE)
 
 
 @app.after_request
@@ -651,8 +687,14 @@ def ask_chatbot():
         ])
         save_chatbot_history(history)
         return jsonify({'answer': bot_reply, 'source': 'gemini'})
-    except Exception as e:
-        app.logger.error(f"Chatbot failed: {e}")
+    except ChatbotIncompleteReply:
+        app.logger.warning('Chatbot response was cut off at the output limit.')
+        return jsonify({
+            'answer': 'My reply was cut off. Please ask a shorter question or ask about one step at a time.',
+            'source': 'incomplete'
+        })
+    except (RuntimeError, ValueError, TypeError, KeyError, OSError) as exc:
+        app.logger.warning('Chatbot provider request failed (%s).', type(exc).__name__)
         if faq_reply:
             history.extend([
                 {'role': 'user', 'text': user_message},
@@ -661,8 +703,8 @@ def ask_chatbot():
             save_chatbot_history(history)
             return jsonify({'answer': faq_reply, 'source': 'faq-fallback'})
         fallback_reply = (
-            "I can help with website games, Canvas questions, and simple math or ELA hints. "
-            "Try asking about a game on this page, how to turn in work, where to find grades, or ask for a step-by-step hint."
+            "I couldn't connect to the helper right now. Please try again in a moment. "
+            "For school questions, you can also ask Mrs. McAllister."
         )
         return jsonify({'answer': fallback_reply, 'source': 'fallback'})
 
@@ -946,6 +988,11 @@ def golden_algebra():
     """An interactive algebra escape room."""
     return render_template('golden_algebra.html')
 
+@app.route('/fable-quest')
+def fable_quest():
+    """An original fantasy adventure planet."""
+    return render_template('fable_quest.html')
+
 @app.route('/solar-system')
 def solar_system():
     """Freely explorable solar-system enrichment map."""
@@ -1039,6 +1086,12 @@ def ensure_account_tables():
             )
             cur.execute(
                 "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS profile_public BOOLEAN NOT NULL DEFAULT FALSE"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS favorite_planet TEXT NOT NULL DEFAULT 'not_set'"
+            )
+            cur.execute(
+                "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS favorite_pet TEXT NOT NULL DEFAULT 'not_set'"
             )
             cur.execute(
                 "ALTER TABLE learning_accounts ADD COLUMN IF NOT EXISTS coin_balance INTEGER NOT NULL DEFAULT 0"
@@ -1478,20 +1531,23 @@ def update_account_profile():
     if not valid_csrf_token(request.form.get('csrf_token', '')):
         abort(400, description='This form expired. Please refresh and try again.')
 
-    bio = request.form.get('bio', '').strip()
     favorite_subject = request.form.get('favorite_subject', 'not_set')
     learning_goal = request.form.get('learning_goal', 'general')
     profile_color = request.form.get('profile_color', 'sage')
     profile_public = request.form.get('profile_public') == 'yes'
+    favorite_planet = request.form.get('favorite_planet')
+    favorite_pet = request.form.get('favorite_pet')
 
-    if len(bio) > 240:
-        flash('Keep your bio to 240 characters or fewer.', 'error')
-    elif favorite_subject not in PROFILE_SUBJECTS:
+    if favorite_subject not in PROFILE_SUBJECTS:
         flash('Choose a valid favorite subject.', 'error')
     elif learning_goal not in PROFILE_GOALS:
         flash('Choose a valid learning goal.', 'error')
     elif profile_color not in PROFILE_COLORS:
         flash('Choose a valid profile color.', 'error')
+    elif favorite_planet is not None and favorite_planet not in PROFILE_PLANETS:
+        flash('Choose a valid favorite planet.', 'error')
+    elif favorite_pet is not None and favorite_pet not in PROFILE_PETS:
+        flash('Choose a valid favorite pet.', 'error')
     else:
         try:
             ensure_account_tables()
@@ -1500,17 +1556,20 @@ def update_account_profile():
                     cur.execute(
                         """
                         UPDATE learning_accounts
-                        SET bio = %s, favorite_subject = %s,
+                        SET favorite_subject = %s,
                             learning_goal = %s, profile_color = %s,
-                            profile_public = %s
+                            profile_public = %s,
+                            favorite_planet = COALESCE(%s, favorite_planet),
+                            favorite_pet = COALESCE(%s, favorite_pet)
                         WHERE id = %s
                         """,
                         (
-                            bio,
                             favorite_subject,
                             learning_goal,
                             profile_color,
                             profile_public,
+                            favorite_planet,
+                            favorite_pet,
                             session['account_id'],
                         ),
                     )
@@ -1536,8 +1595,8 @@ def account_dashboard():
                 cur.execute(
                     """
                     SELECT id, display_name, created_at, last_login_at,
-                           bio, favorite_subject, learning_goal, profile_color, profile_public,
-                           coin_balance, last_daily_bonus_date
+                           favorite_subject, learning_goal, profile_color, profile_public,
+                           coin_balance, last_daily_bonus_date, favorite_planet, favorite_pet
                     FROM learning_accounts
                     WHERE id = %s
                     """,
@@ -1602,18 +1661,21 @@ def account_dashboard():
             'display_name': student_display_name(account[1]),
             'created_at': account[2],
             'last_login_at': account[3],
-            'bio': redact_profile_name(account[4], account[1]),
-            'favorite_subject': account[5],
-            'learning_goal': account[6],
-            'profile_color': account[7],
-            'profile_public': account[8],
-            'coin_balance': account[9],
-            'last_daily_bonus_date': account[10],
+            'favorite_subject': account[4],
+            'learning_goal': account[5],
+            'profile_color': account[6],
+            'profile_public': account[7],
+            'coin_balance': account[8],
+            'last_daily_bonus_date': account[9],
+            'favorite_planet': account[10],
+            'favorite_pet': account[11],
         },
         progress=progress,
         recent_attempts=recent_attempts,
         signup_coin_bonus=SIGNUP_COIN_BONUS,
         daily_login_coin_bonus=DAILY_LOGIN_COIN_BONUS,
+        profile_planets=PROFILE_PLANETS,
+        profile_pets=PROFILE_PETS,
         error_message=None,
     )
 
@@ -2232,6 +2294,19 @@ def award_quest_topic_coins():
     })
 
 
+def public_profile_data(row):
+    """Return only the fields displayed on opt-in profiles."""
+    return {
+        'id': row[0],
+        'display_name': student_display_name(row[1]),
+        'favorite_subject': row[2],
+        'learning_goal': row[3],
+        'profile_color': row[4],
+        'favorite_planet': row[5],
+        'favorite_pet': row[6],
+    }
+
+
 @app.route('/community')
 @login_required
 def community_profiles():
@@ -2242,21 +2317,20 @@ def community_profiles():
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, display_name, bio, favorite_subject, learning_goal, profile_color
+                    SELECT id, display_name, favorite_subject, learning_goal, profile_color,
+                           favorite_planet, favorite_pet
                     FROM learning_accounts
                     WHERE profile_public = TRUE
                     ORDER BY LOWER(display_name)
                     LIMIT 100
                     """
                 )
-                profiles = [
-                    (row[0], student_display_name(row[1]), redact_profile_name(row[2], row[1]), *row[3:])
-                    for row in cur.fetchall()
-                ]
+                profiles = [public_profile_data(row) for row in cur.fetchall()]
     except Exception:
         app.logger.exception('Failed loading public learner profiles.')
         return render_template('community_profiles.html', profiles=[], error_message='We could not load profiles right now.'), 503
-    return render_template('community_profiles.html', profiles=profiles, error_message=None)
+    return render_template('community_profiles.html', profiles=profiles, error_message=None,
+                           profile_planets=PROFILE_PLANETS, profile_pets=PROFILE_PETS)
 
 
 @app.route('/users/<int:account_id>')
@@ -2269,7 +2343,8 @@ def public_profile(account_id):
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, display_name, bio, favorite_subject, learning_goal, profile_color
+                    SELECT id, display_name, favorite_subject, learning_goal, profile_color,
+                           favorite_planet, favorite_pet
                     FROM learning_accounts
                     WHERE id = %s AND profile_public = TRUE
                     """,
@@ -2281,8 +2356,8 @@ def public_profile(account_id):
         return render_template('public_profile.html', profile=None, error_message='We could not load this profile right now.'), 503
     if profile is None:
         abort(404)
-    profile = (profile[0], student_display_name(profile[1]), redact_profile_name(profile[2], profile[1]), *profile[3:])
-    return render_template('public_profile.html', profile=profile, error_message=None)
+    return render_template('public_profile.html', profile=public_profile_data(profile), error_message=None,
+                           profile_planets=PROFILE_PLANETS, profile_pets=PROFILE_PETS)
 
 
 def ensure_student_creations_table():
