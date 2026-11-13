@@ -188,6 +188,40 @@ body {
 .colors button:hover, .colors button:focus-visible { background: var(--swatch-color); color: #173c36; }
 .colors button[aria-pressed="true"] { outline: 3px solid #7440a5; outline-offset: 2px; }
 .empty-pet-icon { font-size: 3.5rem; }
+.playground-panel {
+    background: linear-gradient(125deg, #fffefa, #eaf8ed);
+}
+.playground-companion {
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #e0f3e4;
+    font-weight: 700;
+}
+.playground-link { display: inline-block; margin: 12px 4px; font-weight: 700; }
+.game-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.game-choices button[aria-pressed="true"] { outline: 3px solid #7440a5; outline-offset: 2px; }
+.playground-status { min-height: 1.6em; font-weight: 700; }
+.playground-game-card {
+    max-width: 650px;
+    padding: 18px;
+    border: 1px solid #a9ceb5;
+    border-radius: 18px;
+    background: #fffefa;
+}
+.playground-game-card h3 { margin: 0 0 8px; color: #173c36; }
+.playground-game-card p { margin: 8px 0; }
+.hunt-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 360px; }
+.pet-planet .hunt-grid button {
+    width: 100%; min-height: 75px; margin: 0;
+    background: #e2f5dc; color: #173c36; border-color: #709b78;
+    box-shadow: 0 4px 0 #accbb1; font-size: 1.6rem;
+}
+.pet-planet .hunt-grid button:hover, .pet-planet .hunt-grid button:focus-visible { background: #c9ecc8; color: #173c36; }
+.pet-planet .hunt-grid button:disabled { background: #f0f5e9; color: #365650; box-shadow: none; }
+.pattern-sequence { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.pattern-sequence li { padding: 8px 12px; border-radius: 10px; background: #e0f3e4; color: #173c36; font-weight: 700; }
+.pattern-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+.pattern-buttons button { flex: 1 1 120px; }
 .adoption-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .adoption-card {
     padding: 18px;

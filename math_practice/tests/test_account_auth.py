@@ -1041,6 +1041,19 @@ def test_pet_planet_guest_page_and_api_require_login():
     assert client.post('/api/pet-planet/pets/1').status_code == 302
 
 
+def test_pet_playground_is_available_to_signed_in_visitors():
+    client = app_module.app.test_client()
+    with client.session_transaction() as state:
+        state['account_id'] = 1
+        state['account_name'] = 'Meadow Visitor'
+
+    page = client.get('/pet-planet')
+    assert page.status_code == 200
+    assert b'Toy Hunt' in page.data
+    assert b'Follow the Paw' in page.data
+    assert b'pet_playground.js' in page.data
+
+
 def test_signup_and_daily_login_coin_bonuses_are_once_per_day():
     database = FakeDatabase()
     with patch.object(

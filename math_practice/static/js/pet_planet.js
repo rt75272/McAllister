@@ -15,6 +15,7 @@
     let loaded = false;
     let requestNumber = 0;
     let lastState = '';
+    let playgroundPetId = null;
 
     function element(tag, text, className) {
         const node = document.createElement(tag);
@@ -67,6 +68,12 @@
             meadow.append(card);
         });
         const pet = pets.find(item => item.id === selectedId);
+        if ((pet?.id ?? null) !== playgroundPetId) {
+            playgroundPetId = pet?.id ?? null;
+            window.dispatchEvent(new CustomEvent('pet-planet:selection', {
+                detail: pet ? { id: pet.id, name: catalog[pet.kind].name, emoji: catalog[pet.kind].emoji } : null
+            }));
+        }
         details.replaceChildren();
         if (!pet) {
             const icon = element('div', '🐾', 'empty-pet-icon');
@@ -82,6 +89,10 @@
                 activities.append(button('🍪 Treat · 2 coins', () => act(pet.id, 'treat')), button('🧸 Toy · 4 coins', () => act(pet.id, 'toy')));
             }
             details.append(activities);
+            const playgroundLink = element('a', '🎲 Play playground games');
+            playgroundLink.href = '#pet-playground';
+            playgroundLink.className = 'playground-link';
+            details.append(playgroundLink);
             if (pet.mine) {
                 details.append(element('h3', 'Choose a meadow color'));
                 const palette = element('div', undefined, 'colors');

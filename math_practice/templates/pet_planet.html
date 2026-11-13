@@ -66,6 +66,18 @@
             <div id="pet-details"><p>Choose a pet in the meadow to begin.</p></div>
         </section>
     </div>
+    <section id="pet-playground" class="planet-panel playground-panel" aria-labelledby="playground-title">
+        <p class="eyebrow">Meadow games · Free to play</p>
+        <h2 id="playground-title" tabindex="-1">Pet playground</h2>
+        <p>Pick any pet above, then play together! These games are just for fun: they don't spend coins or change shared pet stats, and progress lasts only while this page is open.</p>
+        <p id="playground-pet" class="playground-companion">Choose a meadow pet to unlock the playground.</p>
+        <div class="game-choices" aria-label="Choose a playground game">
+            <button type="button" id="start-hunt" disabled>🔎 Toy Hunt</button>
+            <button type="button" id="start-pattern" disabled>🐾 Follow the Paw</button>
+        </div>
+        <p id="playground-status" class="playground-status" role="status" aria-live="polite"></p>
+        <div id="playground-game"></div>
+    </section>
     <section class="planet-panel adoption-panel">
         <p class="eyebrow">Adoption station</p>
         <h2>Bring home a new friend</h2>
@@ -78,6 +90,7 @@
 {% endblock %}
 {% block extra_scripts %}
 {% if current_account_name %}
+<script src="{{ url_for('static', filename='js/pet_playground.js') }}"></script>
 <script src="{{ url_for('static', filename='js/pet_planet.js') }}"></script>
 {% endif %}
 {% endblock %}
