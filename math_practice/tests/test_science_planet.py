@@ -80,6 +80,18 @@ def test_planet_polus_is_accessible_from_quest_map():
     assert b'/planet-polus' in quest_map.data
 
 
+def test_golden_algebra_planet_is_accessible_from_quest_map():
+    client = app.test_client()
+
+    response = client.get('/golden-algebra')
+    assert response.status_code == 200
+    assert b'Operation: Golden Algebra' in response.data
+    assert b'golden_algebra.js' in response.data
+    quest_map = client.get('/quest-map')
+    assert b'Golden Algebra Planet' in quest_map.data
+    assert b'/golden-algebra' in quest_map.data
+
+
 def test_science_simulation_is_not_listed_as_a_math_game():
     client = app.test_client()
 

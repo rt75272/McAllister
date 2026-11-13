@@ -88,7 +88,7 @@ with open('app.py', 'w') as f:
     f.write(text)
 
 print("Updated app.py")
-    print("Could not match faq dict in app.py")
+print("Could not match faq dict in app.py")
 
 with open('app.py', 'w') as f:
     f.write(text)

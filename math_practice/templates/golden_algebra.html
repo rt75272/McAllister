@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Golden Algebra Planet - Escape Room{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/golden_algebra.css') }}">
+{% endblock %}
+{% block content %}
+<main class="mission">
+    <header class="mission-header">
+        <a class="back-link" href="{{ url_for('quest_map') }}">← Return to the Quest Map</a>
+        <p class="eyebrow">🔐 Golden Algebra Planet · Escape room</p>
+        <h1>Operation: Golden Algebra</h1>
+        <p>Crack the codes. Bypass the lasers. Rescue the Golden Calculator.</p>
+    </header>
+
+    <div class="mission-layout">
+        <aside class="mission-sidebar" aria-label="Mission progress">
+            <div class="vault-art" aria-hidden="true">
+                <div class="vault-ring"><div class="vault-center">★</div></div>
+            </div>
+            <h2>Mission progress</h2>
+            <ol class="progress-list">
+                <li data-progress="0" aria-current="step">Agent briefing</li>
+                <li data-progress="1">Outer perimeter</li>
+                <li data-progress="2">Mainframe bypass</li>
+                <li data-progress="3">Master vault</li>
+                <li data-progress="4">Extraction</li>
+            </ol>
+        </aside>
+        <div class="mission-panel">
+            <section id="briefing" class="mission-stage" aria-labelledby="briefing-title">
+                <p class="eyebrow">Incoming transmission</p>
+                <h2 id="briefing-title" tabindex="-1">Agent briefing</h2>
+                <p>Dr. Zero has stolen the Golden Calculator of Archimedes and locked it in a high-tech vault. Translate the clues, simplify the codes, and bypass the security doors before the mastermind escapes!</p>
+                <p class="protocol"><strong>Agent protocol:</strong> Use lowercase <code>x</code> as your variable. Enter codes without spaces. Use <code>/</code> for division.</p>
+                <form id="agent-form">
+                    <div class="name-fields">
+                        <div><label for="first-name">First name</label><input id="first-name" maxlength="30" autocomplete="off" required placeholder="Alex"></div>
+                        <div><label for="last-initial">Last initial only</label><input id="last-initial" maxlength="1" autocomplete="off" required placeholder="M"></div>
+                    </div>
+                    <p class="small">For privacy, enter only your first name and last initial. Your latest completed mission is saved only in this browser, not sent to your teacher.</p>
+                    <p id="name-feedback" class="feedback" role="alert"></p>
+                    <button class="mission-button" type="submit">Accept mission →</button>
+                </form>
+                <p id="last-mission" class="small" role="status"></p>
+            </section>
+
+            <section id="outer-door" class="mission-stage" aria-labelledby="outer-title" hidden>
+                <p class="eyebrow">Laser door 01 · Translate</p>
+                <h2 id="outer-title" tabindex="-1">The outer perimeter</h2>
+                <p>A red laser grid blocks the steel door. Translate each security clue into an algebraic expression to disable the lasers.</p>
+                <form class="code-form" data-stage="1" novalidate>
+                    <div class="node"><label for="node-a"><strong>Security node A</strong> Take the sum of a number and 5, then double it. Use parentheses.</label><input id="node-a" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="node-a-feedback" aria-live="polite"></p></div>
+                    <div class="node"><label for="node-b"><strong>Security node B</strong> Three times a number, then subtract 4.</label><input id="node-b" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="node-b-feedback" aria-live="polite"></p></div>
+                    <div class="node"><label for="node-c"><strong>Security node C</strong> The product of a number and 7, then divided by 3.</label><input id="node-c" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="node-c-feedback" aria-live="polite"></p></div>
+                    <button class="mission-button" type="submit">Disable laser grid →</button>
+                </form>
+            </section>
+
+            <section id="mainframe" class="mission-stage" aria-labelledby="mainframe-title" hidden>
+                <p class="eyebrow">Laser door 02 · Simplify</p>
+                <h2 id="mainframe-title" tabindex="-1">The mainframe bypass</h2>
+                <p>The lasers power down! The next door's firewall demands simplified expressions. Simplify each of the three codes as much as possible.</p>
+                <form class="code-form" data-stage="2" novalidate>
+                    <div class="node"><label for="firewall-1"><strong>Firewall 1</strong> Simplify <code>2(x+5)</code>. Use the distributive property.</label><input id="firewall-1" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-1-feedback" aria-live="polite"></p></div>
+                    <div class="node"><label for="firewall-2"><strong>Firewall 2</strong> Simplify <code>3x-4</code>. Can you combine the terms?</label><input id="firewall-2" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-2-feedback" aria-live="polite"></p></div>
+                    <div class="node"><label for="firewall-3"><strong>Firewall 3</strong> Simplify <code>7x/3</code>. Can 7/3 be reduced to a whole number?</label><input id="firewall-3" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-3-feedback" aria-live="polite"></p></div>
+                    <button class="mission-button" type="submit">Bypass firewall →</button>
+                </form>
+            </section>
+
+            <section id="master-vault" class="mission-stage" aria-labelledby="vault-title" hidden>
+                <p class="eyebrow">Final lock · Override</p>
+                <h2 id="vault-title" tabindex="-1">The master vault</h2>
+                <p>Alarms blare! Combine your three simplified codes in order, separated by dashes, with no spaces. The minus sign inside the second code stays in place.</p>
+                <p class="protocol">Format: <code>code1-code2-code3</code></p>
+                <form class="code-form" data-stage="3" novalidate>
+                    <div class="node"><label for="override"><strong>Master override sequence</strong> Enter all three simplified expressions.</label><input id="override" autocomplete="off" spellcheck="false" placeholder="code1-code2-code3"><p class="feedback" id="override-feedback" aria-live="polite"></p></div>
+                    <button class="mission-button" type="submit">Open the vault →</button>
+                </form>
+            </section>
+
+            <section id="extraction" class="mission-stage" aria-labelledby="extraction-title" hidden>
+                <p class="eyebrow">Vault unlocked · Artifact secured</p>
+                <h2 id="extraction-title" tabindex="-1">Mission accomplished!</h2>
+                <div class="trophy" aria-hidden="true">🏆</div>
+                <p>CLUNK. HISS. The vault opens and you recover the Golden Calculator of Archimedes! You make a clean getaway as Dr. Zero's guards arrive. Your algebra skills saved the day, <span id="agent-display"></span>!</p>
+                <p>Submit to log this mission on this device. The record is not sent to your teacher or account.</p>
+                <button id="submit-mission" class="mission-button" type="button">Submit mission completion</button>
+                <p id="completion-feedback" class="feedback" role="status" aria-live="polite"></p>
+                <button id="play-again" class="secondary-button" type="button" hidden>Play again</button>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/golden_algebra.js') }}"></script>
+{% endblock %}

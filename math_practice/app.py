@@ -941,6 +941,11 @@ def planet_polus():
     """Local classroom crew creator and reward station."""
     return render_template('planet_polus.html')
 
+@app.route('/golden-algebra')
+def golden_algebra():
+    """An interactive algebra escape room."""
+    return render_template('golden_algebra.html')
+
 @app.route('/solar-system')
 def solar_system():
     """Freely explorable solar-system enrichment map."""
