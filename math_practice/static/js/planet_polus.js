@@ -2,11 +2,15 @@
     const storageKey = 'planetPolusCrewV1';
     const colors = {
         Red: '#d94d55', Blue: '#4d79ce', Green: '#4b9e65', Pink: '#e58db6',
-        Orange: '#ed9545', Yellow: '#e5c64c', Black: '#515968', Cyan: '#5bbdc5'
+        Orange: '#ed9545', Yellow: '#e5c64c', Black: '#515968', Cyan: '#5bbdc5',
+        Purple: '#9472c9', White: '#e8eef2', Teal: '#278c88'
     };
+    const visorColors = { ice: '#a9dce7', rose: '#f1b9cc', gold: '#f2d58c', mint: '#a7e1c8' };
+    const bodyScales = { classic: [1, 1], wide: [1.2, 1], slim: [0.8, 1], tall: [0.9, 1.12] };
     const hats = ['none', 'sprout', 'party', 'note', 'robot', 'cap', 'crown'];
     const appearanceOptions = {
-        eyes: ['classic', 'happy', 'sleepy', 'star'],
+        body: Object.keys(bodyScales), face: ['round', 'oval', 'square'], visor: Object.keys(visorColors),
+        mouth: ['smile', 'grin', 'surprised', 'calm'], eyes: ['classic', 'happy', 'sleepy', 'star'],
         glasses: ['none', 'round', 'star'],
         shirt: ['suit', 'tee', 'stripe', 'jacket'],
         shirtColor: Object.keys(colors),
@@ -16,10 +20,12 @@
         shoesColor: Object.keys(colors)
     };
     const appearanceDefaults = {
+        body: 'classic', face: 'round', visor: 'ice', mouth: 'smile',
         eyes: 'classic', glasses: 'none', shirt: 'suit', shirtColor: 'Blue',
         bottoms: 'suit', bottomsColor: 'Blue', shoes: 'none', shoesColor: 'Black'
     };
     const appearanceInputs = {
+        body: 'crew-body', face: 'crew-face', visor: 'crew-visor', mouth: 'crew-mouth',
         eyes: 'crew-eyes', glasses: 'crew-glasses', shirt: 'crew-shirt', shirtColor: 'crew-shirt-color',
         bottoms: 'crew-bottoms', bottomsColor: 'crew-bottoms-color', shoes: 'crew-shoes', shoesColor: 'crew-shoes-color'
     };
@@ -84,10 +90,13 @@
         svg.style.setProperty('--shirt-color', colors[appearance.shirtColor]);
         svg.style.setProperty('--bottoms-color', colors[appearance.bottomsColor]);
         svg.style.setProperty('--shoes-color', colors[appearance.shoesColor]);
+        svg.style.setProperty('--visor-color', visorColors[appearance.visor]);
+        const [width, height] = bodyScales[appearance.body];
+        svg.querySelector('.body-shape').setAttribute('transform', `translate(100 120) scale(${width} ${height}) translate(-100 -120)`);
         svg.querySelectorAll('.accessory').forEach(accessory => {
             accessory.toggleAttribute('hidden', accessory.dataset.hat !== person.hat);
         });
-        ['eyes', 'glasses', 'shirt', 'bottoms', 'shoes'].forEach(part => {
+        ['face', 'mouth', 'eyes', 'glasses', 'shirt', 'bottoms', 'shoes'].forEach(part => {
             svg.querySelectorAll(`[data-${part}]`).forEach(element => {
                 element.toggleAttribute('hidden', element.dataset[part] !== appearance[part]);
             });

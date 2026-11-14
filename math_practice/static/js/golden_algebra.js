@@ -55,18 +55,25 @@
     document.querySelectorAll('.code-form').forEach((form) => {
         form.addEventListener('submit', (event) => {
             event.preventDefault();
-            let firstIncorrect = null;
-            form.querySelectorAll('input').forEach((input) => {
-                const feedback = document.getElementById(`${input.id}-feedback`);
-                const correct = rules[input.id].pattern.test(input.value);
-                feedback.classList.toggle('success', correct);
-                feedback.textContent = correct ? 'Code accepted.' : `Access denied. ${rules[input.id].hint} Use lowercase x and no spaces.`;
-                input.setAttribute('aria-invalid', String(!correct));
-                input.setAttribute('aria-describedby', feedback.id);
-                if (!correct && !firstIncorrect) firstIncorrect = input;
-            });
-            if (firstIncorrect) firstIncorrect.focus();
-            else showStage(Number(form.dataset.stage) + 1);
+            const nodes = [...form.querySelectorAll('.node')];
+            const index = nodes.findIndex((node) => !node.hidden);
+            const input = nodes[index].querySelector('input');
+            const feedback = document.getElementById(`${input.id}-feedback`);
+            const correct = rules[input.id].pattern.test(input.value);
+            feedback.classList.toggle('success', correct);
+            feedback.textContent = correct ? 'Code accepted.' : `Access denied. ${rules[input.id].hint} Use lowercase x and no spaces.`;
+            input.setAttribute('aria-invalid', String(!correct));
+            input.setAttribute('aria-describedby', feedback.id);
+            if (!correct) {
+                input.focus();
+            } else if (index + 1 < nodes.length) {
+                nodes[index].hidden = true;
+                nodes[index + 1].hidden = false;
+                form.querySelector('.checkpoint-progress').textContent = `Code accepted. Checkpoint ${index + 2} of ${nodes.length}`;
+                nodes[index + 1].querySelector('input').focus();
+            } else {
+                showStage(Number(form.dataset.stage) + 1);
+            }
         });
     });
 
@@ -87,6 +94,12 @@
 
     document.getElementById('play-again').addEventListener('click', () => {
         document.querySelectorAll('.mission form').forEach((form) => form.reset());
+        document.querySelectorAll('.code-form').forEach((form) => {
+            const nodes = form.querySelectorAll('.node');
+            nodes.forEach((node, index) => { node.hidden = index !== 0; });
+            const progress = form.querySelector('.checkpoint-progress');
+            if (progress) progress.textContent = `Checkpoint 1 of ${nodes.length}`;
+        });
         document.querySelectorAll('.code-form input').forEach((input) => {
             input.removeAttribute('aria-invalid');
             input.removeAttribute('aria-describedby');

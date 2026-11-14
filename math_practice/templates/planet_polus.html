@@ -39,7 +39,14 @@
                 <select id="crew-color" name="color">
                     <option>Red</option><option>Blue</option><option>Green</option><option>Pink</option>
                     <option>Orange</option><option>Yellow</option><option>Black</option><option>Cyan</option>
+                    <option>Purple</option><option>White</option><option>Teal</option>
                 </select>
+                <label for="crew-body">Body shape</label>
+                <select id="crew-body"><option value="classic">Classic</option><option value="wide">Wide</option><option value="slim">Slim</option><option value="tall">Tall</option></select>
+                <label for="crew-face">Face shape</label>
+                <select id="crew-face"><option value="round">Round</option><option value="oval">Oval</option><option value="square">Rounded square</option></select>
+                <label for="crew-visor">Visor color</label>
+                <select id="crew-visor"><option value="ice">Ice blue</option><option value="rose">Rose</option><option value="gold">Gold</option><option value="mint">Mint</option></select>
                 <label for="crew-hat">Accessory</label>
                 <select id="crew-hat" name="hat">
                     <option value="none">None</option><option value="sprout">Sprout</option>
@@ -49,6 +56,8 @@
                 </select>
                 <label for="crew-eyes">Eyes</label>
                 <select id="crew-eyes"><option value="classic">Classic</option><option value="happy">Happy</option><option value="sleepy">Sleepy</option><option value="star">Starry</option></select>
+                <label for="crew-mouth">Expression</label>
+                <select id="crew-mouth"><option value="smile">Smile</option><option value="grin">Grin</option><option value="surprised">Surprised</option><option value="calm">Calm</option></select>
                 <label for="crew-glasses">Glasses</label>
                 <select id="crew-glasses"><option value="none">None</option><option value="round">Round</option><option value="star">Star shades</option></select>
                 <label for="crew-shirt">Shirt</label>
@@ -138,6 +147,7 @@
         <g class="accessory" data-hat="crown" hidden>
             <path d="M76 45 L72 20 L86 30 L100 14 L114 30 L128 20 L124 45 Z" fill="#ffda6d" stroke="#855c19" stroke-width="4" stroke-linejoin="round"/><circle cx="100" cy="36" r="4" fill="#e7669e"/>
         </g>
+        <g class="body-shape">
         <path d="M68 127 L43 148 L50 166 L74 151 M132 127 L157 148 L150 166 L126 151" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
         <path d="M75 186 L69 218 H89 L98 190 M102 190 L111 218 H131 L125 186" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
         <path d="M65 124 L75 103 H125 L135 124 L128 187 H72 Z" fill="var(--suit-color)" stroke="#243754" stroke-width="6" stroke-linejoin="round"/>
@@ -148,16 +158,21 @@
         <g data-shirt="jacket" hidden><path d="M74 115 L65 124 L70 164 H130 L135 124 L126 115 L115 120 H85 Z" fill="var(--shirt-color)" stroke="#243754" stroke-width="4" stroke-linejoin="round"/><path d="M100 121 V164 M84 124 L94 136 M116 124 L106 136" fill="none" stroke="#e5f7fb" stroke-width="3"/></g>
         <g data-shoes="boots" hidden><path d="M68 203 H90 V220 H64 V211 Z M110 203 H132 L136 211 V220 H110 Z" fill="var(--shoes-color)" stroke="#243754" stroke-width="4" stroke-linejoin="round"/></g>
         <g data-shoes="sneakers" hidden><path d="M68 209 H90 V220 H63 Q62 213 68 209 Z M110 209 H132 Q138 213 137 220 H110 Z" fill="var(--shoes-color)" stroke="#243754" stroke-width="4" stroke-linejoin="round"/><path d="M65 216 H89 M111 216 H135" stroke="#fff" stroke-width="3"/></g>
-        <circle cx="100" cy="80" r="38" fill="#e5f7fb" stroke="#243754" stroke-width="6"/>
-        <circle cx="100" cy="80" r="27" fill="#a9dce7" stroke="#4b8092" stroke-width="3"/>
+        <g data-shirt="suit"><rect x="85" y="137" width="30" height="22" rx="4" fill="#e5f7fb" stroke="#243754" stroke-width="3"/><path d="M91 148 H109 M100 142 V154" stroke="#4b8092" stroke-width="3"/></g>
+        </g>
+        <g data-face="round"><circle cx="100" cy="80" r="38" fill="#e5f7fb" stroke="#243754" stroke-width="6"/><circle cx="100" cy="80" r="27" fill="var(--visor-color)" stroke="#4b8092" stroke-width="3"/></g>
+        <g data-face="oval" hidden><ellipse cx="100" cy="80" rx="43" ry="33" fill="#e5f7fb" stroke="#243754" stroke-width="6"/><ellipse cx="100" cy="80" rx="32" ry="23" fill="var(--visor-color)" stroke="#4b8092" stroke-width="3"/></g>
+        <g data-face="square" hidden><rect x="62" y="45" width="76" height="70" rx="20" fill="#e5f7fb" stroke="#243754" stroke-width="6"/><rect x="73" y="56" width="54" height="48" rx="14" fill="var(--visor-color)" stroke="#4b8092" stroke-width="3"/></g>
         <g data-eyes="classic"><circle cx="91" cy="77" r="3.5" fill="#243754"/><circle cx="109" cy="77" r="3.5" fill="#243754"/></g>
         <g data-eyes="happy" hidden><path d="M86 79 Q91 72 96 79 M104 79 Q109 72 114 79" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/></g>
         <g data-eyes="sleepy" hidden><path d="M86 77 Q91 81 96 77 M104 77 Q109 81 114 77" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/></g>
         <g data-eyes="star" hidden><path d="M91 70 L93 75 L98 76 L94 79 L95 84 L91 81 L87 84 L88 79 L84 76 L89 75 Z M109 70 L111 75 L116 76 L112 79 L113 84 L109 81 L105 84 L106 79 L102 76 L107 75 Z" fill="#243754"/></g>
         <g data-glasses="round" hidden><circle cx="91" cy="77" r="8" fill="none" stroke="#243754" stroke-width="3"/><circle cx="109" cy="77" r="8" fill="none" stroke="#243754" stroke-width="3"/><path d="M99 77 H101" stroke="#243754" stroke-width="3"/></g>
         <g data-glasses="star" hidden><path d="M91 67 L94 73 L101 74 L96 79 L97 85 L91 82 L85 85 L86 79 L81 74 L88 73 Z M109 67 L112 73 L119 74 L114 79 L115 85 L109 82 L103 85 L104 79 L99 74 L106 73 Z" fill="#51479a" stroke="#243754" stroke-width="2"/></g>
-        <path d="M93 89 Q100 94 107 89" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/>
-        <g data-shirt="suit"><rect x="85" y="137" width="30" height="22" rx="4" fill="#e5f7fb" stroke="#243754" stroke-width="3"/><path d="M91 148 H109 M100 142 V154" stroke="#4b8092" stroke-width="3"/></g>
+        <path data-mouth="smile" d="M93 89 Q100 94 107 89" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/>
+        <path data-mouth="grin" hidden d="M91 88 Q100 100 109 88 Z" fill="#243754"/>
+        <ellipse data-mouth="surprised" hidden cx="100" cy="90" rx="4" ry="5" fill="#243754"/>
+        <path data-mouth="calm" hidden d="M94 90 H106" fill="none" stroke="#243754" stroke-width="3" stroke-linecap="round"/>
     </svg>
 </template>
 {% endblock %}

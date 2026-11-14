@@ -1,3 +1,5 @@
+from html.parser import HTMLParser
+
 from app import app
 
 
@@ -83,7 +85,8 @@ def test_planet_polus_is_accessible_from_quest_map():
 def test_planet_polus_exposes_customization_and_character_actions():
     response = app.test_client().get('/planet-polus')
     assert response.status_code == 200
-    for control in (b'crew-edit', b'crew-eyes', b'crew-glasses', b'crew-shirt',
+    for control in (b'crew-edit', b'crew-body', b'crew-face', b'crew-visor', b'crew-mouth',
+                    b'crew-eyes', b'crew-glasses', b'crew-shirt',
                     b'crew-bottoms', b'crew-shoes'):
         assert b'id="' + control + b'"' in response.data
     for action in (b'wave', b'dance', b'cheer', b'rest'):
@@ -100,6 +103,30 @@ def test_golden_algebra_planet_is_accessible_from_quest_map():
     quest_map = client.get('/quest-map')
     assert b'Golden Algebra Planet' in quest_map.data
     assert b'/golden-algebra' in quest_map.data
+
+
+def test_golden_algebra_starts_each_stage_with_one_visible_checkpoint():
+    class Checkpoints(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.stage = None
+            self.nodes = {}
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == 'form' and 'code-form' in attrs.get('class', '').split():
+                self.stage = attrs['data-stage']
+                self.nodes[self.stage] = []
+            if self.stage and tag == 'div' and 'node' in attrs.get('class', '').split():
+                self.nodes[self.stage].append('hidden' in attrs)
+
+        def handle_endtag(self, tag):
+            if tag == 'form':
+                self.stage = None
+
+    parser = Checkpoints()
+    parser.feed(app.test_client().get('/golden-algebra').get_data(as_text=True))
+    assert parser.nodes == {'1': [False, True, True], '2': [False, True, True], '3': [False]}
 
 
 def test_fable_quest_planet_is_accessible_from_quest_map():

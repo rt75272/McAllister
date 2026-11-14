@@ -639,7 +639,7 @@
         }
 
         // Three.js and Flight Engine
-        let scene, camera, renderer, raycaster, mouse, planetField;
+        let scene, camera, renderer, raycaster, mouse, planetField, asteroidBelt;
         let ship;
         let planets = [];
         let spaceJunk = [];
@@ -889,16 +889,58 @@
                 metalness: 0.02
             });
             const regularPlanets = planetsData.filter((data) => !data.blackHole && !data.isSun);
-            const planetGeometry = new THREE.DodecahedronGeometry(1, 1);
+            // A seamless procedural surface keeps the planets textured without external image requests.
+            const surfaceCanvas = document.createElement('canvas');
+            surfaceCanvas.width = 512;
+            surfaceCanvas.height = 256;
+            const surfaceContext = surfaceCanvas.getContext('2d');
+            const surface = surfaceContext.createImageData(surfaceCanvas.width, surfaceCanvas.height);
+            for (let y = 0; y < surfaceCanvas.height; y += 1) {
+                const latitude = (y / (surfaceCanvas.height - 1) - 0.5) * Math.PI;
+                for (let x = 0; x < surfaceCanvas.width; x += 1) {
+                    const longitude = x / surfaceCanvas.width * Math.PI * 2;
+                    const terrain = Math.sin(longitude * 3 + Math.sin(latitude * 5)) * Math.cos(latitude * 4)
+                        + 0.45 * Math.sin(longitude * 7 - latitude * 8)
+                        + 0.2 * Math.cos(longitude * 15 + latitude * 13);
+                    const ice = Math.max(0, (Math.abs(latitude) - 1.15) * 1.6);
+                    const shade = Math.min(255, 115 + Math.max(0, terrain) * 55 + ice * 75);
+                    const offset = (y * surfaceCanvas.width + x) * 4;
+                    surface.data[offset] = shade;
+                    surface.data[offset + 1] = Math.min(255, shade * 1.05);
+                    surface.data[offset + 2] = Math.min(255, shade * 1.12);
+                    surface.data[offset + 3] = 255;
+                }
+            }
+            surfaceContext.putImageData(surface, 0, 0);
+            const surfaceTexture = new THREE.CanvasTexture(surfaceCanvas);
+            surfaceTexture.encoding = THREE.sRGBEncoding;
+            const planetGeometry = new THREE.SphereGeometry(1, 32, 24);
             const planetMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
-                flatShading: true,
-                roughness: 0.8,
-                metalness: 0.1
+                map: surfaceTexture,
+                roughness: 0.92,
+                metalness: 0
             });
             planetField = new THREE.InstancedMesh(planetGeometry, planetMaterial, regularPlanets.length);
             planetField.frustumCulled = false;
             scene.add(planetField);
+
+            // The belt occupies the gap between the fifth and sixth curriculum orbits.
+            const fifthOrbit = planetsData.find((data) => data.id === 5).radius;
+            const sixthOrbit = planetsData.find((data) => data.id === 6).radius;
+            asteroidBelt = new THREE.InstancedMesh(asteroidGeometry, asteroidMaterial, 420);
+            const beltRadius = (fifthOrbit + sixthOrbit) / 2;
+            for (let i = 0; i < asteroidBelt.count; i += 1) {
+                const angle = (i / asteroidBelt.count) * Math.PI * 2 + (Math.random() - 0.5) * 0.08;
+                const radius = beltRadius + (Math.random() - 0.5) * 1.6;
+                asteroidTransform.position.set(Math.cos(angle) * radius, (Math.random() - 0.5) * 1.2, Math.sin(angle) * radius);
+                asteroidTransform.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                asteroidTransform.scale.setScalar(0.45 + Math.random() * 1.1);
+                asteroidTransform.updateMatrix();
+                asteroidBelt.setMatrixAt(i, asteroidTransform.matrix);
+            }
+            asteroidBelt.instanceMatrix.needsUpdate = true;
+            scene.add(asteroidBelt);
 
             const orbitSegments = 64;
             planetsData.filter((data) => data.radius > 0).forEach((data) => {
@@ -919,7 +961,7 @@
             orbitGeometry.computeBoundingSphere();
             scene.add(new THREE.Mesh(orbitGeometry, new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide })));
 
-            // 6. Draw Orbit Paths and spawn Low-poly Planets
+            // 6. Draw orbit paths and spawn planets
             let regularPlanetIndex = 0;
             planetsData.forEach((data, index) => {
                 let planetMesh = null;
@@ -1221,6 +1263,7 @@
             lastFrameTime = now;
             const frameScale = deltaSeconds * 60;
 
+            asteroidBelt.rotation.y += 0.00015 * frameScale;
             // 1. Rotate planets in orbit
             planets.forEach((p) => {
                 p.angle += p.data.speed * 0.01 * frameScale;

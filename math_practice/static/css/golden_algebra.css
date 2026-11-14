@@ -6,7 +6,7 @@ body { background: #071528; color: #eef6ff; }
 .back-link { color: #a6e9ff; font-weight: 700; }
 .eyebrow { color: #ffe09a; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em !important; }
 .mission-layout { display: grid; grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-.mission-sidebar, .mission-panel { border: 1px solid #506b85; border-radius: 20px; background: #10243b; box-shadow: 0 16px 42px #0006; padding: clamp(1.2rem, 3vw, 2rem); }
+.mission-sidebar, .mission-panel { border: 1px solid #96723f; border-radius: 20px; background: linear-gradient(145deg, #182f46, #0b192c); box-shadow: 0 16px 42px #0009, inset 0 1px #ffd77333; padding: clamp(1.2rem, 3vw, 2rem); }
 .mission-sidebar h2 { font-size: 1.1rem; }
 .vault-art { display: grid; place-items: center; padding: 1rem; border-radius: 16px; background: radial-gradient(circle, #385c6e, #182f43 70%); }
 .vault-ring { display: grid; place-items: center; width: 120px; aspect-ratio: 1; border-radius: 50%; border: 12px double #ffd773; box-shadow: 0 0 0 5px #536d7c, 0 0 22px #ffc54280; }
@@ -24,6 +24,8 @@ code { color: #ffdf86; font-size: 1.05em; }
 .mission input { display: block; width: 100%; box-sizing: border-box; border: 2px solid #9db5c8; border-radius: 10px; padding: .8rem; color: #102238; background: #fff; font-size: 1rem; }
 .mission input:focus-visible, .mission button:focus-visible, .mission a:focus-visible { outline: 3px solid #78e1ff; outline-offset: 3px; }
 .node { margin: 1rem 0; padding: 1rem; border: 1px solid #526d82; border-radius: 12px; background: #192f45; }
+.node[hidden] { display: none; }
+.checkpoint-progress { color: #ffe09a; font-weight: 800; letter-spacing: .04em; }
 .node label strong { display: block; color: #ffe09a; margin-bottom: .3rem; }
 .feedback { min-height: 1.6em; color: #ffcbc5; font-weight: 700; margin: .4rem 0; }
 .feedback.success { color: #a9edce; }
