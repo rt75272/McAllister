@@ -4,7 +4,25 @@
         Red: '#d94d55', Blue: '#4d79ce', Green: '#4b9e65', Pink: '#e58db6',
         Orange: '#ed9545', Yellow: '#e5c64c', Black: '#515968', Cyan: '#5bbdc5'
     };
-    const hats = ['none', 'sprout', 'party', 'note', 'robot'];
+    const hats = ['none', 'sprout', 'party', 'note', 'robot', 'cap', 'crown'];
+    const appearanceOptions = {
+        eyes: ['classic', 'happy', 'sleepy', 'star'],
+        glasses: ['none', 'round', 'star'],
+        shirt: ['suit', 'tee', 'stripe', 'jacket'],
+        shirtColor: Object.keys(colors),
+        bottoms: ['suit', 'shorts', 'pants'],
+        bottomsColor: Object.keys(colors),
+        shoes: ['none', 'boots', 'sneakers'],
+        shoesColor: Object.keys(colors)
+    };
+    const appearanceDefaults = {
+        eyes: 'classic', glasses: 'none', shirt: 'suit', shirtColor: 'Blue',
+        bottoms: 'suit', bottomsColor: 'Blue', shoes: 'none', shoesColor: 'Black'
+    };
+    const appearanceInputs = {
+        eyes: 'crew-eyes', glasses: 'crew-glasses', shirt: 'crew-shirt', shirtColor: 'crew-shirt-color',
+        bottoms: 'crew-bottoms', bottomsColor: 'crew-bottoms-color', shoes: 'crew-shoes', shoesColor: 'crew-shoes-color'
+    };
     const sections = ['Section 1', 'Section 2', 'Section 3'];
     const namePattern = /^(\p{L}+(?:['’-]\p{L}+)*)\s+(\p{L})\.?$/u;
     const $ = id => document.getElementById(id);
@@ -17,11 +35,17 @@
     let meetingTimer = null;
     let storageReady = false;
 
+    document.querySelectorAll('.clothing-color').forEach(select => {
+        Object.keys(colors).forEach(color => select.add(new Option(color, color)));
+    });
+
     function validEntry(entry) {
         return entry && typeof entry.id === 'string' && typeof entry.name === 'string'
             && entry.name.length <= 34 && namePattern.test(entry.name)
             && sections.includes(entry.section) && Object.hasOwn(colors, entry.color)
-            && hats.includes(entry.hat) && Number.isSafeInteger(entry.passes) && entry.passes >= 0;
+            && hats.includes(entry.hat) && Number.isSafeInteger(entry.passes) && entry.passes >= 0
+            && Object.entries(appearanceOptions).every(([key, options]) =>
+                entry[key] === undefined || options.includes(entry[key]));
     }
 
     function readCrew() {
@@ -55,18 +79,54 @@
 
     function makeAvatar(person) {
         const svg = $('explorer-template').content.firstElementChild.cloneNode(true);
+        const appearance = { ...appearanceDefaults, ...person };
         svg.style.setProperty('--suit-color', colors[person.color]);
+        svg.style.setProperty('--shirt-color', colors[appearance.shirtColor]);
+        svg.style.setProperty('--bottoms-color', colors[appearance.bottomsColor]);
+        svg.style.setProperty('--shoes-color', colors[appearance.shoesColor]);
         svg.querySelectorAll('.accessory').forEach(accessory => {
             accessory.toggleAttribute('hidden', accessory.dataset.hat !== person.hat);
+        });
+        ['eyes', 'glasses', 'shirt', 'bottoms', 'shoes'].forEach(part => {
+            svg.querySelectorAll(`[data-${part}]`).forEach(element => {
+                element.toggleAttribute('hidden', element.dataset[part] !== appearance[part]);
+            });
         });
         svg.setAttribute('aria-label', `${person.color} space explorer`);
         return svg;
     }
 
+    function currentAppearance() {
+        return Object.fromEntries(Object.entries(appearanceInputs).map(([key, id]) => [key, $(id).value]));
+    }
+
     function renderPreview() {
-        $('crew-preview').replaceChildren(makeAvatar({ color: $('crew-color').value, hat: $('crew-hat').value }));
+        $('crew-preview').replaceChildren(makeAvatar({
+            color: $('crew-color').value, hat: $('crew-hat').value, ...currentAppearance()
+        }));
         $('preview-name').textContent = $('crew-name').value.trim()
             ? window.studentDisplayName($('crew-name').value) : 'Your space explorer';
+    }
+
+    function renderCharacterChoices(selected = $('crew-edit').value) {
+        const select = $('crew-edit');
+        select.replaceChildren(new Option('Create a new character', ''));
+        crew.forEach(person => select.add(new Option(`${person.name} · ${person.section}`, person.id)));
+        if (selected && !crew.some(person => person.id === selected)) {
+            select.add(new Option('Character no longer available', selected));
+        }
+        select.value = selected;
+        $('save-character').textContent = select.value ? 'Update Character' : 'Save Character';
+    }
+
+    function loadCharacter(person) {
+        const appearance = { ...appearanceDefaults, ...person };
+        $('crew-name').value = person.name;
+        $('crew-section').value = person.section;
+        $('crew-color').value = person.color;
+        $('crew-hat').value = person.hat;
+        Object.entries(appearanceInputs).forEach(([key, id]) => { $(id).value = appearance[key]; });
+        renderPreview();
     }
 
     function renderRoster() {
@@ -121,13 +181,52 @@
         if (readCrew()) {
             status.textContent = '';
             renderRoster();
+            renderCharacterChoices();
         }
         meetingButton.disabled = !storageReady;
     }
 
     $('student-mode').addEventListener('click', () => setMode(false));
     $('teacher-mode').addEventListener('click', () => setMode(true));
-    ['crew-name', 'crew-color', 'crew-hat'].forEach(id => $(id).addEventListener('input', renderPreview));
+    ['crew-name', 'crew-color', 'crew-hat', ...Object.values(appearanceInputs)]
+        .forEach(id => $(id).addEventListener('input', renderPreview));
+    $('crew-edit').addEventListener('change', () => {
+        const id = $('crew-edit').value;
+        if (!id) {
+            form.reset();
+            Object.entries(appearanceInputs).forEach(([key, input]) => { $(input).value = appearanceDefaults[key]; });
+            renderPreview();
+            $('save-character').textContent = 'Save Character';
+            return;
+        }
+        if (!readCrew()) return;
+        const person = crew.find(item => item.id === id);
+        if (!person) {
+            renderCharacterChoices('');
+            status.textContent = 'That character is no longer in the roster.';
+            return;
+        }
+        loadCharacter(person);
+        $('save-character').textContent = 'Update Character';
+        status.textContent = 'Character loaded. Change the look, then select Update Character.';
+    });
+    const actionMessages = {
+        wave: 'Your explorer waves hello!', dance: 'Your explorer dances among the stars!',
+        cheer: 'Your explorer cheers for the crew!', rest: 'Your explorer takes a peaceful space break.'
+    };
+    document.querySelectorAll('[data-action]').forEach(button => {
+        button.addEventListener('click', () => {
+            const action = button.dataset.action;
+            const preview = $('crew-preview');
+            preview.classList.remove('is-wave', 'is-dance', 'is-cheer', 'is-rest');
+            void preview.offsetWidth;
+            preview.classList.add(`is-${action}`);
+            $('character-response').textContent = actionMessages[action];
+        });
+    });
+    $('crew-preview').addEventListener('animationend', () => {
+        $('crew-preview').classList.remove('is-wave', 'is-dance', 'is-cheer', 'is-rest');
+    });
     form.addEventListener('submit', event => {
         event.preventDefault();
         const name = $('crew-name').value.trim().replace(/\s+/g, ' ');
@@ -142,20 +241,28 @@
         const section = $('crew-section').value;
         const color = $('crew-color').value;
         const hat = $('crew-hat').value;
-        if (!sections.includes(section) || !Object.hasOwn(colors, color) || !hats.includes(hat)) {
-            status.textContent = 'Choose a valid section, color, and accessory.';
+        const appearance = currentAppearance();
+        if (!sections.includes(section) || !Object.hasOwn(colors, color) || !hats.includes(hat)
+            || !Object.entries(appearanceOptions).every(([key, options]) => options.includes(appearance[key]))) {
+            status.textContent = 'Choose valid character customization options.';
             return;
         }
-        if (!window.crypto || !window.crypto.getRandomValues) {
+        const editId = $('crew-edit').value;
+        const existing = editId ? crew.find(item => item.id === editId) : null;
+        if (editId && !existing) {
+            renderCharacterChoices('');
+            status.textContent = 'That character is no longer in the roster. No changes were saved.';
+            return;
+        }
+        if (!existing && (!window.crypto || !window.crypto.getRandomValues)) {
             status.textContent = 'This browser cannot create a secure student ID.';
             return;
         }
-        const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
-        const person = { id, name: normalizedName, section, color, hat, passes: 0 };
-        if (!saveCrew([...crew, person])) return;
-        status.textContent = 'Character saved on this browser!';
-        $('crew-name').value = '';
-        renderPreview();
+        const id = existing ? existing.id : Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
+        const person = { ...existing, id, name: normalizedName, section, color, hat, ...appearance, passes: existing ? existing.passes : 0 };
+        if (!saveCrew(existing ? crew.map(item => item.id === id ? person : item) : [...crew, person])) return;
+        status.textContent = existing ? 'Character updated on this browser!' : 'Character saved on this browser!';
+        renderCharacterChoices(id);
         renderRoster();
     });
 
@@ -236,6 +343,7 @@
         if (!readCrew() || !saveCrew([])) return;
         resetMeeting();
         renderRoster();
+        renderCharacterChoices('');
         status.textContent = 'This browser’s roster was cleared.';
     });
     window.addEventListener('storage', event => {
@@ -243,11 +351,16 @@
         resetMeeting();
         if (readCrew()) {
             renderRoster();
+            renderCharacterChoices();
             status.textContent = 'Roster updated in another tab.';
         }
         meetingButton.disabled = !storageReady;
     });
+    Object.entries(appearanceInputs).forEach(([key, id]) => { $(id).value = appearanceDefaults[key]; });
     renderPreview();
-    if (readCrew()) renderRoster();
+    if (readCrew()) {
+        renderRoster();
+        renderCharacterChoices();
+    }
     meetingButton.disabled = !storageReady;
 })();

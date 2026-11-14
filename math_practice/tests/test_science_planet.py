@@ -80,6 +80,16 @@ def test_planet_polus_is_accessible_from_quest_map():
     assert b'/planet-polus' in quest_map.data
 
 
+def test_planet_polus_exposes_customization_and_character_actions():
+    response = app.test_client().get('/planet-polus')
+    assert response.status_code == 200
+    for control in (b'crew-edit', b'crew-eyes', b'crew-glasses', b'crew-shirt',
+                    b'crew-bottoms', b'crew-shoes'):
+        assert b'id="' + control + b'"' in response.data
+    for action in (b'wave', b'dance', b'cheer', b'rest'):
+        assert b'data-action="' + action + b'"' in response.data
+
+
 def test_golden_algebra_planet_is_accessible_from_quest_map():
     client = app.test_client()
 
@@ -102,6 +112,18 @@ def test_fable_quest_planet_is_accessible_from_quest_map():
     quest_map = client.get('/quest-map')
     assert b'Fable Quest Planet' in quest_map.data
     assert b'/fable-quest' in quest_map.data
+
+
+def test_starlight_maze_is_accessible_from_game_planet():
+    client = app.test_client()
+    game = client.get('/starlight-maze')
+    assert game.status_code == 200
+    assert b'Starlight Maze' in game.data
+    assert b'starlight_maze_engine.js' in game.data
+    hub = client.get('/game-planet')
+    assert hub.status_code == 200
+    assert b'Starlight Maze' in hub.data
+    assert b'/starlight-maze' in hub.data
 
 
 def test_science_simulation_is_not_listed_as_a_math_game():

@@ -549,6 +549,11 @@ def game_planet():
     """Arcade-themed Game Planet destination."""
     return render_template('game_planet.html')
 
+@app.route('/starlight-maze')
+def starlight_maze():
+    """A space-themed maze chase arcade game."""
+    return render_template('starlight_maze.html')
+
 @app.route('/earth-science-planet', methods=['GET'])
 def earth_science_planet():
     """Science Planet with Earth science stations and life-science games."""

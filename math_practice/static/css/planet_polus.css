@@ -60,8 +60,19 @@
     padding: 20px;
 }
 .preview-card p, .meeting-stage p { text-align: center !important; }
+.preview-card { position: sticky; top: 16px; align-self: start; }
 .avatar svg { width: min(100%, 210px); height: auto; }
-.avatar .accessory[hidden] { display: none; }
+.avatar svg [hidden] { display: none; }
+.character-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+#character-response { color: #304d66; font-size: .9rem; }
+.avatar.is-wave svg { animation: explorer-wave .7s ease-in-out 2; transform-origin: center bottom; }
+.avatar.is-dance svg { animation: explorer-dance .5s ease-in-out 3; transform-origin: center bottom; }
+.avatar.is-cheer svg { animation: explorer-cheer .5s ease-in-out 3; }
+.avatar.is-rest svg { animation: explorer-rest 1.5s ease-in-out; }
+@keyframes explorer-wave { 50% { transform: rotate(12deg); } }
+@keyframes explorer-dance { 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes explorer-cheer { 50% { transform: translateY(-14px); } }
+@keyframes explorer-rest { 50% { transform: scale(.94); opacity: .7; } }
 .meeting-stage { margin: 18px 0 24px; min-height: 100px; overflow: hidden; }
 .meeting-avatar svg { width: min(100%, 260px); }
 .meeting-stage.is-meeting { animation: siren-glow 2.4s ease-in-out infinite alternate; }
@@ -73,5 +84,17 @@
 .crew-hq table { width: 100%; border-collapse: collapse; text-align: left; }
 .crew-hq th, .crew-hq td { padding: 10px; border-bottom: 1px solid #c8d3df; }
 #hq-status { min-height: 1.5em; color: #723b10; }
-@media (max-width: 700px) { .crew-hq { padding-top: 85px; } .creator-grid { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .meeting-stage.is-meeting, .meeting-stage.is-ejected .meeting-avatar { animation: none; } }
+@media (max-width: 700px) {
+    .crew-hq { padding-top: 85px; }
+    .creator-grid { display: flex; flex-direction: column; }
+    .preview-card { order: -1; top: 45px; z-index: 3; align-self: stretch; display: grid; grid-template-columns: 70px minmax(0, 1fr); align-items: center; gap: 8px; padding: 8px; }
+    .preview-card h3 { margin: 0; font-size: .9rem; }
+    .preview-card p { margin: 2px 0; font-size: .8rem; }
+    .preview-card .avatar svg { width: 65px; }
+    .character-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .character-actions button { width: 100%; min-width: 0; padding: 4px; margin: 0; font-size: .75rem; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .meeting-stage.is-meeting, .meeting-stage.is-ejected .meeting-avatar,
+    .avatar.is-wave svg, .avatar.is-dance svg, .avatar.is-cheer svg, .avatar.is-rest svg { animation: none; }
+}

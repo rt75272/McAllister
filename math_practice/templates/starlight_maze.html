@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Starlight Maze - Game Planet{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/starlight_maze.css') }}">
+{% endblock %}
+{% block content %}
+<main class="maze-shell">
+    <header class="maze-header">
+        <div>
+            <a href="{{ url_for('game_planet') }}">← Back to Game Planet</a>
+            <p class="maze-kicker">Game Planet arcade</p>
+            <h1>✨ Starlight Maze</h1>
+            <p>Collect every crystal and outsmart the roaming drones!</p>
+        </div>
+    </header>
+    <div class="maze-layout">
+        <section class="maze-board-panel" aria-label="Maze game">
+            <div class="maze-stats" aria-label="Game statistics">
+                <span>⭐ Score <strong id="maze-score">0</strong></span>
+                <span>❤️ Lives <strong id="maze-lives">3</strong></span>
+                <span>💎 Crystals <strong id="maze-remaining">—</strong></span>
+                <span>🛡️ Shield <strong id="maze-shield">Off</strong></span>
+            </div>
+            <canvas id="maze-board" width="600" height="600" aria-label="Maze with crystals, your ship, and drones. Use the direction controls to navigate."></canvas>
+            <p id="maze-status" class="maze-status" role="status" aria-live="polite">Press Start, then choose a direction.</p>
+            <div class="maze-controls">
+                <div>
+                    <button type="button" class="maze-main-button" id="maze-start">Start game</button>
+                    <button type="button" class="maze-secondary" id="maze-restart">Restart</button>
+                </div>
+                <div class="maze-dpad" role="group" aria-label="Direction controls">
+                    <button type="button" data-direction="up" aria-label="Move up">▲</button>
+                    <button type="button" data-direction="left" aria-label="Move left">◀</button>
+                    <button type="button" data-direction="down" aria-label="Move down">▼</button>
+                    <button type="button" data-direction="right" aria-label="Move right">▶</button>
+                </div>
+            </div>
+        </section>
+        <aside class="maze-side">
+            <h2>Mission controls</h2>
+            <p>Move with the arrow keys or WASD, tap a direction, or swipe on the maze. Your ship keeps moving until it hits a wall or you turn.</p>
+            <h3>How to play</h3>
+            <ul>
+                <li>Collect every small crystal to win.</li>
+                <li>Large shield crystals let you tag drones briefly for bonus points.</li>
+                <li>A drone hit costs one life; after a hit, choose a direction to continue.</li>
+            </ul>
+            <p class="maze-note">Scores last for this game only and do not award account coins.</p>
+        </aside>
+    </div>
+</main>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/starlight_maze_engine.js') }}"></script>
+<script src="{{ url_for('static', filename='js/starlight_maze.js') }}"></script>
+{% endblock %}
