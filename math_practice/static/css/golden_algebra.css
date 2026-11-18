@@ -15,6 +15,11 @@ body { background: #071528; color: #eef6ff; }
 .progress-list li { padding: .3rem 0; }
 .progress-list li[aria-current="step"] { color: #ffdf86; font-weight: 800; }
 .progress-list li.done { color: #a9edce; }
+.live-players { margin-top: 1.25rem; padding-top: .75rem; border-top: 1px solid #526d82; }
+.live-players h2 { margin-bottom: .35rem; }
+#live-player-status { color: #c8d8e6; font-size: .9rem; }
+#live-player-list { margin: 0; padding-left: 1.25rem; color: #a9edce; overflow-wrap: anywhere; }
+#live-player-list:empty { display: none; }
 .code-reference { margin-top: 1.25rem; padding: 1rem; border: 1px solid #8e774d; border-radius: 12px; background: #10243a; }
 .code-reference[hidden] { display: none; }
 .code-reference h2 { margin-top: 0; }

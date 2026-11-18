@@ -69,6 +69,11 @@ SIGNUP_COIN_BONUS = 25
 DAILY_LOGIN_COIN_BONUS = 10
 DAILY_GAME_COIN_BONUS = 5
 QUEST_UNIT_UNLOCK_COST = 15
+GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS = 60
+GOLDEN_ALGEBRA_AGENT_NAME_PATTERN = re.compile(
+    r"[^\W\d_]+(?:['’-][^\W\d_]+)* [^\W\d_]\.",
+    re.UNICODE,
+)
 
 CHARACTER_SHOP_ITEMS = {
     'nova-cadet': ('character', 'character', 0),
@@ -992,6 +997,87 @@ def planet_polus():
 def golden_algebra():
     """An interactive algebra escape room."""
     return render_template('golden_algebra.html')
+
+
+def ensure_golden_algebra_presence_table(cursor):
+    """Create the short-lived shared roster table if it does not exist."""
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS golden_algebra_presence (
+            presence_id TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+        """
+    )
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS golden_algebra_presence_last_seen_idx
+        ON golden_algebra_presence (last_seen_at)
+        """
+    )
+
+
+@app.route('/api/golden-algebra/presence', methods=['GET', 'POST'])
+def golden_algebra_presence():
+    """List active Golden Algebra players and refresh the current player's lease."""
+    display_name = None
+    if request.method == 'POST':
+        if not valid_csrf_token(request.form.get('csrf_token', '')):
+            abort(400, description='This form expired. Please refresh and try again.')
+        display_name = request.form.get('display_name', '').strip()
+        if (
+            len(display_name) > 40
+            or not GOLDEN_ALGEBRA_AGENT_NAME_PATTERN.fullmatch(display_name)
+        ):
+            return jsonify({'error': 'Enter a first name and one last initial.'}), 400
+
+    try:
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                ensure_golden_algebra_presence_table(cur)
+                cur.execute(
+                    """
+                    DELETE FROM golden_algebra_presence
+                    WHERE last_seen_at < NOW() - (%s * INTERVAL '1 second')
+                    """,
+                    (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
+                )
+                if display_name is not None:
+                    presence_id = session.get('golden_algebra_presence_id')
+                    if not presence_id:
+                        presence_id = secrets.token_urlsafe(24)
+                        session['golden_algebra_presence_id'] = presence_id
+                    cur.execute(
+                        """
+                        INSERT INTO golden_algebra_presence
+                            (presence_id, display_name, last_seen_at)
+                        VALUES (%s, %s, NOW())
+                        ON CONFLICT (presence_id)
+                        DO UPDATE SET display_name = EXCLUDED.display_name,
+                                      last_seen_at = NOW()
+                        """,
+                        (presence_id, display_name),
+                    )
+                cur.execute(
+                    """
+                    SELECT display_name
+                    FROM golden_algebra_presence
+                    WHERE last_seen_at >= NOW() - (%s * INTERVAL '1 second')
+                    ORDER BY LOWER(display_name), presence_id
+                    """,
+                    (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
+                )
+                players = [{'name': row[0]} for row in cur.fetchall()]
+                conn.commit()
+    except Exception:
+        app.logger.exception('Failed loading the Golden Algebra live player list.')
+        return jsonify({'error': 'The live player list is temporarily unavailable.'}), 503
+
+    response = jsonify({'players': players})
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
 
 @app.route('/fable-quest')
 def fable_quest():

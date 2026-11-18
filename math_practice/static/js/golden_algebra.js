@@ -11,6 +11,56 @@
         'override': { pattern: /^(2x\+10|10\+2x)-5x-4-(4x\+2|2\+4x)$/, hint: 'Use the three simplified codes in order, separated by dashes. Keep the minus sign in the second code.' }
     };
     let agent = '';
+    const mission = document.querySelector('.mission');
+    const presenceEndpoint = mission.dataset.presenceEndpoint;
+    const csrfToken = mission.dataset.csrfToken;
+    const playerStatus = document.getElementById('live-player-status');
+    const playerList = document.getElementById('live-player-list');
+    let presenceRequestPending = false;
+    let lastPlayerList = '';
+
+    function setPlayerStatus(message) {
+        if (playerStatus.textContent !== message) playerStatus.textContent = message;
+    }
+
+    async function updateLivePlayers() {
+        if (presenceRequestPending) return;
+        presenceRequestPending = true;
+        const options = agent
+            ? {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ csrf_token: csrfToken, display_name: agent }),
+            }
+            : { credentials: 'same-origin', cache: 'no-store' };
+        try {
+            const response = await fetch(presenceEndpoint, options);
+            if (!response.ok) throw new Error(`Presence request failed with status ${response.status}.`);
+            const result = await response.json();
+            if (!Array.isArray(result.players) || result.players.some((player) => typeof player.name !== 'string')) {
+                throw new Error('Presence response contained an invalid player list.');
+            }
+            const names = result.players.map((player) => player.name);
+            const listVersion = JSON.stringify(names);
+            if (listVersion !== lastPlayerList) {
+                playerList.replaceChildren(...names.map((name) => {
+                    const item = document.createElement('li');
+                    item.textContent = name;
+                    return item;
+                }));
+                lastPlayerList = listVersion;
+            }
+            setPlayerStatus(names.length
+                ? `${names.length} agent${names.length === 1 ? '' : 's'} currently playing.`
+                : 'No agents are currently playing.');
+        } catch (error) {
+            console.error('Unable to update the Golden Algebra live player list:', error);
+            setPlayerStatus('The live player list is temporarily unavailable.');
+        } finally {
+            presenceRequestPending = false;
+        }
+    }
 
     function showStage(index) {
         stages.forEach((id, i) => {
@@ -51,6 +101,7 @@
         agent = `${first} ${initial.toUpperCase()}.`;
         document.getElementById('agent-display').textContent = `Agent ${agent}`;
         showStage(1);
+        updateLivePlayers();
     });
 
     document.querySelectorAll('.code-form').forEach((form) => {
@@ -117,4 +168,6 @@
     });
 
     showLastMission();
+    updateLivePlayers();
+    window.setInterval(updateLivePlayers, 20000);
 })();

@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/golden_algebra.css') }}">
 {% endblock %}
 {% block content %}
-<main class="mission">
+<main class="mission" data-presence-endpoint="{{ url_for('golden_algebra_presence') }}" data-csrf-token="{{ csrf_token }}">
     <header class="mission-header">
         <a class="back-link" href="{{ url_for('quest_map') }}">← Return to the Quest Map</a>
         <p class="eyebrow">🔐 Golden Algebra Planet · Escape room</p>
@@ -13,7 +13,7 @@
     </header>
 
     <div class="mission-layout">
-        <aside class="mission-sidebar" aria-label="Mission progress">
+        <aside class="mission-sidebar" aria-label="Mission progress and live players">
             <div class="vault-art" aria-hidden="true">
                 <div class="vault-ring"><div class="vault-center">★</div></div>
             </div>
@@ -25,6 +25,11 @@
                 <li data-progress="3">Master vault</li>
                 <li data-progress="4">Extraction</li>
             </ol>
+            <section class="live-players" aria-labelledby="live-players-title">
+                <h2 id="live-players-title">Agents playing now</h2>
+                <p id="live-player-status" role="status" aria-live="polite">Loading player list...</p>
+                <ul id="live-player-list" aria-live="polite" aria-relevant="additions removals"></ul>
+            </section>
             <section id="vault-code-reference" class="code-reference" aria-labelledby="vault-code-title" hidden>
                 <h2 id="vault-code-title">Recovered codes</h2>
                 <ol class="code-reference-list">
@@ -47,7 +52,7 @@
                         <div><label for="first-name">First name</label><input id="first-name" maxlength="30" autocomplete="off" required placeholder="Alex"></div>
                         <div><label for="last-initial">Last initial only</label><input id="last-initial" maxlength="1" autocomplete="off" required placeholder="M"></div>
                     </div>
-                    <p class="small">For privacy, enter only your first name and last initial. Your latest completed mission is saved only in this browser, not sent to your teacher.</p>
+                    <p class="small">Enter only your first name and last initial. Other players can see your name while you play; it disappears from the list shortly after you leave. Your completed mission record is saved only in this browser.</p>
                     <p id="name-feedback" class="feedback" role="alert"></p>
                     <button class="mission-button" type="submit">Accept mission →</button>
                 </form>

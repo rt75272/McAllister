@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+from unittest.mock import MagicMock, patch
 
 from app import app
 
@@ -154,6 +155,52 @@ def test_golden_algebra_shows_recovered_codes_at_the_master_vault():
     assert b'<code>5x-4</code>' in page.data
     assert b'<code>4x+2</code>' in page.data
     assert b"document.getElementById('vault-code-reference').hidden = stages[index] !== 'master-vault';" in script.data
+
+
+def test_golden_algebra_live_roster_is_displayed_and_refreshes():
+    client = app.test_client()
+    page = client.get('/golden-algebra')
+    assert b'Agents playing now' in page.data
+    assert b'data-presence-endpoint="/api/golden-algebra/presence"' in page.data
+    with client.session_transaction() as state:
+        csrf = state['csrf_token']
+
+    connection = MagicMock()
+    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor.fetchall.return_value = [('Alex M.',), ('Riley C.',)]
+    with patch('app.get_db_connection', return_value=connection):
+        roster = client.get('/api/golden-algebra/presence')
+        response = client.post('/api/golden-algebra/presence', data={
+            'csrf_token': csrf,
+            'display_name': 'Alex M.',
+        })
+
+    assert roster.status_code == 200
+    assert roster.get_json() == {'players': [{'name': 'Alex M.'}, {'name': 'Riley C.'}]}
+    assert response.status_code == 200
+    assert response.get_json() == {'players': [{'name': 'Alex M.'}, {'name': 'Riley C.'}]}
+    assert response.headers['Cache-Control'] == 'no-store'
+    assert any('ON CONFLICT (presence_id)' in call.args[0] for call in cursor.execute.call_args_list)
+
+
+def test_golden_algebra_presence_rejects_invalid_names_and_csrf():
+    client = app.test_client()
+    with client.session_transaction() as state:
+        state['csrf_token'] = 'valid-token'
+
+    with patch('app.get_db_connection') as get_db_connection:
+        invalid_csrf = client.post('/api/golden-algebra/presence', data={
+            'csrf_token': 'wrong-token',
+            'display_name': 'Alex M.',
+        })
+        invalid_name = client.post('/api/golden-algebra/presence', data={
+            'csrf_token': 'valid-token',
+            'display_name': '<script>alert(1)</script>',
+        })
+
+    assert invalid_csrf.status_code == 400
+    assert invalid_name.status_code == 400
+    get_db_connection.assert_not_called()
 
 
 def test_fable_quest_planet_is_accessible_from_quest_map():
