@@ -1064,7 +1064,10 @@ def ensure_golden_algebra_presence_table(cursor):
 
 @app.route('/api/golden-algebra/presence', methods=['GET', 'POST'])
 def golden_algebra_presence():
-    """List active Golden Algebra players and refresh the current player's lease."""
+    """Refresh player presence; only the configured teacher can view the roster."""
+    teacher_access = is_teacher_account()
+    if request.method == 'GET' and not teacher_access:
+        abort(403)
     display_name = None
     stats = None
     if request.method == 'POST':
@@ -1146,22 +1149,23 @@ def golden_algebra_presence():
                         """,
                         (presence_id, display_name, *stats, stats[3]),
                     )
-                cur.execute(
-                    """
-                    SELECT display_name
-                    FROM golden_algebra_presence
-                    WHERE last_seen_at >= NOW() - (%s * INTERVAL '1 second')
-                    ORDER BY LOWER(display_name), presence_id
-                    """,
-                    (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
-                )
-                players = [{'name': row[0]} for row in cur.fetchall()]
+                if teacher_access:
+                    cur.execute(
+                        """
+                        SELECT display_name
+                        FROM golden_algebra_presence
+                        WHERE last_seen_at >= NOW() - (%s * INTERVAL '1 second')
+                        ORDER BY LOWER(display_name), presence_id
+                        """,
+                        (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
+                    )
+                    players = [{'name': row[0]} for row in cur.fetchall()]
                 conn.commit()
     except Exception:
         app.logger.exception('Failed loading the Golden Algebra live player list.')
         return jsonify({'error': 'The live player list is temporarily unavailable.'}), 503
 
-    response = jsonify({'players': players})
+    response = jsonify({'players': players} if teacher_access else {'ok': True})
     response.headers['Cache-Control'] = 'no-store'
     return response
 
@@ -1489,8 +1493,11 @@ def is_teacher_account():
 
 @app.route('/teacher/golden-algebra/stats.csv')
 @app.route('/golden-algebra/stats.csv')
+@login_required
 def golden_algebra_stats_csv():
-    """Download a spreadsheet of currently active game sessions."""
+    """Download active game sessions for the configured teacher."""
+    if not is_teacher_account():
+        abort(403)
     try:
         with closing(get_db_connection()) as conn:
             with conn.cursor() as cur:

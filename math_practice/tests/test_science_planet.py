@@ -157,10 +157,10 @@ def test_golden_algebra_shows_recovered_codes_at_the_master_vault():
     assert b"document.getElementById('vault-code-reference').hidden = stages[index] !== 'master-vault';" in script.data
 
 
-def test_golden_algebra_live_roster_is_displayed_and_refreshes():
+def test_golden_algebra_live_roster_is_private_and_student_presence_is_recorded():
     client = app.test_client()
     page = client.get('/golden-algebra')
-    assert b'Agents playing now' in page.data
+    assert b'Agents playing now' not in page.data
     assert b'data-presence-endpoint="/api/golden-algebra/presence"' in page.data
     with client.session_transaction() as state:
         csrf = state['csrf_token']
@@ -179,12 +179,34 @@ def test_golden_algebra_live_roster_is_displayed_and_refreshes():
             'mission_completed': 'false',
         })
 
-    assert roster.status_code == 200
-    assert roster.get_json() == {'players': [{'name': 'Alex M.'}, {'name': 'Riley C.'}]}
+    assert roster.status_code == 403
     assert response.status_code == 200
-    assert response.get_json() == {'players': [{'name': 'Alex M.'}, {'name': 'Riley C.'}]}
+    assert response.get_json() == {'ok': True}
     assert response.headers['Cache-Control'] == 'no-store'
     assert any('ON CONFLICT (presence_id)' in call.args[0] for call in cursor.execute.call_args_list)
+    assert not any('SELECT display_name' in call.args[0] for call in cursor.execute.call_args_list)
+
+    teacher = app.test_client()
+    with teacher.session_transaction() as state:
+        state['account_id'] = 42
+    with patch('app.get_db_connection', return_value=connection), \
+            patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
+        assert b'Agents playing now' in teacher.get('/golden-algebra').data
+        with teacher.session_transaction() as state:
+            teacher_csrf = state['csrf_token']
+        roster = teacher.get('/api/golden-algebra/presence')
+        teacher_update = teacher.post('/api/golden-algebra/presence', data={
+            'csrf_token': teacher_csrf,
+            'display_name': 'Alex M.',
+            'current_stage': 'outer-door',
+            'total_attempts': '0',
+            'correct_answers': '0',
+            'mission_completed': 'false',
+        })
+    assert roster.status_code == 200
+    assert roster.get_json() == {'players': [{'name': 'Alex M.'}, {'name': 'Riley C.'}]}
+    assert roster.headers['Cache-Control'] == 'no-store'
+    assert teacher_update.get_json() == roster.get_json()
 
 
 def test_golden_algebra_presence_rejects_invalid_names_and_csrf():
@@ -207,10 +229,12 @@ def test_golden_algebra_presence_rejects_invalid_names_and_csrf():
     get_db_connection.assert_not_called()
 
 
-def test_golden_algebra_stats_spreadsheet_is_available_to_everyone():
+def test_golden_algebra_stats_spreadsheet_is_teacher_only():
     from datetime import datetime, timezone
 
     client = app.test_client()
+    with client.session_transaction() as state:
+        state['account_id'] = 42
     connection = MagicMock()
     cursor = connection.cursor.return_value.__enter__.return_value
     cursor.fetchall.return_value = [(
@@ -219,14 +243,17 @@ def test_golden_algebra_stats_spreadsheet_is_available_to_everyone():
         datetime(2026, 11, 18, 16, 5, tzinfo=timezone.utc),
         None,
     )]
-    with patch('app.get_db_connection', return_value=connection):
+    with patch('app.get_db_connection', return_value=connection), \
+            patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
         page = client.get('/golden-algebra')
         response = client.get('/golden-algebra/stats.csv')
+        legacy_response = client.get('/teacher/golden-algebra/stats.csv')
 
     assert b'Download active player stats (.csv)' in page.data
     assert b'href="/golden-algebra/stats.csv"' in page.data
-    assert b'Anyone can see your name and download your game stats' in page.data
+    assert b'The teacher can see your name and game stats' in page.data
     assert response.status_code == 200
+    assert legacy_response.status_code == 200
     assert response.mimetype == 'text/csv'
     assert response.headers['Content-Disposition'].endswith(
         'filename="golden-algebra-active-player-stats.csv"'
@@ -237,10 +264,18 @@ def test_golden_algebra_stats_spreadsheet_is_available_to_everyone():
     visitor = app.test_client()
     with visitor.session_transaction() as state:
         state['account_id'] = 77
-    with patch('app.get_db_connection', return_value=connection):
-        assert b'Download active player stats (.csv)' in visitor.get('/golden-algebra').data
-        assert visitor.get('/golden-algebra/stats.csv').status_code == 200
-        assert visitor.get('/teacher/golden-algebra/stats.csv').status_code == 200
+    anonymous = app.test_client()
+    with patch('app.get_db_connection') as get_db_connection, \
+            patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
+        for non_teacher in (anonymous, visitor):
+            page = non_teacher.get('/golden-algebra')
+            assert b'Agents playing now' not in page.data
+            assert b'Download active player stats (.csv)' not in page.data
+            assert non_teacher.get('/api/golden-algebra/presence').status_code == 403
+            expected_status = 302 if non_teacher is anonymous else 403
+            assert non_teacher.get('/golden-algebra/stats.csv').status_code == expected_status
+            assert non_teacher.get('/teacher/golden-algebra/stats.csv').status_code == expected_status
+        get_db_connection.assert_not_called()
 
 
 def test_fable_quest_planet_is_accessible_from_quest_map():

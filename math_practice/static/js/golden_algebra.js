@@ -16,6 +16,7 @@
     const csrfToken = mission.dataset.csrfToken;
     const playerStatus = document.getElementById('live-player-status');
     const playerList = document.getElementById('live-player-list');
+    const presenceFeedback = document.getElementById('presence-feedback');
     let presenceRequestPending = false;
     let presenceRefreshQueued = false;
     let lastPlayerList = '';
@@ -25,10 +26,12 @@
     let missionCompleted = false;
 
     function setPlayerStatus(message) {
-        if (playerStatus.textContent !== message) playerStatus.textContent = message;
+        const status = playerStatus || presenceFeedback;
+        if (status.textContent !== message) status.textContent = message;
     }
 
     async function updateLivePlayers() {
+        if (!agent && !playerList) return;
         if (presenceRequestPending) {
             presenceRefreshQueued = true;
             return;
@@ -53,6 +56,11 @@
             const response = await fetch(presenceEndpoint, options);
             if (!response.ok) throw new Error(`Presence request failed with status ${response.status}.`);
             const result = await response.json();
+            if (!playerList) {
+                if (result.ok !== true) throw new Error('Presence response did not confirm the update.');
+                setPlayerStatus('');
+                return;
+            }
             if (!Array.isArray(result.players) || result.players.some((player) => typeof player.name !== 'string')) {
                 throw new Error('Presence response contained an invalid player list.');
             }
@@ -71,7 +79,9 @@
                 : 'No agents are currently playing.');
         } catch (error) {
             console.error('Unable to update the Golden Algebra live player list:', error);
-            setPlayerStatus('The live player list is temporarily unavailable.');
+            setPlayerStatus(playerList
+                ? 'The live player list is temporarily unavailable.'
+                : 'Your game progress could not be shared with the teacher. Retrying shortly.');
         } finally {
             presenceRequestPending = false;
             if (presenceRefreshQueued) {

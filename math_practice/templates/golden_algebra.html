@@ -13,7 +13,7 @@
     </header>
 
     <div class="mission-layout">
-        <aside class="mission-sidebar" aria-label="Mission progress and live players">
+        <aside class="mission-sidebar" aria-label="Mission progress">
             <div class="vault-art" aria-hidden="true">
                 <div class="vault-ring"><div class="vault-center">★</div></div>
             </div>
@@ -25,6 +25,7 @@
                 <li data-progress="3">Master vault</li>
                 <li data-progress="4">Extraction</li>
             </ol>
+            {% if teacher_access %}
             <section class="live-players" aria-labelledby="live-players-title">
                 <h2 id="live-players-title">Agents playing now</h2>
                 <p id="live-player-status" role="status" aria-live="polite">Loading player list...</p>
@@ -32,6 +33,8 @@
                 <a class="mission-button stats-download" href="{{ url_for('golden_algebra_stats_csv') }}">Download active player stats (.csv)</a>
                 <p class="small">The spreadsheet includes currently active sessions only.</p>
             </section>
+            {% endif %}
+            <p id="presence-feedback" class="small" role="status" aria-live="polite"></p>
             <section id="vault-code-reference" class="code-reference" aria-labelledby="vault-code-title" hidden>
                 <h2 id="vault-code-title">Recovered codes</h2>
                 <ol class="code-reference-list">
@@ -54,7 +57,7 @@
                         <div><label for="first-name">First name</label><input id="first-name" maxlength="30" autocomplete="off" required placeholder="Alex"></div>
                         <div><label for="last-initial">Last initial only</label><input id="last-initial" maxlength="1" autocomplete="off" required placeholder="M"></div>
                     </div>
-                    <p class="small">Enter only your first name and last initial. Anyone can see your name and download your game stats while you play; they disappear from the live list and spreadsheet shortly after you leave. Your completed mission record is saved only in this browser.</p>
+                    <p class="small">Enter only your first name and last initial. The teacher can see your name and game stats while you play; they disappear from the live list and spreadsheet shortly after you leave. Your completed mission record is saved only in this browser.</p>
                     <p id="name-feedback" class="feedback" role="alert"></p>
                     <button class="mission-button" type="submit">Accept mission →</button>
                 </form>
