@@ -17,21 +17,36 @@
     const playerStatus = document.getElementById('live-player-status');
     const playerList = document.getElementById('live-player-list');
     let presenceRequestPending = false;
+    let presenceRefreshQueued = false;
     let lastPlayerList = '';
+    let currentStage = 'briefing';
+    let totalAttempts = 0;
+    let correctAnswers = 0;
+    let missionCompleted = false;
 
     function setPlayerStatus(message) {
         if (playerStatus.textContent !== message) playerStatus.textContent = message;
     }
 
     async function updateLivePlayers() {
-        if (presenceRequestPending) return;
+        if (presenceRequestPending) {
+            presenceRefreshQueued = true;
+            return;
+        }
         presenceRequestPending = true;
         const options = agent
             ? {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: new URLSearchParams({ csrf_token: csrfToken, display_name: agent }),
+                body: new URLSearchParams({
+                    csrf_token: csrfToken,
+                    display_name: agent,
+                    current_stage: currentStage,
+                    total_attempts: String(totalAttempts),
+                    correct_answers: String(correctAnswers),
+                    mission_completed: String(missionCompleted),
+                }),
             }
             : { credentials: 'same-origin', cache: 'no-store' };
         try {
@@ -59,10 +74,15 @@
             setPlayerStatus('The live player list is temporarily unavailable.');
         } finally {
             presenceRequestPending = false;
+            if (presenceRefreshQueued) {
+                presenceRefreshQueued = false;
+                updateLivePlayers();
+            }
         }
     }
 
     function showStage(index) {
+        currentStage = stages[index];
         stages.forEach((id, i) => {
             document.getElementById(id).hidden = i !== index;
             const progress = document.querySelector(`[data-progress="${i}"]`);
@@ -99,6 +119,9 @@
         }
         document.getElementById('name-feedback').textContent = '';
         agent = `${first} ${initial.toUpperCase()}.`;
+        totalAttempts = 0;
+        correctAnswers = 0;
+        missionCompleted = false;
         document.getElementById('agent-display').textContent = `Agent ${agent}`;
         showStage(1);
         updateLivePlayers();
@@ -111,6 +134,7 @@
             const index = nodes.findIndex((node) => !node.hidden);
             const input = nodes[index].querySelector('input');
             const feedback = document.getElementById(`${input.id}-feedback`);
+            totalAttempts += 1;
             const correct = rules[input.id].pattern.test(input.value);
             feedback.classList.toggle('success', correct);
             feedback.textContent = correct ? 'Code accepted.' : `Access denied. ${rules[input.id].hint} Use lowercase x and no spaces.`;
@@ -119,13 +143,18 @@
             if (!correct) {
                 input.focus();
             } else if (index + 1 < nodes.length) {
+                correctAnswers += 1;
                 nodes[index].hidden = true;
                 nodes[index + 1].hidden = false;
                 form.querySelector('.checkpoint-progress').textContent = `Code accepted. Checkpoint ${index + 2} of ${nodes.length}`;
                 nodes[index + 1].querySelector('input').focus();
             } else {
-                showStage(Number(form.dataset.stage) + 1);
+                correctAnswers += 1;
+                const nextStage = Number(form.dataset.stage) + 1;
+                missionCompleted = stages[nextStage] === 'extraction';
+                showStage(nextStage);
             }
+            updateLivePlayers();
         });
     });
 
@@ -163,6 +192,9 @@
         document.getElementById('submit-mission').disabled = false;
         document.getElementById('play-again').hidden = true;
         agent = '';
+        totalAttempts = 0;
+        correctAnswers = 0;
+        missionCompleted = false;
         showLastMission();
         showStage(0);
     });

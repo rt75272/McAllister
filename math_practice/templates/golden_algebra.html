@@ -29,6 +29,10 @@
                 <h2 id="live-players-title">Agents playing now</h2>
                 <p id="live-player-status" role="status" aria-live="polite">Loading player list...</p>
                 <ul id="live-player-list" aria-live="polite" aria-relevant="additions removals"></ul>
+                {% if teacher_access %}
+                <a class="mission-button stats-download" href="{{ url_for('golden_algebra_stats_csv') }}">Download active player stats (.csv)</a>
+                <p class="small">Teacher spreadsheet includes currently active sessions only.</p>
+                {% endif %}
             </section>
             <section id="vault-code-reference" class="code-reference" aria-labelledby="vault-code-title" hidden>
                 <h2 id="vault-code-title">Recovered codes</h2>

@@ -20,6 +20,7 @@ body { background: #071528; color: #eef6ff; }
 #live-player-status { color: #c8d8e6; font-size: .9rem; }
 #live-player-list { margin: 0; padding-left: 1.25rem; color: #a9edce; overflow-wrap: anywhere; }
 #live-player-list:empty { display: none; }
+.stats-download { display: block; margin-top: .75rem; padding: .6rem; text-align: center; text-decoration: none; font-size: .85rem; }
 .code-reference { margin-top: 1.25rem; padding: 1rem; border: 1px solid #8e774d; border-radius: 12px; background: #10243a; }
 .code-reference[hidden] { display: none; }
 .code-reference h2 { margin-top: 0; }

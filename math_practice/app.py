@@ -9,8 +9,10 @@ support chatbot, and student progress/check-in logging.
 
 import json
 import base64
+import csv
 import hashlib
 import hmac
+import io
 import os
 import random
 import re
@@ -1000,14 +1002,56 @@ def golden_algebra():
 
 
 def ensure_golden_algebra_presence_table(cursor):
-    """Create the short-lived shared roster table if it does not exist."""
+    """Create the short-lived shared roster and stats table if needed."""
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS golden_algebra_presence (
             presence_id TEXT PRIMARY KEY,
             display_name TEXT NOT NULL,
-            last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            current_stage TEXT NOT NULL DEFAULT 'outer-door',
+            total_attempts INTEGER NOT NULL DEFAULT 0,
+            correct_answers INTEGER NOT NULL DEFAULT 0,
+            mission_completed BOOLEAN NOT NULL DEFAULT FALSE,
+            completed_at TIMESTAMPTZ
         )
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS current_stage TEXT NOT NULL DEFAULT 'outer-door'
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS total_attempts INTEGER NOT NULL DEFAULT 0
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS correct_answers INTEGER NOT NULL DEFAULT 0
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS mission_completed BOOLEAN NOT NULL DEFAULT FALSE
+        """
+    )
+    cursor.execute(
+        """
+        ALTER TABLE golden_algebra_presence
+        ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ
         """
     )
     cursor.execute(
@@ -1022,6 +1066,7 @@ def ensure_golden_algebra_presence_table(cursor):
 def golden_algebra_presence():
     """List active Golden Algebra players and refresh the current player's lease."""
     display_name = None
+    stats = None
     if request.method == 'POST':
         if not valid_csrf_token(request.form.get('csrf_token', '')):
             abort(400, description='This form expired. Please refresh and try again.')
@@ -1031,6 +1076,29 @@ def golden_algebra_presence():
             or not GOLDEN_ALGEBRA_AGENT_NAME_PATTERN.fullmatch(display_name)
         ):
             return jsonify({'error': 'Enter a first name and one last initial.'}), 400
+        current_stage = request.form.get('current_stage', '')
+        mission_completed_value = request.form.get('mission_completed', '')
+        try:
+            total_attempts = int(request.form.get('total_attempts', ''))
+            correct_answers = int(request.form.get('correct_answers', ''))
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Game statistics are invalid.'}), 400
+        if (
+            current_stage not in {'outer-door', 'mainframe', 'master-vault', 'extraction'}
+            or mission_completed_value not in {'true', 'false'}
+            or not 0 <= total_attempts <= 10_000
+            or not 0 <= correct_answers <= 7
+            or correct_answers > total_attempts
+            or (mission_completed_value == 'true') != (current_stage == 'extraction')
+            or (mission_completed_value == 'true' and correct_answers != 7)
+        ):
+            return jsonify({'error': 'Game statistics are invalid.'}), 400
+        stats = (
+            current_stage,
+            total_attempts,
+            correct_answers,
+            mission_completed_value == 'true',
+        )
 
     try:
         with closing(get_db_connection()) as conn:
@@ -1051,13 +1119,32 @@ def golden_algebra_presence():
                     cur.execute(
                         """
                         INSERT INTO golden_algebra_presence
-                            (presence_id, display_name, last_seen_at)
-                        VALUES (%s, %s, NOW())
+                            (
+                                presence_id, display_name, last_seen_at,
+                                current_stage, total_attempts, correct_answers,
+                                mission_completed, completed_at
+                            )
+                        VALUES (%s, %s, NOW(), %s, %s, %s, %s, CASE WHEN %s THEN NOW() ELSE NULL END)
                         ON CONFLICT (presence_id)
                         DO UPDATE SET display_name = EXCLUDED.display_name,
-                                      last_seen_at = NOW()
+                                      last_seen_at = NOW(),
+                                      started_at = CASE
+                                          WHEN golden_algebra_presence.mission_completed
+                                               AND NOT EXCLUDED.mission_completed
+                                          THEN NOW()
+                                          ELSE golden_algebra_presence.started_at
+                                      END,
+                                      current_stage = EXCLUDED.current_stage,
+                                      total_attempts = EXCLUDED.total_attempts,
+                                      correct_answers = EXCLUDED.correct_answers,
+                                      mission_completed = EXCLUDED.mission_completed,
+                                      completed_at = CASE
+                                          WHEN EXCLUDED.mission_completed
+                                          THEN COALESCE(golden_algebra_presence.completed_at, NOW())
+                                          ELSE NULL
+                                      END
                         """,
-                        (presence_id, display_name),
+                        (presence_id, display_name, *stats, stats[3]),
                     )
                 cur.execute(
                     """
@@ -1398,6 +1485,86 @@ def is_teacher_account():
         and configured_id.isdecimal()
         and configured_id == str(account_id)
     )
+
+
+@app.route('/teacher/golden-algebra/stats.csv')
+@login_required
+def golden_algebra_stats_csv():
+    """Download a teacher-only spreadsheet of currently active game sessions."""
+    if not is_teacher_account():
+        abort(403)
+
+    try:
+        with closing(get_db_connection()) as conn:
+            with conn.cursor() as cur:
+                ensure_golden_algebra_presence_table(cur)
+                cur.execute(
+                    """
+                    DELETE FROM golden_algebra_presence
+                    WHERE last_seen_at < NOW() - (%s * INTERVAL '1 second')
+                    """,
+                    (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
+                )
+                cur.execute(
+                    """
+                    SELECT display_name, current_stage, correct_answers, total_attempts,
+                           mission_completed, started_at AT TIME ZONE 'UTC',
+                           last_seen_at AT TIME ZONE 'UTC',
+                           completed_at AT TIME ZONE 'UTC'
+                    FROM golden_algebra_presence
+                    WHERE last_seen_at >= NOW() - (%s * INTERVAL '1 second')
+                    ORDER BY LOWER(display_name), started_at
+                    """,
+                    (GOLDEN_ALGEBRA_PRESENCE_TTL_SECONDS,),
+                )
+                active_players = cur.fetchall()
+                conn.commit()
+    except Exception:
+        app.logger.exception('Failed exporting Golden Algebra player stats.')
+        return jsonify({'error': 'Could not export Golden Algebra stats right now.'}), 503
+
+    stage_names = {
+        'outer-door': 'Outer perimeter',
+        'mainframe': 'Mainframe bypass',
+        'master-vault': 'Master vault',
+        'extraction': 'Mission completed',
+    }
+    spreadsheet = io.StringIO(newline='')
+    writer = csv.writer(spreadsheet)
+    writer.writerow((
+        'Student',
+        'Current stage',
+        'Checkpoints completed (of 7)',
+        'Total attempts',
+        'Accuracy',
+        'Mission status',
+        'Started at (UTC)',
+        'Last seen (UTC)',
+        'Completed at (UTC)',
+    ))
+    for name, stage, correct, attempts, completed, started_at, last_seen_at, completed_at in active_players:
+        accuracy = f'{correct / attempts:.0%}' if attempts else ''
+        writer.writerow((
+            name,
+            stage_names.get(stage, 'In progress'),
+            f'{correct}/7',
+            attempts,
+            accuracy,
+            'Completed' if completed else 'In progress',
+            started_at.strftime('%Y-%m-%d %H:%M:%S') if started_at else '',
+            last_seen_at.strftime('%Y-%m-%d %H:%M:%S') if last_seen_at else '',
+            completed_at.strftime('%Y-%m-%d %H:%M:%S') if completed_at else '',
+        ))
+
+    response = app.response_class(
+        '\ufeff' + spreadsheet.getvalue(),
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': 'attachment; filename="golden-algebra-active-player-stats.csv"',
+            'Cache-Control': 'no-store',
+        },
+    )
+    return response
 
 
 def save_account_math_attempt(account_id, difficulty, was_correct, ability_after, ability_peak):

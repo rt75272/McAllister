@@ -173,6 +173,10 @@ def test_golden_algebra_live_roster_is_displayed_and_refreshes():
         response = client.post('/api/golden-algebra/presence', data={
             'csrf_token': csrf,
             'display_name': 'Alex M.',
+            'current_stage': 'outer-door',
+            'total_attempts': '0',
+            'correct_answers': '0',
+            'mission_completed': 'false',
         })
 
     assert roster.status_code == 200
@@ -201,6 +205,43 @@ def test_golden_algebra_presence_rejects_invalid_names_and_csrf():
     assert invalid_csrf.status_code == 400
     assert invalid_name.status_code == 400
     get_db_connection.assert_not_called()
+
+
+def test_golden_algebra_stats_spreadsheet_is_teacher_only():
+    from datetime import datetime, timezone
+
+    client = app.test_client()
+    with client.session_transaction() as state:
+        state['account_id'] = 42
+
+    connection = MagicMock()
+    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor.fetchall.return_value = [(
+        'Alex M.', 'mainframe', 3, 5, False,
+        datetime(2026, 11, 18, 16, 0, tzinfo=timezone.utc),
+        datetime(2026, 11, 18, 16, 5, tzinfo=timezone.utc),
+        None,
+    )]
+    with patch('app.get_db_connection', return_value=connection), \
+            patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
+        page = client.get('/golden-algebra')
+        response = client.get('/teacher/golden-algebra/stats.csv')
+
+    assert b'Download active player stats (.csv)' in page.data
+    assert response.status_code == 200
+    assert response.mimetype == 'text/csv'
+    assert response.headers['Content-Disposition'].endswith(
+        'filename="golden-algebra-active-player-stats.csv"'
+    )
+    assert b'Student,Current stage,Checkpoints completed (of 7)' in response.data
+    assert b'Alex M.,Mainframe bypass,3/7,5,60%,In progress' in response.data
+
+    visitor = app.test_client()
+    with visitor.session_transaction() as state:
+        state['account_id'] = 77
+    with patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
+        assert b'Download active player stats (.csv)' not in visitor.get('/golden-algebra').data
+        assert visitor.get('/teacher/golden-algebra/stats.csv').status_code == 403
 
 
 def test_fable_quest_planet_is_accessible_from_quest_map():
