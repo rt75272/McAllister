@@ -37,7 +37,7 @@ rig.remove(camera);
 scene.add(camera);
 const ship = new THREE.Group();
 rig.add(ship);
-initShipCustomizer(ship);
+initShipCustomizer(ship, renderer.domElement);
 
 const followOffset = new THREE.Vector3(0, 3.4, 7.5);
 const lookTarget = new THREE.Vector3();

@@ -1115,7 +1115,7 @@
             // 7. Spaceship (Low-poly wedge model)
             ship = new THREE.Group();
             
-            initShipCustomizer(ship);
+            initShipCustomizer(ship, renderer.domElement);
 
             ship.position.set(0, 0, 14); // Start just outside the Sun's landing range
             scene.add(ship);

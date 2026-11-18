@@ -151,7 +151,7 @@
 		ship.scale.setScalar(prefs.size);
 	}
 
-	function injectUI(onChange, prefs, initialError, onPhoto, onRemove) {
+	function injectUI(onChange, prefs, initialError, onPhoto, onRemove, flightCanvas) {
 		const style = document.createElement('style');
 		style.textContent = '#ship-custom{position:fixed;left:50%;top:0;transform:translateX(-50%);z-index:60;width:min(260px,calc(100vw - 20px));font:700 12px sans-serif;pointer-events:auto}'
 			+ '#ship-custom .sc-toggle{width:auto;display:block;margin:0 auto;padding:2px 12px;font-size:11px;line-height:14px;border-radius:0 0 6px 6px;border-top:0}#ship-custom button{width:100%;margin:0;padding:8px 10px;color:#eef8ff;background:rgba(3,13,31,.92);border:1px solid rgba(125,211,252,.5);border-radius:6px;font:inherit;cursor:pointer}'
@@ -192,10 +192,15 @@
 			prefs[el.dataset.k] = el.dataset.k === 'size' ? parseFloat(el.value) : el.value;
 			onChange(status);
 		}));
-		['keydown', 'keyup', 'click'].forEach((type) => panel.addEventListener(type, (event) => event.stopPropagation()));
+		['keydown', 'click'].forEach((type) => panel.addEventListener(type, (event) => event.stopPropagation()));
 		panel.querySelector('.sc-toggle').addEventListener('click', (event) => {
 			const open = panel.classList.toggle('open');
 			event.currentTarget.setAttribute('aria-expanded', String(open));
+			event.currentTarget.textContent = open ? 'Done customizing' : '🚀 Customize Ship';
+			if (!open && flightCanvas) {
+				flightCanvas.tabIndex = -1;
+				flightCanvas.focus({ preventScroll: true });
+			}
 		});
 		const photoInput = panel.querySelector('.sc-photo');
 		photoInput.addEventListener('change', () => {
@@ -211,7 +216,7 @@
 		return { status, preview: panel.querySelector('.sc-preview') };
 	}
 
-	window.initShipCustomizer = function (ship) {
+	window.initShipCustomizer = function (ship, flightCanvas) {
 		const { prefs, error } = load();
 		const apply = (status, message = '') => {
 			build(ship, prefs);
@@ -278,7 +283,7 @@
 			reader.readAsDataURL(file);
 		};
 		build(ship, prefs);
-		const { status, preview } = injectUI(apply, prefs, error, uploadPhoto, removePhoto);
+		const { status, preview } = injectUI(apply, prefs, error, uploadPhoto, removePhoto, flightCanvas);
 		if (prefs.photo) {
 			if (typeof prefs.photo !== 'string' || !prefs.photo.startsWith('data:image/png;base64,') || prefs.photo.length > 500000) {
 				status.textContent = 'The saved photo could not be read. Remove it or choose another photo.';

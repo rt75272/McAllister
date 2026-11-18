@@ -28,7 +28,8 @@ function setup(saved) {
     });
     for (const name of ['toggle', 'photo', 'remove', 'reset', 'status', 'preview']) controls[name] = new Element();
     const panel = new Element();
-    panel.classList = { toggle: () => true };
+    let panelOpen = false;
+    panel.classList = { toggle: () => { panelOpen = !panelOpen; return panelOpen; } };
     panel.querySelectorAll = () => inputs;
     panel.querySelector = selector => controls[selector.slice(4)];
     const document = {
@@ -106,13 +107,31 @@ function setup(saved) {
         remove(child) { this.children.splice(this.children.indexOf(child), 1); }
     };
     const window = {};
+    const flightCanvas = { focus() { this.focused = true; } };
     vm.runInNewContext(source, { window, document, THREE, localStorage, Image, FileReader, console: { error: (...args) => errors.push(args) } });
-    window.initShipCustomizer(ship);
+    window.initShipCustomizer(ship, flightCanvas);
     return {
-        controls, ship, saved: () => JSON.parse(stored),
+        controls, panel, flightCanvas, ship, saved: () => JSON.parse(stored),
         crop: () => crop, errors, failSave: value => { failSave = value; }
     };
 }
+
+test('closing the customizer returns focus to flight and key releases reach flight controls', () => {
+    const { controls, panel, flightCanvas } = setup();
+    controls.toggle.fire('click');
+    assert.equal(controls.toggle['aria-expanded'], 'true');
+    assert.equal(controls.toggle.textContent, 'Done customizing');
+    assert.equal(flightCanvas.focused, undefined);
+    let stopped = false;
+    panel.listeners.keydown({ stopPropagation() { stopped = true; } });
+    assert.equal(stopped, true);
+    assert.equal(panel.listeners.keyup, undefined);
+    controls.toggle.fire('click');
+    assert.equal(controls.toggle['aria-expanded'], 'false');
+    assert.equal(controls.toggle.textContent, '🚀 Customize Ship');
+    assert.equal(flightCanvas.tabIndex, -1);
+    assert.equal(flightCanvas.focused, true);
+});
 
 test('legacy ships retain their settings and new shapes and markings persist', () => {
     const { controls, ship, saved } = setup({ style: 'rocket', body: '#abcdef', wings: '#123456', exhaust: '#112233', size: 1.4 });
