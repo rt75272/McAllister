@@ -129,6 +129,33 @@ def test_golden_algebra_starts_each_stage_with_one_visible_checkpoint():
     assert parser.nodes == {'1': [False, True, True], '2': [False, True, True], '3': [False]}
 
 
+def test_golden_algebra_mainframe_questions_require_simplification():
+    client = app.test_client()
+
+    page = client.get('/golden-algebra')
+    script = client.get('/static/js/golden_algebra.js')
+
+    assert b'Simplify <code>3x+2x-4</code> by combining like terms.' in page.data
+    assert b'Simplify <code>(12x+6)/3</code> by dividing each term by 3.' in page.data
+    assert b"'firewall-2': { pattern: /^5x-4$/" in script.data
+    assert b"'firewall-3': { pattern: /^(4x\\+2|2\\+4x)$/" in script.data
+    assert b"-(4x\\+2|2\\+4x)$/" in script.data
+
+
+def test_golden_algebra_shows_recovered_codes_at_the_master_vault():
+    client = app.test_client()
+
+    page = client.get('/golden-algebra')
+    script = client.get('/static/js/golden_algebra.js')
+
+    assert b'id="vault-code-reference"' in page.data
+    assert b' id="vault-code-reference" class="code-reference" aria-labelledby="vault-code-title" hidden' in page.data
+    assert b'<code>2x+10</code>' in page.data
+    assert b'<code>5x-4</code>' in page.data
+    assert b'<code>4x+2</code>' in page.data
+    assert b"document.getElementById('vault-code-reference').hidden = stages[index] !== 'master-vault';" in script.data
+
+
 def test_fable_quest_planet_is_accessible_from_quest_map():
     client = app.test_client()
     response = client.get('/fable-quest')

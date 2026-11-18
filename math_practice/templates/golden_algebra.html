@@ -25,6 +25,15 @@
                 <li data-progress="3">Master vault</li>
                 <li data-progress="4">Extraction</li>
             </ol>
+            <section id="vault-code-reference" class="code-reference" aria-labelledby="vault-code-title" hidden>
+                <h2 id="vault-code-title">Recovered codes</h2>
+                <ol class="code-reference-list">
+                    <li><span>Firewall 1</span><code>2x+10</code></li>
+                    <li><span>Firewall 2</span><code>5x-4</code></li>
+                    <li><span>Firewall 3</span><code>4x+2</code></li>
+                </ol>
+                <p class="small">Enter these in order in the master override.</p>
+            </section>
         </aside>
         <div class="mission-panel">
             <section id="briefing" class="mission-stage" aria-labelledby="briefing-title">
@@ -65,8 +74,8 @@
                 <form class="code-form" data-stage="2" novalidate>
                     <p class="checkpoint-progress" aria-live="polite">Checkpoint 1 of 3</p>
                     <div class="node"><label for="firewall-1"><strong>Firewall 1</strong> Simplify <code>2(x+5)</code>. Use the distributive property.</label><input id="firewall-1" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-1-feedback" aria-live="polite"></p></div>
-                    <div class="node" hidden><label for="firewall-2"><strong>Firewall 2</strong> Simplify <code>3x-4</code>. Can you combine the terms?</label><input id="firewall-2" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-2-feedback" aria-live="polite"></p></div>
-                    <div class="node" hidden><label for="firewall-3"><strong>Firewall 3</strong> Simplify <code>7x/3</code>. Can 7/3 be reduced to a whole number?</label><input id="firewall-3" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-3-feedback" aria-live="polite"></p></div>
+                    <div class="node" hidden><label for="firewall-2"><strong>Firewall 2</strong> Simplify <code>3x+2x-4</code> by combining like terms.</label><input id="firewall-2" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-2-feedback" aria-live="polite"></p></div>
+                    <div class="node" hidden><label for="firewall-3"><strong>Firewall 3</strong> Simplify <code>(12x+6)/3</code> by dividing each term by 3.</label><input id="firewall-3" autocomplete="off" spellcheck="false" placeholder="Enter code"><p class="feedback" id="firewall-3-feedback" aria-live="polite"></p></div>
                     <button class="mission-button" type="submit">Check code →</button>
                 </form>
             </section>

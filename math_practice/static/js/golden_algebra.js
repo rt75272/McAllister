@@ -6,9 +6,9 @@
         'node-b': { pattern: /^3x-4$/, hint: 'Multiply the number by 3 first, then subtract 4.' },
         'node-c': { pattern: /^(7x|x\*?7)\/3$/, hint: 'Multiply 7 and x together, then use / to divide by 3.' },
         'firewall-1': { pattern: /^(2x\+10|10\+2x)$/, hint: 'Multiply 2 by both x and 5.' },
-        'firewall-2': { pattern: /^3x-4$/, hint: '3x and -4 are not like terms, so the expression is already simplified.' },
-        'firewall-3': { pattern: /^7x\/3$/, hint: '7 cannot be divided evenly by 3, so the expression is already simplified.' },
-        'override': { pattern: /^(2x\+10|10\+2x)-3x-4-7x\/3$/, hint: 'Use the three simplified codes in order, separated by dashes. Keep the minus sign in the second code.' }
+        'firewall-2': { pattern: /^5x-4$/, hint: 'Combine 3x and 2x; keep the -4.' },
+        'firewall-3': { pattern: /^(4x\+2|2\+4x)$/, hint: 'Divide both 12x and 6 by 3.' },
+        'override': { pattern: /^(2x\+10|10\+2x)-5x-4-(4x\+2|2\+4x)$/, hint: 'Use the three simplified codes in order, separated by dashes. Keep the minus sign in the second code.' }
     };
     let agent = '';
 
@@ -20,6 +20,7 @@
             if (i === index) progress.setAttribute('aria-current', 'step');
             else progress.removeAttribute('aria-current');
         });
+        document.getElementById('vault-code-reference').hidden = stages[index] !== 'master-vault';
         document.querySelector(`#${stages[index]} h2`).focus();
     }
 

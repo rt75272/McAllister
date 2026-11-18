@@ -15,6 +15,12 @@ body { background: #071528; color: #eef6ff; }
 .progress-list li { padding: .3rem 0; }
 .progress-list li[aria-current="step"] { color: #ffdf86; font-weight: 800; }
 .progress-list li.done { color: #a9edce; }
+.code-reference { margin-top: 1.25rem; padding: 1rem; border: 1px solid #8e774d; border-radius: 12px; background: #10243a; }
+.code-reference[hidden] { display: none; }
+.code-reference h2 { margin-top: 0; }
+.code-reference-list { padding-left: 1.4rem; }
+.code-reference-list li { display: flex; justify-content: space-between; gap: .5rem; padding: .35rem 0; }
+.code-reference-list code { white-space: nowrap; }
 .mission-stage h2 { color: #fff3cc; margin: .25rem 0 .7rem; }
 .mission-stage[hidden], button[hidden] { display: none; }
 .protocol { border-left: 4px solid #ffcf69; background: #243b4c; padding: .8rem 1rem; border-radius: 0 10px 10px 0; }
