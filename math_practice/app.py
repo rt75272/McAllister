@@ -1488,12 +1488,9 @@ def is_teacher_account():
 
 
 @app.route('/teacher/golden-algebra/stats.csv')
-@login_required
+@app.route('/golden-algebra/stats.csv')
 def golden_algebra_stats_csv():
-    """Download a teacher-only spreadsheet of currently active game sessions."""
-    if not is_teacher_account():
-        abort(403)
-
+    """Download a spreadsheet of currently active game sessions."""
     try:
         with closing(get_db_connection()) as conn:
             with conn.cursor() as cur:

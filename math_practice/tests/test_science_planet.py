@@ -207,13 +207,10 @@ def test_golden_algebra_presence_rejects_invalid_names_and_csrf():
     get_db_connection.assert_not_called()
 
 
-def test_golden_algebra_stats_spreadsheet_is_teacher_only():
+def test_golden_algebra_stats_spreadsheet_is_available_to_everyone():
     from datetime import datetime, timezone
 
     client = app.test_client()
-    with client.session_transaction() as state:
-        state['account_id'] = 42
-
     connection = MagicMock()
     cursor = connection.cursor.return_value.__enter__.return_value
     cursor.fetchall.return_value = [(
@@ -222,12 +219,13 @@ def test_golden_algebra_stats_spreadsheet_is_teacher_only():
         datetime(2026, 11, 18, 16, 5, tzinfo=timezone.utc),
         None,
     )]
-    with patch('app.get_db_connection', return_value=connection), \
-            patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
+    with patch('app.get_db_connection', return_value=connection):
         page = client.get('/golden-algebra')
-        response = client.get('/teacher/golden-algebra/stats.csv')
+        response = client.get('/golden-algebra/stats.csv')
 
     assert b'Download active player stats (.csv)' in page.data
+    assert b'href="/golden-algebra/stats.csv"' in page.data
+    assert b'Anyone can see your name and download your game stats' in page.data
     assert response.status_code == 200
     assert response.mimetype == 'text/csv'
     assert response.headers['Content-Disposition'].endswith(
@@ -239,9 +237,10 @@ def test_golden_algebra_stats_spreadsheet_is_teacher_only():
     visitor = app.test_client()
     with visitor.session_transaction() as state:
         state['account_id'] = 77
-    with patch.dict('app.os.environ', {'TEACHER_ACCOUNT_ID': '42'}):
-        assert b'Download active player stats (.csv)' not in visitor.get('/golden-algebra').data
-        assert visitor.get('/teacher/golden-algebra/stats.csv').status_code == 403
+    with patch('app.get_db_connection', return_value=connection):
+        assert b'Download active player stats (.csv)' in visitor.get('/golden-algebra').data
+        assert visitor.get('/golden-algebra/stats.csv').status_code == 200
+        assert visitor.get('/teacher/golden-algebra/stats.csv').status_code == 200
 
 
 def test_fable_quest_planet_is_accessible_from_quest_map():
